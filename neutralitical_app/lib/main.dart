@@ -5,8 +5,11 @@ import 'package:go_router/go_router.dart';
 
 import 'screens/home_screen.dart';
 import 'screens/product_detail_screen.dart';
+import 'screens/cart_screen.dart';
 import 'models/product.dart';
 import 'providers/product_provider.dart';
+import 'providers/cart_provider.dart';
+import 'providers/wishlist_provider.dart';
 
 void main() {
   runApp(const NeutraliticalApp());
@@ -17,8 +20,12 @@ class NeutraliticalApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ProductProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ProductProvider()),
+        ChangeNotifierProvider(create: (context) => CartProvider()),
+        ChangeNotifierProvider(create: (context) => WishlistProvider()),
+      ],
       child: MaterialApp.router(
         title: 'Neutralitical - Vedanta TradeLink',
         debugShowCheckedModeBanner: false,
@@ -62,6 +69,10 @@ class NeutraliticalApp extends StatelessWidget {
                 final product = context.read<ProductProvider>().getProductById(productId);
                 return ProductDetailScreen(product: product!);
               },
+            ),
+            GoRoute(
+              path: '/cart',
+              builder: (context, state) => const CartScreen(),
             ),
           ],
         ),

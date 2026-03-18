@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
 import '../models/product.dart';
+import '../providers/cart_provider.dart';
+import '../providers/wishlist_provider.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
@@ -103,10 +106,33 @@ class ProductDetailScreen extends StatelessWidget {
         ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.favorite_border, color: Colors.white),
-          onPressed: () {
-            // TODO: Add to favorites
+        Consumer<WishlistProvider>(
+          builder: (context, wishlistProvider, child) {
+            return IconButton(
+              icon: Icon(
+                wishlistProvider.isInWishlist(product.id)
+                    ? Icons.favorite
+                    : Icons.favorite_border,
+                color: wishlistProvider.isInWishlist(product.id)
+                    ? Colors.red
+                    : Colors.white,
+              ),
+              onPressed: () {
+                wishlistProvider.toggleWishlist(product.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      wishlistProvider.isInWishlist(product.id)
+                          ? 'Added to wishlist'
+                          : 'Removed from wishlist',
+                    ),
+                    backgroundColor: wishlistProvider.isInWishlist(product.id)
+                        ? Colors.green
+                        : Colors.orange,
+                  ),
+                );
+              },
+            );
           },
         ),
         IconButton(
@@ -325,80 +351,118 @@ class ProductDetailScreen extends StatelessWidget {
   }
 
   Widget _buildPurchaseSection(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, -2),
+    return Consumer2<CartProvider, WishlistProvider>(
+      builder: (context, cartProvider, wishlistProvider, child) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 4,
+                offset: const Offset(0, -2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
+          child: Column(
             children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // TODO: Add to cart
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Added to cart!'),
-                        backgroundColor: Color(0xFF2E7D32),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        cartProvider.addToCart(product);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Added to cart!'),
+                            backgroundColor: Color(0xFF2E7D32),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      child: Text(
+                        cartProvider.isInCart(product.id)
+                            ? 'In Cart'
+                            : 'Add to Cart',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
-                  child: const Text(
-                    'Add to Cart',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  const SizedBox(width: 12),
+                  IconButton(
+                    onPressed: () {
+                      // TODO: Buy now
+                    },
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.grey[100],
+                      padding: const EdgeInsets.all(16),
+                    ),
+                    icon: const Icon(Icons.flash_on),
+                  ),
+                  const SizedBox(width: 12),
+                  IconButton(
+                    onPressed: () {
+                      wishlistProvider.toggleWishlist(product.id);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            wishlistProvider.isInWishlist(product.id)
+                                ? 'Added to wishlist'
+                                : 'Removed from wishlist',
+                          ),
+                          backgroundColor: wishlistProvider.isInWishlist(product.id)
+                              ? Colors.green
+                              : Colors.orange,
+                        ),
+                      );
+                    },
+                    style: IconButton.styleFrom(
+                      backgroundColor: wishlistProvider.isInWishlist(product.id)
+                          ? Colors.red.withOpacity(0.1)
+                          : Colors.grey[100],
+                      padding: const EdgeInsets.all(16),
+                    ),
+                    icon: Icon(
+                      wishlistProvider.isInWishlist(product.id)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: wishlistProvider.isInWishlist(product.id)
+                          ? Colors.red
+                          : Colors.grey[600],
                     ),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(width: 12),
-              IconButton(
-                onPressed: () {
-                  // TODO: Buy now
-                },
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.grey[100],
-                  padding: const EdgeInsets.all(16),
-                ),
-                icon: const Icon(Icons.flash_on),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.local_shipping, color: Color(0xFF2E7D32)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Free delivery on orders above ₹500',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.local_shipping, color: Color(0xFF2E7D32)),
-              const SizedBox(width: 8),
-              Text(
-                'Free delivery on orders above ₹500',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
