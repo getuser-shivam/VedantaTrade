@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../models/product.dart';
 import '../providers/cart_provider.dart';
 import '../providers/wishlist_provider.dart';
+import '../providers/review_provider.dart';
+import '../providers/auth_provider.dart';
+import '../widgets/review_widget.dart';
+import '../screens/add_review_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
@@ -25,8 +30,10 @@ class ProductDetailScreen extends StatelessWidget {
               children: [
                 _buildProductImage(context),
                 _buildProductInfo(context),
+                _buildRatingSection(context),
                 _buildIngredients(context),
                 _buildDosageInfo(context),
+                _buildReviewsSection(context),
                 _buildPurchaseSection(context),
               ],
             ),
@@ -347,6 +354,107 @@ class ProductDetailScreen extends StatelessWidget {
           const SizedBox(height: 24),
         ],
       ),
+    );
+  }
+
+  Widget _buildRatingSection(BuildContext context) {
+    return Consumer<ReviewProvider>(
+      builder: (context, reviewProvider, child) {
+        final rating = reviewProvider.getProductRating(product.id);
+        final reviews = reviewProvider.getReviewsForProduct(product.id);
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Customer Reviews',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => AddReviewScreen(
+                            productId: product.id,
+                            productName: product.name,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Write a Review'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (rating.totalReviews > 0) ...[
+                RatingSummaryWidget(rating: rating),
+                const SizedBox(height: 20),
+              ] else ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.rate_review_outlined,
+                        color: Colors.grey[600],
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'No reviews yet. Be the first to review this product!',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+              if (reviews.isNotEmpty) ...[
+                Text(
+                  'Recent Reviews',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ...reviews.take(3).map((review) => ReviewWidget(review: review)),
+                if (reviews.length > 3)
+                  TextButton(
+                    onPressed: () {
+                      // TODO: Show all reviews
+                    },
+                    child: const Text('View all reviews'),
+                  ),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 

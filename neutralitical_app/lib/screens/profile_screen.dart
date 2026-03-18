@@ -396,11 +396,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.notifications, color: Color(0xFF2E7D32)),
-              title: const Text('Notifications'),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              leading: Icon(Icons.notifications, color: Color(0xFF2E7D32)),
+              title: Text('Notifications'),
+              trailing: Consumer<NotificationProvider>(
+                builder: (context, notificationProvider, child) {
+                  final unreadCount = notificationProvider.unreadCount;
+                  return Row(
+                    children: [
+                      if (unreadCount > 0)
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            unreadCount.toString(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward_ios),
+                    ],
+                  );
+                },
+              ),
               onTap: () {
-                // TODO: Navigate to notifications settings
+                context.go('/notifications');
               },
             ),
             const Divider(),
