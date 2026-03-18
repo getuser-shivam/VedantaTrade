@@ -163,16 +163,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 24,
+                  GestureDetector(
+                    onTap: () {
+                      final authProvider = context.read<AuthProvider>();
+                      if (authProvider.isAuthenticated) {
+                        context.go('/profile');
+                      } else {
+                        context.go('/auth');
+                      }
+                    },
+                    child: Consumer<AuthProvider>(
+                      builder: (context, authProvider, child) {
+                        return Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            authProvider.isAuthenticated ? Icons.person : Icons.login,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],

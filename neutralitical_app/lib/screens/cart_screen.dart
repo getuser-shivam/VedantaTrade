@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../providers/cart_provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/order_provider.dart';
 import '../widgets/cart_item_widget.dart';
 
 class CartScreen extends StatelessWidget {
@@ -236,12 +238,43 @@ class CartScreen extends StatelessWidget {
   }
 
   void _showCheckoutDialog(BuildContext context, CartProvider cartProvider) {
+    final authProvider = context.read<AuthProvider>();
+    final orderProvider = context.read<OrderProvider>();
+
+    if (!authProvider.isAuthenticated) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Sign In Required'),
+          content: const Text('Please sign in to proceed with checkout.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.go('/auth');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2E7D32),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Sign In'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Checkout'),
         content: const Text(
-          'This is a demo app. In a real app, this would proceed to payment processing.',
+          'Proceed to place your order?',
         ),
         actions: [
           TextButton(
@@ -249,16 +282,42 @@ class CartScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              cartProvider.clearCart();
+            onPressed: () async {
               Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Order placed successfully!'),
-                  backgroundColor: Color(0xFF2E7D32),
-                ),
-              );
-              context.go('/');
+              
+              try {
+                // Create order
+                final orderId = await orderProvider.createOrder(
+                  cartItems: cartProvider.items,
+                  totalAmount: cartProvider.totalAmount,
+                  deliveryFee: cartProvider.totalAmount >= 500 ? 0 : 40,
+                  finalAmount: cartProvider.totalAmount + (cartProvider.totalAmount >= 500 ? 0 : 40),
+                  deliveryAddress: authProvider.user!.addresses.isNotEmpty 
+                      ? authProvider.user!.addresses.first 
+                      : 'Default Address',
+                );
+
+                // Clear cart
+                cartProvider.clearCart();
+
+                // Show success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Order placed successfully!'),
+                    backgroundColor: Color(0xFF2E7D32),
+                  ),
+                );
+
+                // Navigate to orders
+                context.go('/orders');
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to place order. Please try again.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2E7D32),
