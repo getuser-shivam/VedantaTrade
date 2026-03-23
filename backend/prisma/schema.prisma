@@ -1,0 +1,665 @@
+// VedantaTrade Enterprise Pharma Platform - Prisma Schema
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =================== ENUMS ===================
+
+enum UserRole {
+  ADMIN
+  MEDICAL_REP
+  ACCOUNTANT
+  DOCTOR
+  STOCKIST
+  RETAILER
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  CONFIRMED
+  PROCESSING
+  DISPATCHED
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+  WRITTEN_OFF
+}
+
+enum VisitType {
+  FIRST_CALL
+  FOLLOW_UP
+  SAMPLE_DELIVERY
+  ORDER_COLLECTION
+  COMPLAINT_HANDLING
+}
+
+enum ExpenseStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum ScraperSource {
+  PRACTO
+  JUSTDIAL
+  INDIAMART
+  NMC
+  MANUAL
+}
+
+enum ScraperStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum LeadStatus {
+  RAW
+  VERIFIED
+  APPROVED
+  REJECTED
+  CONVERTED
+}
+
+enum LeadType {
+  DOCTOR
+  HOSPITAL
+  STOCKIST
+  RETAILER
+}
+
+enum InvoiceType {
+  PURCHASE
+  SALE
+  CREDIT_NOTE
+  DEBIT_NOTE
+}
+
+enum LedgerEntryType {
+  DEBIT
+  CREDIT
+}
+
+// =================== CORE TABLES ===================
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  passwordHash  String
+  name          String
+  phone         String?
+  avatarUrl     String?
+  role          UserRole @default(RETAILER)
+  isActive      Boolean  @default(true)
+  emailVerified Boolean  @default(false)
+  territory     String?  // For MRs: assigned region/territory
+  employeeCode  String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastLogin     DateTime?
+
+  // Relations
+  mrProfile     MedicalRep?
+  doctorProfile Doctor?
+  stockistProfile Stockist?
+  retailerProfile Retailer?
+  accountantProfile Accountant?
+
+  mrVisits      MrVisit[]     @relation("MrVisitUser")
+  expenses      Expense[]
+  notifications Notification[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// =================== ROLE PROFILES ===================
+
+model MedicalRep {
+  id            Int     @id @default(autoincrement())
+  userId        Int     @unique
+  employeeCode  String  @unique
+  territory     String
+  headquarters  String
+  managerId     Int?    // Reporting manager (another MR or admin)
+  monthlySalary Decimal?
+  joiningDate   DateTime?
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  visits      MrVisit[]
+  tourPlans   TourPlan[]
+  targets     MrTarget[]
+  samplesGiven SampleDistribution[]
+
+  @@map("medical_reps")
+}
+
+model Accountant {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accountants")
+}
+
+model Doctor {
+  id             Int     @id @default(autoincrement())
+  userId         Int?    @unique
+  name           String
+  registrationNo String? @unique
+  specialization String?
+  qualification  String?
+  phone          String?
+  email          String?
+  clinicName     String?
+  clinicAddress  String?
+  city           String?
+  state          String?
+  pincode        String?
+  latitude       Float?
+  longitude      Float?
+  potentialScore Int     @default(0) // MR scoring: 1-10
+  prescribingIndex Int   @default(0) // Monthly prescription volume estimate
+  preferredBrands String?
+  isVerified     Boolean @default(false)
+  sourceType     ScraperSource @default(MANUAL)
+  user           User?   @relation(fields: [userId], references: [id])
+
+  hospitals      DoctorHospital[]
+  visits         MrVisit[]
+  samplesReceived SampleDistribution[]
+  orders         Order[]  @relation("DoctorOrders")
+
+  @@map("doctors")
+}
+
+model Hospital {
+  id          Int     @id @default(autoincrement())
+  name        String
+  type        String? // Government, Private, Clinic, Nursing Home
+  phone       String?
+  email       String?
+  address     String?
+  city        String?
+  state       String?
+  pincode     String?
+  bedCount    Int?
+  isVerified  Boolean @default(false)
+  sourceType  ScraperSource @default(MANUAL)
+  createdAt   DateTime @default(now())
+
+  doctors     DoctorHospital[]
+
+  @@map("hospitals")
+}
+
+model DoctorHospital {
+  id         Int      @id @default(autoincrement())
+  doctorId   Int
+  hospitalId Int
+  isPrimary  Boolean  @default(false)
+  timings    String?
+  doctor     Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  hospital   Hospital @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, hospitalId])
+  @@map("doctor_hospital")
+}
+
+model Stockist {
+  id           Int     @id @default(autoincrement())
+  userId       Int?    @unique
+  firmName     String
+  ownerName    String?
+  phone        String?
+  email        String?
+  address      String?
+  city         String?
+  state        String?
+  pincode      String?
+  gstNumber    String?
+  drugLicense  String?
+  creditLimit  Decimal @default(0)
+  paymentTerms Int     @default(30) // Days
+  isVerified   Boolean @default(false)
+  sourceType   ScraperSource @default(MANUAL)
+  user         User?   @relation(fields: [userId], references: [id])
+
+  retailers    StockistRetailer[]
+  orders       Order[]  @relation("StockistOrders")
+  inventory    Inventory[]
+  invoices     Invoice[] @relation("StockistInvoices")
+
+  @@map("stockists")
+}
+
+model Retailer {
+  id           Int     @id @default(autoincrement())
+  userId       Int?    @unique
+  firmName     String
+  ownerName    String?
+  phone        String?
+  email        String?
+  address      String?
+  city         String?
+  state        String?
+  pincode      String?
+  gstNumber    String?
+  drugLicense  String?
+  creditLimit  Decimal @default(0)
+  paymentTerms Int     @default(15)
+  isVerified   Boolean @default(false)
+  sourceType   ScraperSource @default(MANUAL)
+  user         User?   @relation(fields: [userId], references: [id])
+
+  stockistLinks StockistRetailer[]
+  orders        Order[]  @relation("RetailerOrders")
+  inventory     Inventory[]
+  invoices      Invoice[] @relation("RetailerInvoices")
+
+  @@map("retailers")
+}
+
+model StockistRetailer {
+  id          Int      @id @default(autoincrement())
+  stockistId  Int
+  retailerId  Int
+  isActive    Boolean  @default(true)
+  creditLimit Decimal?
+  stockist    Stockist @relation(fields: [stockistId], references: [id])
+  retailer    Retailer @relation(fields: [retailerId], references: [id])
+
+  @@unique([stockistId, retailerId])
+  @@map("stockist_retailer")
+}
+
+// =================== PRODUCTS ===================
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  imageUrl    String?
+  parentId    Int?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  parent      Category? @relation("CategoryParent", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryParent")
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id                   Int      @id @default(autoincrement())
+  name                 String
+  genericName          String?
+  description          String?
+  sku                  String   @unique
+  hsnCode              String?
+  categoryId           Int?
+  manufacturer         String?
+  composition          String?
+  packSize             String?  // e.g., "10 tablets/strip"
+  mrp                  Decimal
+  ptr                  Decimal  // Price to Retailer
+  pts                  Decimal  // Price to Stockist
+  mop                  Decimal? // Market Operating Price
+  gstPercent           Decimal  @default(12)
+  stockQuantity        Int      @default(0)
+  minStockLevel        Int      @default(10)
+  batchNo              String?
+  expiryDate           DateTime?
+  requiresPrescription Boolean  @default(false)
+  isActive             Boolean  @default(true)
+  images               String[] // Array of image URLs
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  category             Category? @relation(fields: [categoryId], references: [id])
+
+  orderItems       OrderItem[]
+  inventoryItems   Inventory[]
+  sampleItems      SampleDistribution[]
+  mrTargetProducts MrTargetProduct[]
+
+  @@map("products")
+}
+
+// =================== MR VISIT TRACKING ===================
+
+model MrVisit {
+  id           Int       @id @default(autoincrement())
+  mrId         Int       // MedicalRep.id
+  userId       Int       // User.id (the MR's user account)
+  doctorId     Int
+  visitDate    DateTime
+  visitType    VisitType @default(FOLLOW_UP)
+  visitStatus  String    @default("completed") // completed, missed, rescheduled
+  checkinTime  DateTime?
+  checkoutTime DateTime?
+  latitude     Float?
+  longitude    Float?
+  notes        String?
+  nextFollowUp DateTime?
+  feedbackScore Int?     // Doctor's feedback on visit 1-5
+  samplesGiven Int       @default(0)
+  ordersBooked Decimal   @default(0)
+  createdAt    DateTime  @default(now())
+
+  mr      MedicalRep @relation(fields: [mrId], references: [id])
+  user    User       @relation("MrVisitUser", fields: [userId], references: [id])
+  doctor  Doctor     @relation(fields: [doctorId], references: [id])
+  samples SampleDistribution[]
+
+  @@map("mr_visits")
+}
+
+model TourPlan {
+  id          Int      @id @default(autoincrement())
+  mrId        Int
+  planDate    DateTime
+  headquarters String?
+  plannedVisits Json   // Array of {doctorId, time, purpose}
+  actualVisits  Json?  // Filled after completion
+  status       String  @default("planned") // planned, in_progress, completed, approved
+  approvedBy   Int?
+  createdAt    DateTime @default(now())
+  mr           MedicalRep @relation(fields: [mrId], references: [id])
+
+  @@map("tour_plans")
+}
+
+model MrTarget {
+  id         Int     @id @default(autoincrement())
+  mrId       Int
+  month      Int     // 1-12
+  year       Int
+  visitTarget Int
+  orderTarget Decimal
+  achievedVisits Int @default(0)
+  achievedOrders Decimal @default(0)
+  mr         MedicalRep @relation(fields: [mrId], references: [id])
+  products   MrTargetProduct[]
+
+  @@unique([mrId, month, year])
+  @@map("mr_targets")
+}
+
+model MrTargetProduct {
+  id        Int      @id @default(autoincrement())
+  targetId  Int
+  productId Int
+  quantity  Int
+  achieved  Int      @default(0)
+  target    MrTarget @relation(fields: [targetId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@map("mr_target_products")
+}
+
+model SampleDistribution {
+  id        Int      @id @default(autoincrement())
+  mrId      Int
+  doctorId  Int
+  visitId   Int?
+  productId Int
+  quantity  Int
+  givenDate DateTime @default(now())
+  mr        MedicalRep @relation(fields: [mrId], references: [id])
+  doctor    Doctor     @relation(fields: [doctorId], references: [id])
+  visit     MrVisit?   @relation(fields: [visitId], references: [id])
+  product   Product    @relation(fields: [productId], references: [id])
+
+  @@map("sample_distributions")
+}
+
+model Expense {
+  id          Int           @id @default(autoincrement())
+  userId      Int
+  category    String        // travel, food, lodging, communication, misc
+  amount      Decimal
+  description String?
+  receiptUrl  String?
+  expenseDate DateTime
+  status      ExpenseStatus @default(DRAFT)
+  approvedBy  Int?
+  approvedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  user        User          @relation(fields: [userId], references: [id])
+
+  @@map("expenses")
+}
+
+// =================== ORDERS ===================
+
+model Order {
+  id              Int           @id @default(autoincrement())
+  orderNumber     String        @unique
+  orderType       String        // company_to_stockist, stockist_to_retailer
+  status          OrderStatus   @default(PENDING)
+  stockistId      Int?
+  retailerId      Int?
+  doctorId        Int?
+  subtotal        Decimal
+  discountAmount  Decimal       @default(0)
+  gstAmount       Decimal       @default(0)
+  totalAmount     Decimal
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentDueDate  DateTime?
+  notes           String?
+  dispatched      Boolean       @default(false)
+  dispatchedAt    DateTime?
+  deliveredAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  stockist    Stockist? @relation("StockistOrders", fields: [stockistId], references: [id])
+  retailer    Retailer? @relation("RetailerOrders", fields: [retailerId], references: [id])
+  doctor      Doctor?   @relation("DoctorOrders", fields: [doctorId], references: [id])
+  items       OrderItem[]
+  invoices    Invoice[]
+  payments    Payment[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          Int     @id @default(autoincrement())
+  orderId     Int
+  productId   Int
+  productName String
+  quantity    Int
+  unitPrice   Decimal
+  discount    Decimal @default(0)
+  gstPercent  Decimal @default(12)
+  totalPrice  Decimal
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// =================== ACCOUNTING ===================
+
+model Invoice {
+  id            Int           @id @default(autoincrement())
+  invoiceNumber String        @unique
+  invoiceType   InvoiceType   @default(SALE)
+  orderId       Int?
+  stockistId    Int?
+  retailerId    Int?
+  subtotal      Decimal
+  discountAmount Decimal      @default(0)
+  gstAmount     Decimal       @default(0)
+  totalAmount   Decimal
+  status        PaymentStatus @default(PENDING)
+  dueDate       DateTime?
+  paidAt        DateTime?
+  pdfUrl        String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  order       Order?    @relation(fields: [orderId], references: [id])
+  stockist    Stockist? @relation("StockistInvoices", fields: [stockistId], references: [id])
+  retailer    Retailer? @relation("RetailerInvoices", fields: [retailerId], references: [id])
+  payments    Payment[]
+  ledgerEntries LedgerEntry[]
+  gstRecords  GstRecord[]
+
+  @@map("invoices")
+}
+
+model Payment {
+  id            Int           @id @default(autoincrement())
+  invoiceId     Int?
+  orderId       Int?
+  amount        Decimal
+  paymentMode   String        // cash, cheque, neft, rtgs, upi
+  referenceNo   String?
+  paidDate      DateTime
+  notes         String?
+  createdAt     DateTime      @default(now())
+  invoice       Invoice? @relation(fields: [invoiceId], references: [id])
+  order         Order?   @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+model LedgerEntry {
+  id          Int             @id @default(autoincrement())
+  invoiceId   Int?
+  entryType   LedgerEntryType
+  accountHead String          // Sales, Purchases, Expenses, Cash, Bank, Debtors, Creditors
+  amount      Decimal
+  description String?
+  entryDate   DateTime
+  createdAt   DateTime        @default(now())
+  invoice     Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@map("ledger_entries")
+}
+
+model GstRecord {
+  id          Int      @id @default(autoincrement())
+  invoiceId   Int?
+  month       Int
+  year        Int
+  hsnCode     String?
+  taxableAmount Decimal
+  cgst        Decimal  @default(0)
+  sgst        Decimal  @default(0)
+  igst        Decimal  @default(0)
+  totalGst    Decimal
+  invoice     Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@map("gst_records")
+}
+
+// =================== INVENTORY ===================
+
+model Inventory {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  stockistId  Int?
+  retailerId  Int?
+  quantity    Int      @default(0)
+  batchNo     String?
+  expiryDate  DateTime?
+  updatedAt   DateTime @updatedAt
+  product     Product  @relation(fields: [productId], references: [id])
+  stockist    Stockist? @relation(fields: [stockistId], references: [id])
+  retailer    Retailer? @relation(fields: [retailerId], references: [id])
+
+  @@map("inventory")
+}
+
+// =================== NOTIFICATIONS ===================
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  body      String
+  type      String   // visit_reminder, order_update, payment_due, target_alert
+  isRead    Boolean  @default(false)
+  data      Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// =================== WEB SCRAPER ===================
+
+model ScraperJob {
+  id         Int           @id @default(autoincrement())
+  source     ScraperSource
+  targetType LeadType
+  city       String?
+  query      String?
+  status     ScraperStatus @default(PENDING)
+  totalFound Int           @default(0)
+  startedAt  DateTime?
+  completedAt DateTime?
+  errorMsg   String?
+  createdAt  DateTime      @default(now())
+  leads      ScrapedLead[]
+
+  @@map("scraper_jobs")
+}
+
+model ScrapedLead {
+  id          Int           @id @default(autoincrement())
+  jobId       Int
+  leadType    LeadType
+  name        String
+  phone       String?
+  email       String?
+  address     String?
+  city        String?
+  state       String?
+  specialization String?   // For doctors
+  clinicName  String?       // For doctors
+  firmName    String?       // For stockists/retailers
+  sourceUrl   String?
+  rawData     Json?
+  status      LeadStatus    @default(RAW)
+  convertedId Int?          // ID of the doctor/stockist/retailer once converted
+  reviewedBy  Int?
+  reviewedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  job         ScraperJob    @relation(fields: [jobId], references: [id])
+
+  @@map("scraped_leads")
+}

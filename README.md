@@ -1,142 +1,97 @@
 # Neutralitical App
 
-A modern Flutter e-commerce application for Neutralitical health supplements, marketed by Vedanta TradeLink.
+Neutralitical is a Flutter commerce app for Vedanta TradeLink health supplements. The current app includes a registered product catalog, featured merchandising, product details, cart and wishlist flows, user profile screens, review support, and notification/order scaffolding.
 
-## Features
+## Current Highlights
 
-- 🏪 **Product Catalog**: Browse comprehensive health supplement catalog
-- 🎯 **Featured Products**: Highlighted premium products with carousel
-- 🔍 **Search & Filter**: Find products by name or category
-- 📱 **Product Details**: Detailed product information with ingredients
-- 🛒 **Shopping Cart**: Add to cart functionality
-- 🎨 **Modern UI**: Clean, professional design with Material 3
+- Registered product catalog loaded from `assets/data/products.json`
+- Featured products carousel with category chips and combined search filtering
+- Product detail pages with ingredients, dosage, packaging, reviews, and cart actions
+- Cart, wishlist, authentication, profile, order history, and notifications flows
+- Provider-based state management across the app
+- GitHub Actions workflows for CI and GitHub Pages deployment of the separate `neutralitical/` starter project
 
-## Products Included
+## Product Catalog Enhancements
 
-### Featured Products
-- **ARGIVIT** (Sachets) - Prenatal Care
-- **MEGA-O** (Softgel) - Omega Supplements  
-- **MYOBOOST** (Sachets) - Women's Health
-- **UTIVA-BV PLUS** (Capsules) - Urinary Health
-- **Zeo Plus** (Softgel) - Bone Health
+Recent catalog work moved product data out of hardcoded provider state and into a dedicated catalog data source:
 
-### Additional Products
-- **OFFER-XT** (Tablets) - Iron Supplements
-- **Vferty** (Softgel) - Fertility Support
-- **Vfertil-M** (Tablets) - Men's Health
-- **ZEOCAL-500** (Tablets) - Calcium Supplements
+- `assets/data/products.json` now acts as the registered-products source
+- `ProductCatalogService` loads and parses registered products
+- `ProductProvider` now exposes loading and error state for the catalog
+- `HomeScreen` now supports:
+  - pull-to-refresh
+  - loading, error, and empty states
+  - combined category and text filtering
+  - registered-product counts
+- `ProductCard` and routing were cleaned up so catalog navigation behaves more predictably
 
-## Getting Started
+## Repository Layout
 
-### Prerequisites
-- Flutter SDK (>=3.0.0)
-- Dart SDK
-- Android Studio / VS Code with Flutter extensions
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/getuser-shivam/VedantaTrade.git
-cd VedantaTrade/neutralitical_app
+```text
+.
+|-- assets/
+|   |-- data/products.json
+|   `-- images/
+|-- backend/
+|   |-- prisma/
+|   `-- src/
+|-- lib/
+|   |-- models/
+|   |-- providers/
+|   |-- screens/
+|   |-- services/
+|   `-- widgets/
+|-- .github/workflows/
+`-- neutralitical/
 ```
 
-2. Install dependencies:
+## Main App Stack
+
+- Flutter
+- Provider
+- GoRouter
+- Google Fonts
+- Card Swiper
+- Shared Preferences
+- Firebase Core / Analytics / Remote Config
+
+## Local Development
+
+### Main App
+
 ```bash
 flutter pub get
-```
-
-3. Run the app:
-```bash
+flutter analyze
 flutter run
 ```
 
-## Project Structure
+### Starter Project In `neutralitical/`
 
-```
-lib/
-├── main.dart                 # App entry point
-├── models/
-│   └── product.dart         # Product data model
-├── providers/
-│   └── product_provider.dart # State management
-├── screens/
-│   ├── home_screen.dart     # Main catalog screen
-│   └── product_detail_screen.dart # Product details
-└── widgets/
-    ├── product_card.dart    # Product grid item
-    └── category_chip.dart   # Category filter chip
+```bash
+cd neutralitical
+flutter pub get
+flutter analyze
+flutter test
+flutter run
 ```
 
-## Dependencies
+## CI/CD
 
-- `flutter` - Flutter framework
-- `google_fonts` - Custom typography
-- `provider` - State management
-- `go_router` - Navigation and routing
-- `cached_network_image` - Image caching
-- `card_swiper` - Featured products carousel
-- `flutter_svg` - SVG support
+The repository now includes GitHub Actions workflows under `.github/workflows/`:
 
-## Design System
+- `ci.yml`
+  - installs Flutter
+  - checks formatting
+  - runs `flutter analyze`
+  - runs tests
+  - builds the web target
+- `deploy.yml`
+  - builds the Flutter web app in `neutralitical/`
+  - uploads the Pages artifact
+  - deploys to GitHub Pages from `main`
 
-### Colors
-- **Primary**: #2E7D32 (Green)
-- **Secondary**: #1976D2 (Blue)
-- **Surface**: White
-- **Background**: #F5F5F5 (Light Grey)
+## Notes
 
-### Typography
-- **Font Family**: Poppins (via Google Fonts)
-- **Headings**: Bold weights
-- **Body**: Regular weights
-
-## Features Implementation
-
-### State Management
-Uses Provider pattern for reactive state management with `ProductProvider` handling product data and operations.
-
-### Navigation
-Implements Go Router for declarative routing with support for deep linking and browser navigation.
-
-### Responsive Design
-- Adaptive layouts for different screen sizes
-- Grid layout for product catalog
-- Scrollable content areas
-
-### Product Data
-Products include:
-- Basic info (name, category, form)
-- Detailed ingredients list
-- Pricing information
-- Dosage and packaging details
-- Featured product flags
-
-## Future Enhancements
-
-- [ ] User authentication
-- [ ] Shopping cart persistence
-- [ ] Order management
-- [ ] Payment integration
-- [ ] Product reviews and ratings
-- [ ] Wishlist functionality
-- [ ] Push notifications
-- [ ] Multi-language support
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contact
-
-**Vedanta TradeLink**
-- Marketing and Distribution
-- Health Supplements Division
+- The main catalog currently reads from the local registered-products dataset.
+- Backend product endpoints are scaffolded separately under `backend/` and can be connected to the catalog in a later iteration.
+- Supporting project planning and schema documents remain in the repository root for product and backend reference.

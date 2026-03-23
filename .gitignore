@@ -1,0 +1,43 @@
+# Flutter
+.dart_tool/
+.metadata
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Android
+android/**/generated/
+android/app/src/main/res/drawable-*/
+android/app/src/main/res/mipmap-*/
+*.keystore
+*.jks
+*.properties
+!proguard-rules.pro
+!gradle.properties
+!key.properties
+android/sdk.dir
+android/local.properties
+
+# Backend
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/prisma/migrations/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scratch
+*.txt
+*.bat
+*.ps1
+!launch_vedanta.bat

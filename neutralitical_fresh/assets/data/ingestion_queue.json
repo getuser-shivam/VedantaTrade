@@ -1,0 +1,46 @@
+[
+  {
+    "id": "lead_1",
+    "name": "Dr. Rachana Gyawali",
+    "type": "doctor",
+    "city": "Pokhara",
+    "territory": "West Medical",
+    "status": "Pending review",
+    "sourceLabel": "Approved public directory import",
+    "sourceUrl": "https://example.org/public-doctor-directory/pokhara/rachana-gyawali",
+    "confidence": 0.88
+  },
+  {
+    "id": "lead_2",
+    "name": "Sunrise Retail Pharmacy",
+    "type": "retailer",
+    "city": "Butwal",
+    "territory": "West Retail",
+    "status": "Needs dedupe check",
+    "sourceLabel": "Trade directory crawl batch",
+    "sourceUrl": "https://example.org/trade-directory/butwal/sunrise-retail-pharmacy",
+    "confidence": 0.73
+  },
+  {
+    "id": "lead_3",
+    "name": "Lotus Multispeciality Hospital",
+    "type": "hospital",
+    "city": "Chitwan",
+    "territory": "Central Institutions",
+    "status": "Awaiting compliance approval",
+    "sourceLabel": "Institutional registry import",
+    "sourceUrl": "https://example.org/hospital-registry/lotus-multispeciality-hospital",
+    "confidence": 0.92
+  },
+  {
+    "id": "lead_4",
+    "name": "Himalaya Pharma Distributors",
+    "type": "stockist",
+    "city": "Birgunj",
+    "territory": "Terai Trade",
+    "status": "Missing GST/PAN confirmation",
+    "sourceLabel": "Approved B2B directory import",
+    "sourceUrl": "https://example.org/distributor-directory/himalaya-pharma-distributors",
+    "confidence": 0.81
+  }
+]

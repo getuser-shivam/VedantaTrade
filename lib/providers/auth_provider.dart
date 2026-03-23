@@ -1,210 +1,98 @@
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dio/dio.dart';
 import 'dart:convert';
-import '../models/user.dart';
 
 class AuthProvider extends ChangeNotifier {
-  User? _user;
-  bool _isLoading = false;
-  String? _errorMessage;
+  static const String _baseUrl = 'http://localhost:3001/api';
+  final _storage = const FlutterSecureStorage();
 
-  User? get user => _user;
+  Map<String, dynamic>? _user;
+  String? _token;
+  bool _isLoading = false;
+  String? _error;
+
+  Map<String, dynamic>? get user => _user;
+  String? get token => _token;
   bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
-  bool get isAuthenticated => _user != null;
+  String? get error => _error;
+  bool get isLoggedIn => _token != null && _user != null;
+  String? get userRole => _user?['role'];
+  String? get userName => _user?['name'];
+  int? get userId => _user?['id'];
 
   AuthProvider() {
-    _loadUser();
+    _loadSession();
   }
 
-  Future<void> _loadUser() async {
+  Future<void> _loadSession() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userData = prefs.getString('user');
-      
-      if (userData != null) {
-        final userJson = json.decode(userData);
-        _user = User.fromJson(userJson);
+      final token = await _storage.read(key: 'token');
+      final userJson = await _storage.read(key: 'user');
+      if (token != null && userJson != null) {
+        _token = token;
+        _user = json.decode(userJson);
         notifyListeners();
       }
-    } catch (e) {
-      debugPrint('Error loading user: $e');
-    }
+    } catch (_) {}
   }
 
-  Future<void> _saveUser() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (_user != null) {
-        await prefs.setString('user', json.encode(_user!.toJson()));
-      } else {
-        await prefs.remove('user');
-      }
-    } catch (e) {
-      debugPrint('Error saving user: $e');
-    }
-  }
-
-  Future<bool> signUp(String name, String email, String phone, String password) async {
-    _setLoading(true);
-    _clearError();
+  Future<bool> login(String email, String password) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      // In a real app, this would be an API call to create user
-      // For demo, we'll create a mock user
-      _user = User(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        name: name,
-        email: email,
-        phone: phone,
-        createdAt: DateTime.now(),
-        lastLogin: DateTime.now(),
+      final dio = Dio();
+      final response = await dio.post(
+        '$_baseUrl/auth/login',
+        data: {'email': email, 'password': password},
+        options: Options(
+          contentType: 'application/json',
+          validateStatus: (status) => status! < 500,
+        ),
       );
 
-      await _saveUser();
-      _setLoading(false);
-      return true;
-    } catch (e) {
-      _setError('Sign up failed. Please try again.');
-      _setLoading(false);
-      return false;
-    }
-  }
+      if (response.data['success'] == true) {
+        _token = response.data['token'];
+        _user = response.data['user'];
 
-  Future<bool> signIn(String email, String password) async {
-    _setLoading(true);
-    _clearError();
+        await _storage.write(key: 'token', value: _token);
+        await _storage.write(key: 'user', value: json.encode(_user));
 
-    try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      // In a real app, this would validate credentials with backend
-      // For demo, we'll accept any email/password combination
-      if (email.isNotEmpty && password.isNotEmpty) {
-        _user = User(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: email.split('@')[0], // Extract name from email
-          email: email,
-          phone: '+977 1234567890', // Mock phone
-          createdAt: DateTime.now(),
-          lastLogin: DateTime.now(),
-        );
-
-        await _saveUser();
-        _setLoading(false);
+        _isLoading = false;
+        notifyListeners();
         return true;
       } else {
-        _setError('Invalid email or password');
-        _setLoading(false);
+        _error = response.data['message'] ?? 'Login failed';
+        _isLoading = false;
+        notifyListeners();
         return false;
       }
     } catch (e) {
-      _setError('Sign in failed. Please try again.');
-      _setLoading(false);
+      _error = 'Connection failed. Please check if server is running.';
+      _isLoading = false;
+      notifyListeners();
       return false;
     }
   }
 
-  Future<void> signOut() async {
+  Future<void> logout() async {
+    try {
+      if (_token != null) {
+        final dio = Dio();
+        await dio.post('$_baseUrl/auth/logout', options: Options(headers: {'Authorization': 'Bearer $_token'}));
+      }
+    } catch (_) {}
+
+    _token = null;
     _user = null;
-    await _saveUser();
+    await _storage.deleteAll();
     notifyListeners();
   }
 
-  Future<bool> updateProfile({
-    String? name,
-    String? phone,
-    String? avatar,
-  }) async {
-    if (_user == null) return false;
-
-    _setLoading(true);
-    _clearError();
-
-    try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
-      _user = _user!.copyWith(
-        name: name,
-        phone: phone,
-        avatar: avatar,
-      );
-
-      await _saveUser();
-      _setLoading(false);
-      return true;
-    } catch (e) {
-      _setError('Profile update failed. Please try again.');
-      _setLoading(false);
-      return false;
-    }
-  }
-
-  Future<bool> addAddress(String address) async {
-    if (_user == null) return false;
-
-    _setLoading(true);
-    _clearError();
-
-    try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
-      final updatedAddresses = List<String>.from(_user!.addresses);
-      updatedAddresses.add(address);
-
-      _user = _user!.copyWith(addresses: updatedAddresses);
-      await _saveUser();
-      _setLoading(false);
-      return true;
-    } catch (e) {
-      _setError('Failed to add address. Please try again.');
-      _setLoading(false);
-      return false;
-    }
-  }
-
-  Future<bool> removeAddress(String address) async {
-    if (_user == null) return false;
-
-    _setLoading(true);
-    _clearError();
-
-    try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
-      final updatedAddresses = List<String>.from(_user!.addresses);
-      updatedAddresses.remove(address);
-
-      _user = _user!.copyWith(addresses: updatedAddresses);
-      await _saveUser();
-      _setLoading(false);
-      return true;
-    } catch (e) {
-      _setError('Failed to remove address. Please try again.');
-      _setLoading(false);
-      return false;
-    }
-  }
-
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
-  void _setError(String error) {
-    _errorMessage = error;
-    notifyListeners();
-  }
-
-  void _clearError() {
-    _errorMessage = null;
+  void clearError() {
+    _error = null;
     notifyListeners();
   }
 }

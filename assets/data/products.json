@@ -1,0 +1,143 @@
+[
+  {
+    "id": "1",
+    "name": "ARGIVIT",
+    "category": "Prenatal Care",
+    "form": "Sachets",
+    "ingredients": ["Folic Acid 200 mcg", "L-Arginine 3gm", "Zinc 10mg/5gm"],
+    "description": "Essential nutrients for maternal health and fetal development.",
+    "imageUrl": "assets/images/argivit.png",
+    "price": 299.0,
+    "featured": true,
+    "dosage": "One sachet daily",
+    "packaging": "30 sachets per box"
+  },
+  {
+    "id": "2",
+    "name": "MEGA-O",
+    "category": "Omega Supplements",
+    "form": "Softgel Capsules",
+    "ingredients": ["Omega-3 Fatty Acid", "Fish Oil", "Vitamins and Minerals"],
+    "description": "Premium omega-3 supplement for heart and brain health.",
+    "imageUrl": "assets/images/mega_o.png",
+    "price": 450.0,
+    "featured": true,
+    "dosage": "One capsule twice daily",
+    "packaging": "60 softgels per bottle"
+  },
+  {
+    "id": "3",
+    "name": "MYOBOOST",
+    "category": "Women's Health",
+    "form": "Sachets",
+    "ingredients": ["Myo-Inositol 2 gm", "Folic Acid 400 mcg", "Vitamin D3 1000 IU"],
+    "description": "Supports ovarian health and hormonal balance.",
+    "imageUrl": "assets/images/myoboost.png",
+    "price": 350.0,
+    "featured": true,
+    "dosage": "One sachet daily",
+    "packaging": "30 sachets per box"
+  },
+  {
+    "id": "4",
+    "name": "OFFER-XT",
+    "category": "Iron Supplements",
+    "form": "Tablets",
+    "ingredients": ["Ferrous Ascorbate 100mg", "Folic Acid 1000mcg", "Zinc Sulphate 22.5mg"],
+    "description": "Comprehensive iron supplement for anemia management.",
+    "imageUrl": "",
+    "price": 180.0,
+    "featured": false,
+    "dosage": "One tablet daily",
+    "packaging": "30 tablets per strip"
+  },
+  {
+    "id": "5",
+    "name": "UTIVA-BV PLUS",
+    "category": "Urinary Health",
+    "form": "Capsules",
+    "ingredients": [
+      "Cranberry 300mg",
+      "D-Mannose 250mg",
+      "Polydextrose 150mg",
+      "Probiotic Blend 56mg",
+      "10 Billion CFU proprietary probiotic blend"
+    ],
+    "description": "Advanced urinary tract health support with probiotics.",
+    "imageUrl": "",
+    "price": 550.0,
+    "featured": true,
+    "dosage": "One capsule twice daily",
+    "packaging": "30 capsules per bottle"
+  },
+  {
+    "id": "6",
+    "name": "VFERTY",
+    "category": "Fertility Support",
+    "form": "Softgel Capsules",
+    "ingredients": [
+      "Omega 3 Fatty Acids 150mg",
+      "L-Arginine 100mg",
+      "Co-Q10 50mg",
+      "Chastberry Extract 50mg",
+      "Wheat Germ Oil 25mg"
+    ],
+    "description": "Comprehensive fertility support for women.",
+    "imageUrl": "",
+    "price": 750.0,
+    "featured": false,
+    "dosage": "One capsule twice daily",
+    "packaging": "60 softgels per bottle"
+  },
+  {
+    "id": "7",
+    "name": "VFERTIL-M",
+    "category": "Men's Health",
+    "form": "Tablets",
+    "ingredients": [
+      "L-Carnitine L-Tartrate 250mg",
+      "Acetyl-L-Carnitine 200mg",
+      "L-Arginine 125mg",
+      "Coenzyme Q10 100mg",
+      "Zinc Sulphate 20mg"
+    ],
+    "description": "Male fertility and reproductive health support.",
+    "imageUrl": "",
+    "price": 680.0,
+    "featured": false,
+    "dosage": "One tablet twice daily",
+    "packaging": "60 tablets per bottle"
+  },
+  {
+    "id": "8",
+    "name": "ZEO PLUS",
+    "category": "Bone Health",
+    "form": "Softgel Capsules",
+    "ingredients": [
+      "Calcium Carbonate 500mg",
+      "Cholecalciferol 1000 IU",
+      "Vitamin K2-7 45mcg",
+      "Folic Acid 400 mcg",
+      "Boron 1.5mg"
+    ],
+    "description": "Advanced bone health formula with essential vitamins.",
+    "imageUrl": "",
+    "price": 420.0,
+    "featured": true,
+    "dosage": "One capsule twice daily",
+    "packaging": "60 softgels per bottle"
+  },
+  {
+    "id": "9",
+    "name": "ZEOCAL-500",
+    "category": "Calcium Supplements",
+    "form": "Tablets",
+    "ingredients": ["Calcium Carbonate 1250mg", "Vitamin D3 6.25mcg"],
+    "description": "High-potency calcium supplement for bone strength.",
+    "imageUrl": "",
+    "price": 250.0,
+    "featured": false,
+    "dosage": "One tablet twice daily",
+    "packaging": "30 tablets per strip"
+  }
+]
