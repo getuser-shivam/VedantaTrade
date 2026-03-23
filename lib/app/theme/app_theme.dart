@@ -33,18 +33,15 @@ class AppTheme {
       primary: primary,
       secondary: secondary,
       surface: surfaceDark,
-      background: bgDark,
       error: error,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: Colors.white,
-      onBackground: Colors.white,
     ),
     scaffoldBackgroundColor: bgDark,
-    cardTheme: CardTheme(
+    cardTheme: const CardThemeData(
       color: cardDark,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: surfaceDark,
