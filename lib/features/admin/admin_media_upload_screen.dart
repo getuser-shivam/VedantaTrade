@@ -1,6 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
+import 'package:provider/provider.dart';
+import 'package:vedanta_trade/core/api_config.dart';
+import 'package:vedanta_trade/providers/auth_provider.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
 import 'package:vedanta_trade/shared/widgets.dart';
 
@@ -56,20 +60,47 @@ class _AdminMediaUploadScreenState extends State<AdminMediaUploadScreen> {
     if (_selectedFiles.isEmpty) return;
     
     setState(() => _isUploading = true);
-    // Simulate upload delay for processing images and videos
-    await Future.delayed(const Duration(seconds: 2));
     
-    if (mounted) {
-      setState(() {
-        _isUploading = false;
-        _selectedFiles.clear();
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Media uploaded successfully to Vedanta TradeLink servers.'),
-          backgroundColor: AppTheme.success,
-        )
+    try {
+      final formData = FormData();
+      for (var file in _selectedFiles) {
+        formData.files.add(MapEntry(
+          'files',
+          await MultipartFile.fromFile(file.path, filename: file.name),
+        ));
+      }
+
+      final res = await Dio().post(
+        '${ApiConfig.baseUrl}/products/upload',
+        data: formData,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer ${context.read<AuthProvider>().token}',
+          },
+        ),
       );
+
+      if (res.data['success']) {
+        if (mounted) {
+          setState(() {
+            _isUploading = false;
+            _selectedFiles.clear();
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Media uploaded successfully to Vedanta TradeLink servers.'),
+              backgroundColor: AppTheme.success,
+            )
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUploading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload failed: $e'), backgroundColor: Colors.redAccent)
+        );
+      }
     }
   }
 
