@@ -6,13 +6,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 // =================== ENUMS ===================
 
-enum UserRole {
+//@enum UserRole {
   ADMIN
   MEDICAL_REP
   ACCOUNTANT
@@ -21,7 +21,7 @@ enum UserRole {
   RETAILER
 }
 
-enum OrderStatus {
+//@enum OrderStatus {
   DRAFT
   PENDING
   CONFIRMED
@@ -32,7 +32,7 @@ enum OrderStatus {
   RETURNED
 }
 
-enum PaymentStatus {
+//@enum PaymentStatus {
   PENDING
   PARTIAL
   PAID
@@ -40,7 +40,7 @@ enum PaymentStatus {
   WRITTEN_OFF
 }
 
-enum VisitType {
+//@enum VisitType {
   FIRST_CALL
   FOLLOW_UP
   SAMPLE_DELIVERY
@@ -48,7 +48,7 @@ enum VisitType {
   COMPLAINT_HANDLING
 }
 
-enum ExpenseStatus {
+//@enum ExpenseStatus {
   DRAFT
   SUBMITTED
   APPROVED
@@ -56,7 +56,7 @@ enum ExpenseStatus {
   PAID
 }
 
-enum ScraperSource {
+//@enum ScraperSource {
   PRACTO
   JUSTDIAL
   INDIAMART
@@ -64,14 +64,14 @@ enum ScraperSource {
   MANUAL
 }
 
-enum ScraperStatus {
+//@enum ScraperStatus {
   PENDING
   RUNNING
   COMPLETED
   FAILED
 }
 
-enum LeadStatus {
+//@enum LeadStatus {
   RAW
   VERIFIED
   APPROVED
@@ -79,21 +79,21 @@ enum LeadStatus {
   CONVERTED
 }
 
-enum LeadType {
+//@enum LeadType {
   DOCTOR
   HOSPITAL
   STOCKIST
   RETAILER
 }
 
-enum InvoiceType {
+//@enum InvoiceType {
   PURCHASE
   SALE
   CREDIT_NOTE
   DEBIT_NOTE
 }
 
-enum LedgerEntryType {
+//@enum LedgerEntryType {
   DEBIT
   CREDIT
 }
@@ -151,7 +151,7 @@ model MedicalRep {
   territory     String
   headquarters  String
   managerId     Int?    // Reporting manager (another MR or admin)
-  monthlySalary Decimal?
+  monthlySalary Float?
   joiningDate   DateTime?
   user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -248,7 +248,7 @@ model Stockist {
   pincode      String?
   gstNumber    String?
   drugLicense  String?
-  creditLimit  Decimal @default(0)
+  creditLimit  Float @default(0)
   paymentTerms Int     @default(30) // Days
   isVerified   Boolean @default(false)
   sourceType   ScraperSource @default(MANUAL)
@@ -275,7 +275,7 @@ model Retailer {
   pincode      String?
   gstNumber    String?
   drugLicense  String?
-  creditLimit  Decimal @default(0)
+  creditLimit  Float @default(0)
   paymentTerms Int     @default(15)
   isVerified   Boolean @default(false)
   sourceType   ScraperSource @default(MANUAL)
@@ -294,7 +294,7 @@ model StockistRetailer {
   stockistId  Int
   retailerId  Int
   isActive    Boolean  @default(true)
-  creditLimit Decimal?
+  creditLimit Float?
   stockist    Stockist @relation(fields: [stockistId], references: [id])
   retailer    Retailer @relation(fields: [retailerId], references: [id])
 
@@ -331,11 +331,11 @@ model Product {
   manufacturer         String?
   composition          String?
   packSize             String?  // e.g., "10 tablets/strip"
-  mrp                  Decimal
-  ptr                  Decimal  // Price to Retailer
-  pts                  Decimal  // Price to Stockist
-  mop                  Decimal? // Market Operating Price
-  gstPercent           Decimal  @default(12)
+  mrp                  Float
+  ptr                  Float  // Price to Retailer
+  pts                  Float  // Price to Stockist
+  mop                  Float? // Market Operating Price
+  gstPercent           Float  @default(12)
   stockQuantity        Int      @default(0)
   minStockLevel        Int      @default(10)
   batchNo              String?
@@ -373,7 +373,7 @@ model MrVisit {
   nextFollowUp DateTime?
   feedbackScore Int?     // Doctor's feedback on visit 1-5
   samplesGiven Int       @default(0)
-  ordersBooked Decimal   @default(0)
+  ordersBooked Float   @default(0)
   createdAt    DateTime  @default(now())
 
   mr      MedicalRep @relation(fields: [mrId], references: [id])
@@ -405,9 +405,9 @@ model MrTarget {
   month      Int     // 1-12
   year       Int
   visitTarget Int
-  orderTarget Decimal
+  orderTarget Float
   achievedVisits Int @default(0)
-  achievedOrders Decimal @default(0)
+  achievedOrders Float @default(0)
   mr         MedicalRep @relation(fields: [mrId], references: [id])
   products   MrTargetProduct[]
 
@@ -447,7 +447,7 @@ model Expense {
   id          Int           @id @default(autoincrement())
   userId      Int
   category    String        // travel, food, lodging, communication, misc
-  amount      Decimal
+  amount      Float
   description String?
   receiptUrl  String?
   expenseDate DateTime
@@ -470,10 +470,10 @@ model Order {
   stockistId      Int?
   retailerId      Int?
   doctorId        Int?
-  subtotal        Decimal
-  discountAmount  Decimal       @default(0)
-  gstAmount       Decimal       @default(0)
-  totalAmount     Decimal
+  subtotal        Float
+  discountAmount  Float       @default(0)
+  gstAmount       Float       @default(0)
+  totalAmount     Float
   paymentStatus   PaymentStatus @default(PENDING)
   paymentDueDate  DateTime?
   notes           String?
@@ -499,10 +499,10 @@ model OrderItem {
   productId   Int
   productName String
   quantity    Int
-  unitPrice   Decimal
-  discount    Decimal @default(0)
-  gstPercent  Decimal @default(12)
-  totalPrice  Decimal
+  unitPrice   Float
+  discount    Float @default(0)
+  gstPercent  Float @default(12)
+  totalPrice  Float
   order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product     Product @relation(fields: [productId], references: [id])
 
@@ -518,10 +518,10 @@ model Invoice {
   orderId       Int?
   stockistId    Int?
   retailerId    Int?
-  subtotal      Decimal
-  discountAmount Decimal      @default(0)
-  gstAmount     Decimal       @default(0)
-  totalAmount   Decimal
+  subtotal      Float
+  discountAmount Float      @default(0)
+  gstAmount     Float       @default(0)
+  totalAmount   Float
   status        PaymentStatus @default(PENDING)
   dueDate       DateTime?
   paidAt        DateTime?
@@ -544,7 +544,7 @@ model Payment {
   id            Int           @id @default(autoincrement())
   invoiceId     Int?
   orderId       Int?
-  amount        Decimal
+  amount        Float
   paymentMode   String        // cash, cheque, neft, rtgs, upi
   referenceNo   String?
   paidDate      DateTime
@@ -561,7 +561,7 @@ model LedgerEntry {
   invoiceId   Int?
   entryType   LedgerEntryType
   accountHead String          // Sales, Purchases, Expenses, Cash, Bank, Debtors, Creditors
-  amount      Decimal
+  amount      Float
   description String?
   entryDate   DateTime
   createdAt   DateTime        @default(now())
@@ -576,11 +576,11 @@ model GstRecord {
   month       Int
   year        Int
   hsnCode     String?
-  taxableAmount Decimal
-  cgst        Decimal  @default(0)
-  sgst        Decimal  @default(0)
-  igst        Decimal  @default(0)
-  totalGst    Decimal
+  taxableAmount Float
+  cgst        Float  @default(0)
+  sgst        Float  @default(0)
+  igst        Float  @default(0)
+  totalGst    Float
   invoice     Invoice? @relation(fields: [invoiceId], references: [id])
 
   @@map("gst_records")
