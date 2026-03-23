@@ -58,7 +58,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
               child: Row(children: [
                 Expanded(child: StatCard(title: 'Total Visits', value: '${_visits.length}', icon: Icons.medical_services_rounded, color: AppTheme.mrColor)),
                 const SizedBox(width: 16),
-                Expanded(child: StatCard(title: 'This Week', value: '${_visits.where((v) { try { return DateTime.parse(v['visitDate']).isAfter(DateTime.now().subtract(const Duration(days: 7))); } catch (_) { return false; } }).length}', icon: Icons.calendar_week_start_day, color: AppTheme.primary)),
+                Expanded(child: StatCard(title: 'This Week', value: '${_visits.where((v) { try { return DateTime.parse(v['visitDate'].toString()).isAfter(DateTime.now().subtract(const Duration(days: 7))); } catch (_) { return false; } }).length}', icon: Icons.calendar_month_rounded, color: AppTheme.primary)),
                 const SizedBox(width: 16),
                 Expanded(child: StatCard(title: 'Pending Follow-ups', value: '${_visits.where((v) => v['nextFollowUp'] != null).length}', icon: Icons.schedule_rounded, color: AppTheme.warning)),
               ]),

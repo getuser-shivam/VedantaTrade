@@ -133,8 +133,8 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
     final outflow = [60000.0, 80000, 70000, 90000, 85000, 110000];
     return BarChartData(
       barGroups: List.generate(6, (i) => BarChartGroupData(x: i, barRods: [
-        BarChartRodData(toY: inflow[i], color: AppTheme.success, width: 10, borderRadius: BorderRadius.circular(4)),
-        BarChartRodData(toY: outflow[i], color: AppTheme.error, width: 10, borderRadius: BorderRadius.circular(4)),
+        BarChartRodData(toY: (inflow[i] as num).toDouble(), color: AppTheme.success, width: 10, borderRadius: BorderRadius.circular(4)),
+        BarChartRodData(toY: (outflow[i] as num).toDouble(), color: AppTheme.error, width: 10, borderRadius: BorderRadius.circular(4)),
       ])),
       titlesData: FlTitlesData(
         bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, m) {
