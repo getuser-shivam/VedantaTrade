@@ -1,5 +1,6 @@
 class ApiConfig {
   static const String baseUrl = 'http://192.168.1.79:3001/api';
+  static const String health = '$baseUrl/health';
   
   // Auth endpoints
   static const String login = '$baseUrl/auth/login';

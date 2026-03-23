@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 import 'package:vedanta_trade/providers/auth_provider.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
 
@@ -16,6 +17,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   bool _obscure = true;
   late AnimationController _animCtrl;
   late Animation<double> _slideAnim;
+  bool? _isBackendOnline;
+  Timer? _healthTimer;
 
   final _roles = [
     {'role': 'ADMIN', 'email': 'admin@vedanta.com', 'password': 'Admin@123', 'color': AppTheme.adminColor, 'icon': Icons.admin_panel_settings_rounded, 'label': 'Admin'},
@@ -32,10 +35,23 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _animCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
     _slideAnim = Tween<double>(begin: 60, end: 0).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut));
     _animCtrl.forward();
+    _checkHealth();
+    _healthTimer = Timer.periodic(const Duration(seconds: 5), (_) => _checkHealth());
+  }
+
+  Future<void> _checkHealth() async {
+    final status = await context.read<AuthProvider>().checkHealth();
+    if (mounted) setState(() => _isBackendOnline = status);
   }
 
   @override
-  void dispose() { _animCtrl.dispose(); _emailCtrl.dispose(); _passwordCtrl.dispose(); super.dispose(); }
+  void dispose() { 
+    _animCtrl.dispose(); 
+    _emailCtrl.dispose(); 
+    _passwordCtrl.dispose(); 
+    _healthTimer?.cancel();
+    super.dispose(); 
+  }
 
   Future<void> _login() async {
     final auth = context.read<AuthProvider>();
@@ -135,7 +151,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   children: [
                     const Text('Welcome back', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white)),
                     const SizedBox(height: 6),
-                    Text('Sign in to your account', style: TextStyle(color: Colors.white.withOpacity(0.5))),
+                    Row(
+                      children: [
+                        Text('Sign in to your account', style: TextStyle(color: Colors.white.withOpacity(0.5))),
+                        const Spacer(),
+                        _BackendStatusBadge(isOnline: _isBackendOnline),
+                      ],
+                    ),
                     const SizedBox(height: 40),
                     TextField(
                       controller: _emailCtrl,
@@ -203,6 +225,36 @@ class _QuickLoginChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w500)),
         ]),
+      ),
+    );
+  }
+}
+class _BackendStatusBadge extends StatelessWidget {
+  final bool? isOnline;
+  const _BackendStatusBadge({this.isOnline});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isOnline == null ? Colors.white24 : (isOnline! ? AppTheme.success : AppTheme.error);
+    final text = isOnline == null ? 'Checking...' : (isOnline! ? 'Backend Online' : 'Backend Offline');
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8, height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Text(text, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700)),
+        ],
       ),
     );
   }

@@ -26,6 +26,16 @@ class AuthProvider extends ChangeNotifier {
     _loadSession();
   }
 
+  Future<bool> checkHealth() async {
+    try {
+      final dio = Dio();
+      final res = await dio.get(ApiConfig.health);
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> _loadSession() async {
     try {
       final token = await _storage.read(key: 'token');
