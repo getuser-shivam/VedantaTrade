@@ -5,6 +5,7 @@ import 'package:vedanta_trade/shared/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:vedanta_trade/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:vedanta_trade/core/api_config.dart';
 
 class StockistDashboard extends StatefulWidget {
   const StockistDashboard({super.key});
@@ -23,7 +24,7 @@ class _StockistDashboardState extends State<StockistDashboard> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final res = await dio.get('http://localhost:3001/api/stockists/dashboard', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+      final res = await dio.get('${ApiConfig.baseUrl}/stockists/dashboard', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
       if (mounted) setState(() { _stats = res.data['data']; _loading = false; });
     } catch (_) { if (mounted) setState(() { _loading = false; _stats = {'pendingOrders': 0, 'totalInventoryItems': 0, 'overduePayments': 0, 'outstandingAmount': 0}; }); }
   }

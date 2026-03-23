@@ -2,9 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'dart:convert';
+import 'package:vedanta_trade/core/api_config.dart';
 
 class AuthProvider extends ChangeNotifier {
-  static const String _baseUrl = 'http://localhost:3001/api';
+  static const String _baseUrl = ApiConfig.baseUrl;
   final _storage = const FlutterSecureStorage();
 
   Map<String, dynamic>? _user;

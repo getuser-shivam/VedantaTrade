@@ -5,6 +5,7 @@ import 'package:vedanta_trade/shared/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:vedanta_trade/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:vedanta_trade/core/api_config.dart';
 
 class ScraperScreen extends StatefulWidget {
   const ScraperScreen({super.key});
@@ -30,8 +31,8 @@ class _ScraperScreenState extends State<ScraperScreen> with SingleTickerProvider
       final dio = Dio();
       final headers = {'Authorization': 'Bearer ${auth.token}'};
       final [jobsRes, leadsRes] = await Future.wait([
-        dio.get('http://localhost:3001/api/scraper/jobs', options: Options(headers: headers)),
-        dio.get('http://localhost:3001/api/scraper/leads?status=RAW&limit=50', options: Options(headers: headers)),
+        dio.get('${ApiConfig.baseUrl}/scraper/jobs', options: Options(headers: headers)),
+        dio.get('${ApiConfig.baseUrl}/scraper/leads?status=RAW&limit=50', options: Options(headers: headers)),
       ]);
       if (mounted) setState(() {
         _jobs = jobsRes.data['data'] ?? [];
@@ -45,7 +46,7 @@ class _ScraperScreenState extends State<ScraperScreen> with SingleTickerProvider
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      await dio.post('http://localhost:3001/api/scraper/run',
+      await dio.post('${ApiConfig.baseUrl}/scraper/run',
         data: {'source': _source, 'targetType': _targetType, 'city': _city},
         options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}),
       );
@@ -62,7 +63,7 @@ class _ScraperScreenState extends State<ScraperScreen> with SingleTickerProvider
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      await dio.post('http://localhost:3001/api/scraper/leads/$id/approve', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+      await dio.post('${ApiConfig.baseUrl}/scraper/leads/$id/approve', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
       if (mounted) { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Lead approved and converted!'), backgroundColor: AppTheme.success)); _loadData(); }
     } catch (_) {}
   }
@@ -71,7 +72,7 @@ class _ScraperScreenState extends State<ScraperScreen> with SingleTickerProvider
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      await dio.post('http://localhost:3001/api/scraper/leads/$id/reject', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+      await dio.post('${ApiConfig.baseUrl}/scraper/leads/$id/reject', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
       if (mounted) { _loadData(); }
     } catch (_) {}
   }

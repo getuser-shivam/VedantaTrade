@@ -6,6 +6,7 @@ import 'package:vedanta_trade/shared/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:vedanta_trade/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:vedanta_trade/core/api_config.dart';
 
 class AccountantDashboard extends StatefulWidget {
   const AccountantDashboard({super.key});
@@ -27,8 +28,8 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
       final dio = Dio();
       final headers = {'Authorization': 'Bearer ${auth.token}'};
       final [dashRes, invRes] = await Future.wait([
-        dio.get('http://localhost:3001/api/accounting/dashboard', options: Options(headers: headers)),
-        dio.get('http://localhost:3001/api/accounting/invoices?limit=5', options: Options(headers: headers)),
+        dio.get('${ApiConfig.baseUrl}/accounting/dashboard', options: Options(headers: headers)),
+        dio.get('${ApiConfig.baseUrl}/accounting/invoices?limit=5', options: Options(headers: headers)),
       ]);
       if (mounted) setState(() {
         _stats = dashRes.data['data'];

@@ -7,6 +7,7 @@ import 'package:vedanta_trade/shared/app_scaffold.dart';
 import 'package:vedanta_trade/shared/widgets.dart';
 import 'package:vedanta_trade/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:vedanta_trade/core/api_config.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -29,7 +30,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
       final res = await dio.get(
-        'http://localhost:3001/api/users/admin/dashboard',
+        '${ApiConfig.baseUrl}/users/admin/dashboard',
         options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}),
       );
       if (res.data['success'] == true && mounted) {

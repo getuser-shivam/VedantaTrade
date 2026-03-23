@@ -5,6 +5,7 @@ import 'package:vedanta_trade/shared/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:vedanta_trade/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:vedanta_trade/core/api_config.dart';
 
 class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({super.key});
@@ -23,7 +24,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final res = await dio.get('http://localhost:3001/api/mr/visits', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+      final res = await dio.get('${ApiConfig.baseUrl}/mr/visits', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
       if (mounted) setState(() { _recentVisits = (res.data['data'] as List? ?? []).take(5).toList(); _loading = false; });
     } catch (_) { if (mounted) setState(() => _loading = false); }
   }

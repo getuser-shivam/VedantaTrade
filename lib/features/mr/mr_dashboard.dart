@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:vedanta_trade/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
+import 'package:vedanta_trade/core/api_config.dart';
 
 class MrDashboard extends StatefulWidget {
   const MrDashboard({super.key});
@@ -28,8 +29,8 @@ class _MrDashboardState extends State<MrDashboard> {
       final dio = Dio();
       final headers = {'Authorization': 'Bearer ${auth.token}'};
       final [dashRes, visitsRes] = await Future.wait([
-        dio.get('http://localhost:3001/api/mr/dashboard', options: Options(headers: headers)),
-        dio.get('http://localhost:3001/api/mr/visits', options: Options(headers: headers)),
+        dio.get('${ApiConfig.baseUrl}/mr/dashboard', options: Options(headers: headers)),
+        dio.get('${ApiConfig.baseUrl}/mr/visits', options: Options(headers: headers)),
       ]);
       if (mounted) setState(() {
         _stats = dashRes.data['data'];

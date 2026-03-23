@@ -23,7 +23,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final res = await dio.get('http://localhost:3001/api/mr/visits', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+      final res = await dio.get('${ApiConfig.baseUrl}/mr/visits', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
       if (mounted) setState(() { _visits = res.data['data'] ?? []; _loading = false; });
     } catch (_) { if (mounted) setState(() => _loading = false); }
   }

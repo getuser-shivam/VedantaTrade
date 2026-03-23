@@ -6,6 +6,7 @@ import 'package:vedanta_trade/shared/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:vedanta_trade/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
+import 'package:vedanta_trade/core/api_config.dart';
 
 class RetailerDashboard extends StatefulWidget {
   const RetailerDashboard({super.key});
@@ -24,7 +25,7 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final res = await dio.get('http://localhost:3001/api/retailers/dashboard', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+      final res = await dio.get('${ApiConfig.baseUrl}/retailers/dashboard', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
       if (mounted) setState(() { _stats = res.data['data']; _loading = false; });
     } catch (_) { if (mounted) setState(() { _loading = false; _stats = {'pendingOrders': 0, 'inventoryCount': 0, 'pendingInvoices': 0}; }); }
   }
