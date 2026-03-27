@@ -1,13 +1,15 @@
+
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:vedanta_trade/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
-
 // Screens
-import 'package:vedanta_trade/features/auth/login_screen.dart';
+import 'package:vedanta_trade/features/auth/presentation/screens/login_screen.dart';
 import 'package:vedanta_trade/features/splash/splash_screen.dart';
 import 'package:vedanta_trade/features/admin/admin_dashboard.dart';
+import 'package:vedanta_trade/features/admin/map_master_screen.dart';
 import 'package:vedanta_trade/features/admin/admin_media_upload_screen.dart';
 import 'package:vedanta_trade/features/admin/user_management_screen.dart';
 import 'package:vedanta_trade/features/admin/scraper_screen.dart';
@@ -18,7 +20,7 @@ import 'package:vedanta_trade/features/mr/expense_screen.dart';
 import 'package:vedanta_trade/features/accounting/accountant_dashboard.dart';
 import 'package:vedanta_trade/features/accounting/invoice_screen.dart';
 import 'package:vedanta_trade/features/accounting/ledger_screen.dart';
-import 'package:vedanta_trade/features/accounting/gst_screen.dart';
+import 'package:vedanta_trade/features/accounting/vat_screen.dart';
 import 'package:vedanta_trade/features/doctor/doctor_dashboard.dart';
 import 'package:vedanta_trade/features/stockist/stockist_dashboard.dart';
 import 'package:vedanta_trade/features/retailer/retailer_dashboard.dart';
@@ -26,6 +28,7 @@ import 'package:vedanta_trade/features/products/products_screen.dart';
 import 'package:vedanta_trade/features/doctors_list/doctors_list_screen.dart';
 import 'package:vedanta_trade/features/orders/orders_screen.dart';
 import 'package:vedanta_trade/features/profile/profile_screen.dart';
+import 'package:vedanta_trade/features/catalog/presentation/screens/catalog_screen.dart';
 
 class VedantaTradeApp extends StatelessWidget {
   const VedantaTradeApp({super.key});
@@ -65,11 +68,13 @@ class VedantaTradeApp extends StatelessWidget {
         GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
         GoRoute(path: '/profile', builder: (c, s) => const ProfileScreen()),
         GoRoute(path: '/products', builder: (c, s) => const ProductsScreen()),
+        GoRoute(path: '/catalog', builder: (c, s) => const CatalogScreen()),
         GoRoute(path: '/doctors-list', builder: (c, s) => const DoctorsListScreen()),
         GoRoute(path: '/orders', builder: (c, s) => const OrdersScreen()),
 
         // Admin routes
         GoRoute(path: '/admin', builder: (c, s) => const AdminDashboard()),
+        GoRoute(path: '/admin/map', builder: (c, s) => const MapMasterScreen()),
         GoRoute(path: '/admin/users', builder: (c, s) => const UserManagementScreen()),
         GoRoute(path: '/admin/scraper', builder: (c, s) => const ScraperScreen()),
         GoRoute(path: '/admin/media-upload', builder: (c, s) => const AdminMediaUploadScreen()),
@@ -84,7 +89,7 @@ class VedantaTradeApp extends StatelessWidget {
         GoRoute(path: '/accounting', builder: (c, s) => const AccountantDashboard()),
         GoRoute(path: '/accounting/invoices', builder: (c, s) => const InvoiceScreen()),
         GoRoute(path: '/accounting/ledger', builder: (c, s) => const LedgerScreen()),
-        GoRoute(path: '/accounting/gst', builder: (c, s) => const GstScreen()),
+        GoRoute(path: '/accounting/vat', builder: (c, s) => const VatScreen()),
 
         // Doctor routes
         GoRoute(path: '/doctor', builder: (c, s) => const DoctorDashboard()),

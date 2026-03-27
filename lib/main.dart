@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vedanta_trade/app/app.dart';
-import 'package:vedanta_trade/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
 import 'package:vedanta_trade/providers/theme_provider.dart';
-import 'package:vedanta_trade/providers/product_provider.dart';
+import 'package:vedanta_trade/features/catalog/presentation/providers/product_provider.dart';
+import 'package:vedanta_trade/features/catalog/data/services/product_catalog_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +13,13 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, ProductProvider>(
+          create: (_) => ProductProvider(catalogService: const ProductCatalogService()),
+          update: (context, auth, previous) => ProductProvider(
+            catalogService: const ProductCatalogService(),
+            token: auth.token,
+          ),
+        ),
       ],
       child: const VedantaTradeApp(),
     ),

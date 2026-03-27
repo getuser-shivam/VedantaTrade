@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:neutralitical_app/features/notifications/domain/models/app_notification.dart' as app_notification;
+import 'package:vedanta_trade/features/notifications/domain/models/app_notification.dart' as app_notification;
 
 class NotificationProvider extends ChangeNotifier {
   List<app_notification.AppNotification> _notifications = [];

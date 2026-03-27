@@ -1,4 +1,4 @@
-# Database Schema Design - Neutralitical App
+# Database Schema Design - VedantaTrade App
 
 ## 📊 **Database Overview**
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:neutralitical_app/features/orders/presentation/providers/order_provider.dart';
-import 'package:neutralitical_app/features/orders/domain/models/order.dart';
-import 'package:neutralitical_app/features/orders/presentation/widgets/order_card.dart';
+import 'package:vedanta_trade/features/orders/presentation/providers/order_provider.dart';
+import 'package:vedanta_trade/features/orders/domain/models/order.dart';
+import 'package:vedanta_trade/features/orders/presentation/widgets/order_card.dart';
 
 class OrderHistoryScreen extends StatelessWidget {
   const OrderHistoryScreen({super.key});

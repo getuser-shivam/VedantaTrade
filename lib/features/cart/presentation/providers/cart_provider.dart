@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:neutralitical_app/features/cart/domain/models/cart_item.dart';
-import 'package:neutralitical_app/features/catalog/domain/models/product.dart';
+import 'package:vedanta_trade/features/cart/domain/models/cart_item.dart';
+import 'package:vedanta_trade/features/catalog/domain/models/product.dart';
 
 class CartProvider extends ChangeNotifier {
   List<CartItem> _items = [];

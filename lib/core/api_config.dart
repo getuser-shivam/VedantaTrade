@@ -18,4 +18,8 @@ class ApiConfig {
   
   // Accounting endpoints
   static const String accountantDashboard = '$baseUrl/accounting/dashboard';
+  
+  // Product catalog endpoints
+  static const String products = '$baseUrl/products';
+  static const String categories = '$baseUrl/products/categories';
 }

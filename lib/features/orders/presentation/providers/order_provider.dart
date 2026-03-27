@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:neutralitical_app/features/orders/domain/models/order.dart';
-import 'package:neutralitical_app/features/cart/domain/models/cart_item.dart';
+import 'package:vedanta_trade/features/orders/domain/models/order.dart';
+import 'package:vedanta_trade/features/cart/domain/models/cart_item.dart';
 
 class OrderProvider extends ChangeNotifier {
   List<Order> _orders = [];

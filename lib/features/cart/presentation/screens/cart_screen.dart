@@ -3,11 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
-import 'package:neutralitical_app/features/cart/domain/models/cart_item.dart';
-import 'package:neutralitical_app/features/cart/presentation/providers/cart_provider.dart';
-import 'package:neutralitical_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:neutralitical_app/features/orders/presentation/providers/order_provider.dart';
-import 'package:neutralitical_app/features/cart/presentation/widgets/cart_item_widget.dart';
+import 'package:vedanta_trade/features/cart/domain/models/cart_item.dart';
+import 'package:vedanta_trade/features/cart/presentation/providers/cart_provider.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/orders/presentation/providers/order_provider.dart';
+import 'package:vedanta_trade/features/cart/presentation/widgets/cart_item_widget.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});

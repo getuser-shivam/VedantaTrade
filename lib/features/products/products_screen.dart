@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
 import 'package:vedanta_trade/shared/app_scaffold.dart';
 import 'package:provider/provider.dart';
-import 'package:vedanta_trade/providers/auth_provider.dart';
-import 'package:vedanta_trade/providers/product_provider.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/catalog/presentation/providers/product_provider.dart';
+import 'package:vedanta_trade/features/catalog/domain/models/product.dart';
+import 'package:vedanta_trade/core/api_config.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -18,8 +20,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<ProductProvider>().fetchCategories();
-      context.read<ProductProvider>().fetchProducts();
+      context.read<ProductProvider>().loadProducts();
     });
   }
 
@@ -47,15 +48,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   isSelected: _selectedCategoryId == null,
                   onTap: () {
                     setState(() => _selectedCategoryId = null);
-                    productProv.fetchProducts();
+                    productProv.loadProducts();
                   },
                 ),
                 ...productProv.categories.map((c) => _CategoryChip(
-                  label: c['name'],
-                  isSelected: _selectedCategoryId == c['id'],
+                  label: c,
+                  isSelected: _selectedCategoryId == null,
                   onTap: () {
-                    setState(() => _selectedCategoryId = c['id']);
-                    productProv.fetchProducts(categoryId: c['id']);
+                    setState(() => _selectedCategoryId = null);
+                    productProv.loadProducts();
                   },
                 )),
               ],
@@ -65,22 +66,27 @@ class _ProductsScreenState extends State<ProductsScreen> {
           // Product Grid
           Expanded(
             child: productProv.isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : productProv.error != null
-                ? Center(child: Text(productProv.error!, style: const TextStyle(color: Colors.red)))
+              ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
+              : productProv.errorMessage != null
+                ? Center(child: Text(productProv.errorMessage!, style: const TextStyle(color: Colors.red)))
                 : productProv.products.isEmpty
                   ? const Center(child: Text('No products found', style: TextStyle(color: Colors.white54)))
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2, childAspectRatio: 0.75,
-                        crossAxisSpacing: 16, mainAxisSpacing: 16,
-                      ),
-                      itemCount: productProv.products.length,
-                      itemBuilder: (context, index) {
-                        final p = productProv.products[index];
-                        return _ProductCard(product: p);
-                      },
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        final crossAxisCount = constraints.maxWidth < 600 ? 2 : (constraints.maxWidth < 1000 ? 3 : 5);
+                        return GridView.builder(
+                          padding: const EdgeInsets.all(16),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount, childAspectRatio: 0.72,
+                            crossAxisSpacing: 16, mainAxisSpacing: 16,
+                          ),
+                          itemCount: productProv.products.length,
+                          itemBuilder: (context, index) {
+                            final p = productProv.products[index];
+                            return _ProductCard(product: p, roleColor: _getRoleColor(auth.userRole));
+                          },
+                        );
+                      }
                     ),
           ),
         ],
@@ -89,11 +95,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   Color _getRoleColor(String? role) {
-    switch(role) {
+    switch (role) {
       case 'ADMIN': return AppTheme.adminColor;
       case 'STOCKIST': return AppTheme.stockistColor;
       case 'RETAILER': return AppTheme.retailerColor;
       case 'DOCTOR': return AppTheme.doctorColor;
+      case 'MEDICAL_REP': return AppTheme.mrColor;
       default: return AppTheme.primary;
     }
   }
@@ -103,17 +110,22 @@ class _ProductsScreenState extends State<ProductsScreen> {
       NavItem(label: 'Dashboard', icon: Icons.dashboard_rounded, route: '/admin'),
       NavItem(label: 'Users', icon: Icons.people_rounded, route: '/admin/users'),
       NavItem(label: 'Products', icon: Icons.inventory_2_rounded, route: '/products'),
-    ];
-    if (role == 'STOCKIST') return const [
-      NavItem(label: 'Dashboard', icon: Icons.dashboard_rounded, route: '/stockist'),
       NavItem(label: 'Orders', icon: Icons.shopping_bag_rounded, route: '/orders'),
-      NavItem(label: 'Inventory', icon: Icons.inventory_rounded, route: '/products'),
+      NavItem(label: 'Scraper', icon: Icons.travel_explore_rounded, route: '/admin/scraper'),
     ];
-    if (role == 'RETAILER') return const [
-      NavItem(label: 'Dashboard', icon: Icons.dashboard_rounded, route: '/retailer'),
-      NavItem(label: 'My Inventory', icon: Icons.inventory_rounded, route: '/products'),
+    if (role == 'MEDICAL_REP') return const [
+      NavItem(label: 'Dashboard', icon: Icons.dashboard_rounded, route: '/mr'),
+      NavItem(label: 'Visits', icon: Icons.medical_services_rounded, route: '/mr/visits'),
+      NavItem(label: 'Tour Plan', icon: Icons.map_rounded, route: '/mr/tour-plan'),
+      NavItem(label: 'Expenses', icon: Icons.receipt_long_rounded, route: '/mr/expenses'),
+      NavItem(label: 'Orders', icon: Icons.shopping_bag_rounded, route: '/orders'),
+      NavItem(label: 'Products', icon: Icons.inventory_2_rounded, route: '/products'),
     ];
-    return const [];
+    return [
+      NavItem(label: 'Dashboard', icon: Icons.dashboard_rounded, route: role == 'STOCKIST' ? '/stockist' : '/retailer'),
+      NavItem(label: 'Orders', icon: Icons.shopping_bag_rounded, route: '/orders'),
+      NavItem(label: 'Products', icon: Icons.inventory_2_rounded, route: '/products'),
+    ];
   }
 }
 
@@ -128,12 +140,13 @@ class _CategoryChip extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: FilterChip(
-        label: Text(label),
+        label: Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.white60, fontSize: 11, fontWeight: FontWeight.bold)),
         selected: isSelected,
         onSelected: (_) => onTap(),
-        backgroundColor: AppTheme.cardDark,
+        backgroundColor: AppTheme.surfaceDark,
         selectedColor: AppTheme.primary.withOpacity(0.3),
-        labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.white60, fontSize: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        showCheckmark: false,
       ),
     );
   }
@@ -141,7 +154,8 @@ class _CategoryChip extends StatelessWidget {
 
 class _ProductCard extends StatelessWidget {
   final Product product;
-  const _ProductCard({required this.product});
+  final Color roleColor;
+  const _ProductCard({required this.product, required this.roleColor});
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +175,9 @@ class _ProductCard extends StatelessWidget {
                 color: Colors.white.withOpacity(0.02),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               ),
-              child: const Icon(Icons.medication_rounded, size: 48, color: Colors.white12),
+              child: product.imageUrl.isNotEmpty
+                ? _buildProductImage(product.imageUrl)
+                : const Icon(Icons.medication_rounded, size: 48, color: Colors.white12),
             ),
           ),
           Padding(
@@ -171,12 +187,12 @@ class _ProductCard extends StatelessWidget {
               children: [
                 Text(product.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 2),
-                Text(product.genericName ?? '', style: TextStyle(color: Colors.white54, fontSize: 11)),
+                Text(product.manufacturer, style: const TextStyle(color: Colors.white38, fontSize: 11), maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('₹${product.mrp}', style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w700)),
+                    Text('₹${product.mrp}', style: TextStyle(color: roleColor, fontWeight: FontWeight.w700, fontSize: 14)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
@@ -194,4 +210,16 @@ class _ProductCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildProductImage(String imagePath) {
+    final url = imagePath.startsWith('http') ? imagePath : '${ApiConfig.baseUrl}$imagePath';
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: Image.network(
+        url, fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => const Icon(Icons.medication_rounded, size: 48, color: Colors.white12),
+      ),
+    );
+  }
 }
+

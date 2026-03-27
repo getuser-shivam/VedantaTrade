@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:neutralitical_app/features/catalog/domain/models/product.dart';
+import 'package:vedanta_trade/features/catalog/domain/models/product.dart';
 
 class WishlistProvider extends ChangeNotifier {
   List<String> _wishlistProductIds = [];

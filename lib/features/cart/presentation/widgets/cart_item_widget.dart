@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:neutralitical_app/features/cart/domain/models/cart_item.dart';
+import 'package:vedanta_trade/features/cart/domain/models/cart_item.dart';
 
 class CartItemWidget extends StatelessWidget {
   final CartItem cartItem;

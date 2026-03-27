@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import 'package:neutralitical_app/features/auth/presentation/screens/auth_screen.dart';
-import 'package:neutralitical_app/features/cart/presentation/screens/cart_screen.dart';
-import 'package:neutralitical_app/features/catalog/presentation/providers/product_provider.dart';
-import 'package:neutralitical_app/features/catalog/presentation/screens/catalog_screen.dart';
-import 'package:neutralitical_app/features/catalog/presentation/screens/product_detail_screen.dart';
-import 'package:neutralitical_app/features/notifications/presentation/screens/notifications_screen.dart';
-import 'package:neutralitical_app/features/orders/presentation/screens/order_history_screen.dart';
-import 'package:neutralitical_app/features/profile/presentation/screens/profile_screen.dart';
+import 'package:vedanta_trade/features/auth/presentation/screens/auth_screen.dart';
+import 'package:vedanta_trade/features/cart/presentation/screens/cart_screen.dart';
+import 'package:vedanta_trade/features/catalog/presentation/providers/product_provider.dart';
+import 'package:vedanta_trade/features/catalog/presentation/screens/catalog_screen.dart';
+import 'package:vedanta_trade/features/catalog/presentation/screens/product_detail_screen.dart';
+import 'package:vedanta_trade/features/notifications/presentation/screens/notifications_screen.dart';
+import 'package:vedanta_trade/features/orders/presentation/screens/order_history_screen.dart';
+import 'package:vedanta_trade/features/profile/presentation/screens/profile_screen.dart';
 
 GoRouter createAppRouter() {
   return GoRouter(

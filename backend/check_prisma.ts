@@ -1,0 +1,1 @@
+import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); console.log(Object.keys(prisma).filter(k => k === 'user' || k === 'users' || k === 'Users' || k === 'User' || k === 'Users' || k === 'InventoryItems' || k === 'inventoryItems'));

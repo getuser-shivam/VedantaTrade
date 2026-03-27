@@ -4,7 +4,7 @@ import 'package:vedanta_trade/app/theme/app_theme.dart';
 import 'package:vedanta_trade/shared/app_scaffold.dart';
 import 'package:vedanta_trade/shared/widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:vedanta_trade/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:vedanta_trade/core/api_config.dart';
 

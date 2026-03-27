@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:neutralitical_app/core/constants/app_sizes.dart';
+import 'package:vedanta_trade/core/constants/app_sizes.dart';
 
 enum ButtonType { primary, secondary, outlined, danger }
 

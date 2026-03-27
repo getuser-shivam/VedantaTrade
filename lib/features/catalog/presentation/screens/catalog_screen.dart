@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import 'package:neutralitical_app/features/catalog/domain/models/product.dart';
-import 'package:neutralitical_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:neutralitical_app/features/cart/presentation/providers/cart_provider.dart';
-import 'package:neutralitical_app/features/catalog/presentation/providers/product_provider.dart';
-import 'package:neutralitical_app/features/catalog/presentation/widgets/category_chip.dart';
-import 'package:neutralitical_app/features/catalog/presentation/widgets/product_card.dart';
+import 'package:vedanta_trade/features/catalog/domain/models/product.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/cart/presentation/providers/cart_provider.dart';
+import 'package:vedanta_trade/features/catalog/presentation/providers/product_provider.dart';
+import 'package:vedanta_trade/features/catalog/presentation/widgets/category_chip.dart';
+import 'package:vedanta_trade/features/catalog/presentation/widgets/product_card.dart';
 
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});

@@ -5,7 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
 import 'package:vedanta_trade/shared/app_scaffold.dart';
 import 'package:vedanta_trade/shared/widgets.dart';
-import 'package:vedanta_trade/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:vedanta_trade/core/api_config.dart';
 
@@ -66,81 +66,101 @@ class _AdminDashboardState extends State<AdminDashboard> {
       ],
       body: _loading
         ? const Center(child: CircularProgressIndicator(color: AppTheme.adminColor))
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Welcome
-                Row(children: [
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('Platform Overview', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
-                    Text('Vedanta TradeLink Enterprise', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
-                  ]),
-                ]),
-                const SizedBox(height: 24),
-                // Stats Grid
-                GridView.count(
-                  crossAxisCount: 4, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.5,
+        : LayoutBuilder(
+            builder: (context, constraints) {
+              final isSmall = constraints.maxWidth < 600;
+              final isMedium = constraints.maxWidth < 1000;
+              
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    StatCard(title: 'Total Users', value: '${_stats?['totalUsers'] ?? 0}', icon: Icons.people_rounded, color: AppTheme.adminColor),
-                    StatCard(title: 'Medical Reps', value: '${_stats?['totalMRs'] ?? 0}', icon: Icons.medical_services_rounded, color: AppTheme.mrColor),
-                    StatCard(title: 'Doctors', value: '${_stats?['totalDoctors'] ?? 0}', icon: Icons.health_and_safety_rounded, color: AppTheme.doctorColor),
-                    StatCard(title: 'Stockists', value: '${_stats?['totalStockists'] ?? 0}', icon: Icons.warehouse_rounded, color: AppTheme.stockistColor),
-                    StatCard(title: 'Retailers', value: '${_stats?['totalRetailers'] ?? 0}', icon: Icons.storefront_rounded, color: AppTheme.retailerColor),
-                    StatCard(title: 'Orders', value: '${_stats?['totalOrders'] ?? 0}', icon: Icons.shopping_bag_rounded, color: AppTheme.primary),
-                    StatCard(title: 'Pending Leads', value: '${_stats?['pendingLeads'] ?? 0}', icon: Icons.travel_explore_rounded, color: AppTheme.secondary, subtitle: 'Tap to review scraped leads'),
-                    StatCard(title: 'Products', value: '50+', icon: Icons.inventory_2_rounded, color: AppTheme.success),
+                    // Welcome
+                    Row(children: [
+                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        const Text('Platform Overview', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
+                        Text('Vedanta TradeLink Enterprise', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
+                      ]),
+                    ]),
+                    const SizedBox(height: 24),
+                    // Stats Grid
+                    GridView.count(
+                      crossAxisCount: isSmall ? 2 : (isMedium ? 3 : 4),
+                      shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                      mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.5,
+                      children: [
+                        StatCard(title: 'Total Users', value: '${_stats?['totalUsers'] ?? 0}', icon: Icons.people_rounded, color: AppTheme.adminColor),
+                        StatCard(title: 'Medical Reps', value: '${_stats?['totalMRs'] ?? 0}', icon: Icons.medical_services_rounded, color: AppTheme.mrColor),
+                        StatCard(title: 'Doctors', value: '${_stats?['totalDoctors'] ?? 0}', icon: Icons.health_and_safety_rounded, color: AppTheme.doctorColor),
+                        StatCard(title: 'Stockists', value: '${_stats?['totalStockists'] ?? 0}', icon: Icons.warehouse_rounded, color: AppTheme.stockistColor),
+                        StatCard(title: 'Retailers', value: '${_stats?['totalRetailers'] ?? 0}', icon: Icons.storefront_rounded, color: AppTheme.retailerColor),
+                        StatCard(title: 'Orders', value: '${_stats?['totalOrders'] ?? 0}', icon: Icons.shopping_bag_rounded, color: AppTheme.primary),
+                        StatCard(title: 'Pending Leads', value: '${_stats?['pendingLeads'] ?? 0}', icon: Icons.travel_explore_rounded, color: AppTheme.secondary, subtitle: 'Tap to review'),
+                        StatCard(title: 'Products', value: '50+', icon: Icons.inventory_2_rounded, color: AppTheme.success),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    // Charts Row/Column
+                    if (isSmall) ...[
+                      _buildChartContainer('Monthly Sales Trend', SizedBox(height: 200, child: LineChart(_buildSalesChart()))),
+                      const SizedBox(height: 16),
+                      _buildChartContainer('Supply Chain', SizedBox(height: 200, child: PieChart(_buildPieChart()))),
+                    ] else
+                      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Expanded(flex: 3, child: _buildChartContainer('Monthly Sales Trend', SizedBox(height: 180, child: LineChart(_buildSalesChart())))),
+                        const SizedBox(width: 16),
+                        Expanded(flex: 2, child: _buildChartContainer('Supply Chain', SizedBox(height: 180, child: PieChart(_buildPieChart())))),
+                      ],),
+                    const SizedBox(height: 24),
+                    // Quick Actions
+                    const SectionHeader(title: 'Quick Actions'),
+                    const SizedBox(height: 16),
+                    if (isSmall) 
+                      Column(children: [
+                        Row(children: [
+                          _QuickAction(label: 'Add User', icon: Icons.person_add_rounded, color: AppTheme.adminColor, onTap: () => context.go('/admin/users')),
+                          const SizedBox(width: 12),
+                          _QuickAction(label: 'Scraper', icon: Icons.travel_explore_rounded, color: AppTheme.secondary, onTap: () => context.go('/admin/scraper')),
+                        ]),
+                        const SizedBox(height: 12),
+                        Row(children: [
+                          _QuickAction(label: 'Invoices', icon: Icons.receipt_long_rounded, color: AppTheme.accountantColor, onTap: () => context.go('/accounting/invoices')),
+                          const SizedBox(width: 12),
+                          _QuickAction(label: 'Upload', icon: Icons.cloud_upload_rounded, color: AppTheme.mrColor, onTap: () => context.go('/admin/media-upload')),
+                        ]),
+                      ])
+                    else
+                      Row(children: [
+                        _QuickAction(label: 'Add User', icon: Icons.person_add_rounded, color: AppTheme.adminColor, onTap: () => context.go('/admin/users')),
+                        const SizedBox(width: 12),
+                        _QuickAction(label: 'Janakpur Map', icon: Icons.map_rounded, color: AppTheme.success, onTap: () => context.go('/admin/map')),
+                        const SizedBox(width: 12),
+                        _QuickAction(label: 'Run Scraper', icon: Icons.travel_explore_rounded, color: AppTheme.secondary, onTap: () => context.go('/admin/scraper')),
+                        const SizedBox(width: 12),
+                        _QuickAction(label: 'View Invoices', icon: Icons.receipt_long_rounded, color: AppTheme.accountantColor, onTap: () => context.go('/accounting/invoices')),
+                      ]),
                   ],
                 ),
-                const SizedBox(height: 32),
-                // Charts Row
-                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  // Sales Chart
-                  Expanded(
-                    flex: 3,
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        const SectionHeader(title: 'Monthly Sales Trend'),
-                        const SizedBox(height: 20),
-                        SizedBox(height: 180, child: LineChart(_buildSalesChart())),
-                      ]),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Role Distribution
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        const SectionHeader(title: 'Supply Chain'),
-                        const SizedBox(height: 20),
-                        SizedBox(height: 180, child: PieChart(_buildPieChart())),
-                      ]),
-                    ),
-                  ),
-                ]),
-                const SizedBox(height: 24),
-                // Quick Actions
-                const SectionHeader(title: 'Quick Actions'),
-                const SizedBox(height: 16),
-                Row(children: [
-                  _QuickAction(label: 'Add User', icon: Icons.person_add_rounded, color: AppTheme.adminColor, onTap: () => context.go('/admin/users')),
-                  const SizedBox(width: 12),
-                  _QuickAction(label: 'Run Scraper', icon: Icons.travel_explore_rounded, color: AppTheme.secondary, onTap: () => context.go('/admin/scraper')),
-                  const SizedBox(width: 12),
-                  _QuickAction(label: 'View Invoices', icon: Icons.receipt_long_rounded, color: AppTheme.accountantColor, onTap: () => context.go('/accounting/invoices')),
-                  const SizedBox(width: 12),
-                  _QuickAction(label: 'Upload Media', icon: Icons.cloud_upload_rounded, color: AppTheme.mrColor, onTap: () => context.go('/admin/media-upload')),
-                ]),
-              ],
-            ),
+              );
+            }
           ),
+
+    );
+  }
+
+    );
+  }
+
+  Widget _buildChartContainer(String title, Widget chart) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SectionHeader(title: title),
+        const SizedBox(height: 20),
+        chart,
+      ]),
     );
   }
 

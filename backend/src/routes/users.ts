@@ -88,5 +88,29 @@ router.get('/admin/dashboard', authenticate, authorize('ADMIN'), async (req, res
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+// GET map data for Janakpur (Admin)
+router.get('/admin/map-data', authenticate, authorize('ADMIN'), async (req, res) => {
+  try {
+    const doctors = await prisma.doctor.findMany({ where: { lat: { not: null }, lng: { not: null } } });
+    const stockists = await prisma.stockist.findMany({ where: { lat: { not: null }, lng: { not: null } } });
+    const retailers = await prisma.retailer.findMany({ where: { lat: { not: null }, lng: { not: null } } });
+    const mrVisits = await prisma.mrVisit.findMany({ 
+      where: { lat: { not: null }, lng: { not: null } },
+      include: { mr: { include: { user: true } } },
+      orderBy: { visit_date: 'desc' },
+      take: 20
+    });
+
+    const data: any[] = [];
+    doctors.forEach(d => data.push({ type: 'DOCTOR', name: d.clinic_name ? `${d.name} (${d.clinic_name})` : d.name, lat: d.lat, lng: d.lng }));
+    stockists.forEach(s => data.push({ type: 'STOCKIST', name: s.firm_name, lat: s.lat, lng: s.lng }));
+    retailers.forEach(r => data.push({ type: 'RETAILER', name: r.firm_name, lat: r.lat, lng: r.lng }));
+    mrVisits.forEach(v => data.push({ type: 'MR_VISIT', name: `MR: ${v.mr.user.name || 'Unknown'} (Visit)`, lat: v.lat, lng: v.lng }));
+
+    return res.json({ success: true, data });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 export default router;

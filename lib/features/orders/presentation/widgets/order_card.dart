@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:neutralitical_app/features/orders/domain/models/order.dart';
+import 'package:vedanta_trade/features/orders/domain/models/order.dart';
 
 class OrderCard extends StatelessWidget {
   final Order order;

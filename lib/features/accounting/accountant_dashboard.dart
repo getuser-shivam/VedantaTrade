@@ -4,7 +4,7 @@ import 'package:vedanta_trade/app/theme/app_theme.dart';
 import 'package:vedanta_trade/shared/app_scaffold.dart';
 import 'package:vedanta_trade/shared/widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:vedanta_trade/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:vedanta_trade/core/api_config.dart';
 
@@ -45,7 +45,7 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
     NavItem(label: 'Dashboard', icon: Icons.dashboard_rounded, route: '/accounting'),
     NavItem(label: 'Invoices', icon: Icons.receipt_long_rounded, route: '/accounting/invoices'),
     NavItem(label: 'Ledger', icon: Icons.book_rounded, route: '/accounting/ledger'),
-    NavItem(label: 'GST Reports', icon: Icons.calculate_rounded, route: '/accounting/gst'),
+    NavItem(label: 'VAT Reports', icon: Icons.calculate_rounded, route: '/accounting/vat'),
     NavItem(label: 'MR Expenses', icon: Icons.account_balance_wallet_rounded, route: '/mr/expenses'),
     NavItem(label: 'Orders', icon: Icons.shopping_bag_rounded, route: '/orders'),
     NavItem(label: 'Profile', icon: Icons.person_rounded, route: '/profile'),
@@ -69,52 +69,63 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
               const SizedBox(height: 6),
               Text('Current Month — ${DateTime.now().year}', style: TextStyle(color: Colors.white.withOpacity(0.4))),
               const SizedBox(height: 24),
-              GridView.count(
-                crossAxisCount: 4, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.5,
-                children: [
-                  StatCard(title: 'Receivables', value: _inr(_stats?['totalReceivables']), icon: Icons.arrow_downward_rounded, color: AppTheme.success, subtitle: 'Outstanding from customers'),
-                  StatCard(title: 'Payables', value: _inr(_stats?['totalPayables']), icon: Icons.arrow_upward_rounded, color: AppTheme.error, subtitle: 'Outstanding to suppliers'),
-                  StatCard(title: 'Collected This Month', value: _inr(_stats?['paidThisMonth']), icon: Icons.check_circle_rounded, color: AppTheme.accountantColor),
-                  StatCard(title: 'Overdue Invoices', value: '${_stats?['overdueInvoices'] ?? 0}', icon: Icons.warning_rounded, color: AppTheme.warning, subtitle: 'Requires immediate action'),
-                ],
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 600;
+                  return GridView.count(
+                    crossAxisCount: isMobile ? 2 : 4, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: isMobile ? 1.2 : 1.5,
+                    children: [
+                      StatCard(title: 'Receivables', value: _inr(_stats?['totalReceivables']), icon: Icons.arrow_downward_rounded, color: AppTheme.success, subtitle: isMobile ? null : 'Outstanding from customers'),
+                      StatCard(title: 'Payables', value: _inr(_stats?['totalPayables']), icon: Icons.arrow_upward_rounded, color: AppTheme.error, subtitle: isMobile ? null : 'Outstanding to suppliers'),
+                      StatCard(title: 'Collected', value: _inr(_stats?['paidThisMonth']), icon: Icons.check_circle_rounded, color: AppTheme.accountantColor),
+                      StatCard(title: 'Overdue', value: '${_stats?['overdueInvoices'] ?? 0}', icon: Icons.warning_rounded, color: AppTheme.warning, subtitle: isMobile ? null : 'Requires action'),
+                    ],
+                  );
+                }
               ),
               const SizedBox(height: 24),
-              Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                // Cash Flow Chart
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const SectionHeader(title: 'Cash Flow (Last 6 Months)'),
-                      const SizedBox(height: 20),
-                      SizedBox(height: 180, child: BarChart(_buildCashFlowChart())),
-                    ]),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                // GST Summary
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const SectionHeader(title: 'GST Status'),
-                      const SizedBox(height: 16),
-                      _GstRow(label: 'CGST Collected', amount: '₹24,500', color: AppTheme.primary),
-                      const SizedBox(height: 10),
-                      _GstRow(label: 'SGST Collected', amount: '₹24,500', color: AppTheme.secondary),
-                      const SizedBox(height: 10),
-                      _GstRow(label: 'IGST Collected', amount: '₹8,200', color: AppTheme.accountantColor),
-                      const Divider(height: 20),
-                      _GstRow(label: 'Total GST', amount: '₹57,200', color: AppTheme.success, bold: true),
-                    ]),
-                  ),
-                ),
-              ]),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 900;
+                  final content = [
+                    // Cash Flow Chart
+                    Expanded(
+                      flex: isMobile ? 0 : 3,
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const SectionHeader(title: 'Cash Flow (Last 6 Months)'),
+                          const SizedBox(height: 20),
+                          SizedBox(height: 180, child: BarChart(_buildCashFlowChart())),
+                        ]),
+                      ),
+                    ),
+                    if (isMobile) const SizedBox(height: 16) else const SizedBox(width: 16),
+                    // GST Summary
+                    Expanded(
+                      flex: isMobile ? 0 : 2,
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const SectionHeader(title: 'VAT Status (13%)'),
+                          const SizedBox(height: 16),
+                          _VatRow(label: 'VAT on Sales', amount: 'NPR 24,500', color: AppTheme.primary),
+                          const SizedBox(height: 10),
+                          _VatRow(label: 'VAT on Purchases', amount: 'NPR 12,500', color: AppTheme.secondary),
+                          const SizedBox(height: 10),
+                          _VatRow(label: 'Net VAT Payable', amount: 'NPR 12,000', color: AppTheme.accountantColor),
+                          const Divider(height: 20),
+                          _VatRow(label: 'Total VAT', amount: 'NPR 37,000', color: AppTheme.success, bold: true),
+                        ]),
+                      ),
+                    ),
+                  ];
+                  return isMobile ? Column(children: content) : Row(crossAxisAlignment: CrossAxisAlignment.start, children: content);
+                }
+              ),
               const SizedBox(height: 24),
               SectionHeader(title: 'Recent Invoices', trailing: TextButton(onPressed: () {}, child: const Text('View All', style: TextStyle(color: AppTheme.accountantColor)))),
               const SizedBox(height: 12),
@@ -152,12 +163,12 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
   }
 }
 
-class _GstRow extends StatelessWidget {
+class _VatRow extends StatelessWidget {
   final String label;
   final String amount;
   final Color color;
   final bool bold;
-  const _GstRow({required this.label, required this.amount, required this.color, this.bold = false});
+  const _VatRow({required this.label, required this.amount, required this.color, this.bold = false});
 
   @override
   Widget build(BuildContext context) {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:neutralitical_app/features/reviews/presentation/providers/review_provider.dart';
-import 'package:neutralitical_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/reviews/presentation/providers/review_provider.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
 
 class AddReviewScreen extends StatefulWidget {
   final String productId;

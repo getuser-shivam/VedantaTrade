@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import 'package:neutralitical_app/features/auth/domain/models/user.dart';
-import 'package:neutralitical_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:neutralitical_app/features/notifications/presentation/providers/notification_provider.dart';
+import 'package:vedanta_trade/features/auth/domain/models/user.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/notifications/presentation/providers/notification_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

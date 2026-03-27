@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:neutralitical_app/features/catalog/domain/models/product.dart';
-import 'package:neutralitical_app/features/cart/presentation/providers/cart_provider.dart';
-import 'package:neutralitical_app/features/wishlist/presentation/providers/wishlist_provider.dart';
+import 'package:vedanta_trade/features/catalog/domain/models/product.dart';
+import 'package:vedanta_trade/features/cart/presentation/providers/cart_provider.dart';
+import 'package:vedanta_trade/features/wishlist/presentation/providers/wishlist_provider.dart';
 
 class ProductCard extends StatelessWidget {
   const ProductCard({

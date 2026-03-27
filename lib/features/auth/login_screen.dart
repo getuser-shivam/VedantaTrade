@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import 'package:vedanta_trade/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -55,7 +55,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   Future<void> _login() async {
     final auth = context.read<AuthProvider>();
-    final ok = await auth.login(_emailCtrl.text.trim(), _passwordCtrl.text);
+    final ok = await auth.login(
+      _emailCtrl.text.trim(), 
+      _passwordCtrl.text,
+      useBiometric: false,
+    );
     if (!mounted) return;
     if (ok) {
       final role = auth.userRole;
@@ -79,6 +83,37 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _emailCtrl.text = role['email'] as String;
     _passwordCtrl.text = role['password'] as String;
     _login();
+  }
+
+  Future<void> _biometricLogin() async {
+    final auth = context.read<AuthProvider>();
+    if (!auth.biometricEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Biometric authentication not enabled'), backgroundColor: AppTheme.error),
+      );
+      return;
+    }
+    
+    // Use stored credentials for biometric login
+    final ok = await auth.login('', '', useBiometric: true);
+    if (!mounted) return;
+    
+    if (ok) {
+      final role = auth.userRole;
+      switch (role) {
+        case 'ADMIN': context.go('/admin'); break;
+        case 'MEDICAL_REP': context.go('/mr'); break;
+        case 'ACCOUNTANT': context.go('/accounting'); break;
+        case 'DOCTOR': context.go('/doctor'); break;
+        case 'STOCKIST': context.go('/stockist'); break;
+        case 'RETAILER': context.go('/retailer'); break;
+        default: {}
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(auth.error ?? 'Biometric login failed'), backgroundColor: AppTheme.error),
+      );
+    }
   }
 
   @override
@@ -187,6 +222,54 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
                           : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Biometric Login Button
+                    Consumer<AuthProvider>(
+                      builder: (context, auth, _) {
+                        if (auth.biometricEnabled) {
+                          return SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: OutlinedButton(
+                              onPressed: auth.isLoading ? null : _biometricLogin,
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: AppTheme.primary),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.fingerprint, color: AppTheme.primary),
+                                  SizedBox(width: 8),
+                                  Text('Sign in with Biometrics', style: TextStyle(color: AppTheme.primary, fontSize: 14)),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    // Forgot Password & Register Links
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () => context.go('/forgot-password'),
+                          child: Text(
+                            'Forgot password?',
+                            style: TextStyle(color: AppTheme.primary, fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => context.go('/register'),
+                          child: Text(
+                            'Create account',
+                            style: TextStyle(color: AppTheme.primary, fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
                     Center(child: Text('Vedanta TradeLink Pvt. Ltd. © 2024', style: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 11))),

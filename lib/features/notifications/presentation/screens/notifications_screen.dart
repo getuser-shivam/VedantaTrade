@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:neutralitical_app/features/notifications/presentation/providers/notification_provider.dart';
-import 'package:neutralitical_app/features/notifications/domain/models/app_notification.dart' as app_notification;
+import 'package:vedanta_trade/features/notifications/presentation/providers/notification_provider.dart';
+import 'package:vedanta_trade/features/notifications/domain/models/app_notification.dart' as app_notification;
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});

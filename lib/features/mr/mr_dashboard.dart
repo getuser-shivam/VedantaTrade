@@ -4,10 +4,12 @@ import 'package:vedanta_trade/app/theme/app_theme.dart';
 import 'package:vedanta_trade/shared/app_scaffold.dart';
 import 'package:vedanta_trade/shared/widgets.dart';
 import 'package:provider/provider.dart';
-import 'package:vedanta_trade/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 import 'package:vedanta_trade/core/api_config.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class MrDashboard extends StatefulWidget {
   const MrDashboard({super.key});
@@ -67,57 +69,103 @@ class _MrDashboardState extends State<MrDashboard> {
       ),
       body: _loading
         ? const Center(child: CircularProgressIndicator(color: AppTheme.mrColor))
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              // Greeting
-              Text('Today, ${DateFormat('d MMM yyyy').format(DateTime.now())}', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
-              const Text('Good Morning, Ramesh! 👋', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
-              const SizedBox(height: 24),
-              // Stats
-              GridView.count(
-                crossAxisCount: 4, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.4,
-                children: [
-                  StatCard(title: 'Visits Today', value: '${_stats?['visitsToday'] ?? 0}', icon: Icons.today_rounded, color: AppTheme.mrColor),
-                  StatCard(title: 'This Month', value: '${_stats?['visitsThisMonth'] ?? 0}', icon: Icons.calendar_month_rounded, color: AppTheme.primary, subtitle: '/${_stats?['mrProfile']?['id'] != null ? 60 : 60} target'),
-                  StatCard(title: 'Samples Given', value: '${_stats?['samplesDistributed'] ?? 0}', icon: Icons.medication_rounded, color: AppTheme.secondary),
-                  StatCard(title: 'Pending Claims', value: '${_stats?['pendingExpenses'] ?? 0}', icon: Icons.account_balance_wallet_rounded, color: AppTheme.warning),
-                ],
-              ),
-              const SizedBox(height: 24),
-              // Target Progress
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
+        : LayoutBuilder(
+            builder: (context, constraints) {
+              final isSmall = constraints.maxWidth < 600;
+              
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const SectionHeader(title: 'Monthly Target Progress'),
-                  const SizedBox(height: 16),
-                  _TargetRow(label: 'Visits', achieved: _stats?['visitsThisMonth'] ?? 0, target: 60, color: AppTheme.mrColor),
+                  // Greeting
+                  Text('Today, ${DateFormat('d MMM yyyy').format(DateTime.now())}', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13)),
+                  const Text('Good Morning, Ramesh! 👋', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
+                  const SizedBox(height: 24),
+                  // Stats
+                  GridView.count(
+                    crossAxisCount: isSmall ? 2 : 4,
+                    shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                    mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 1.4,
+                    children: [
+                      StatCard(title: 'Visits Today', value: '${_stats?['visitsToday'] ?? 0}', icon: Icons.today_rounded, color: AppTheme.mrColor),
+                      StatCard(title: 'This Month', value: '${_stats?['visitsThisMonth'] ?? 0}', icon: Icons.calendar_month_rounded, color: AppTheme.primary, subtitle: '/60 target'),
+                      StatCard(title: 'Samples Given', value: '${_stats?['samplesDistributed'] ?? 0}', icon: Icons.medication_rounded, color: AppTheme.secondary),
+                      StatCard(title: 'Pending Claims', value: '${_stats?['pendingExpenses'] ?? 0}', icon: Icons.account_balance_wallet_rounded, color: AppTheme.warning),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  // Target Progress
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const SectionHeader(title: 'Monthly Target Progress'),
+                      const SizedBox(height: 16),
+                      _TargetRow(label: 'Visits', achieved: _stats?['visitsThisMonth'] ?? 0, target: 60, color: AppTheme.mrColor),
+                      const SizedBox(height: 12),
+                      _TargetRow(label: 'Orders (₹)', achieved: 75000, target: 250000, color: AppTheme.primary),
+                      const SizedBox(height: 12),
+                      _TargetRow(label: 'Samples', achieved: _stats?['samplesDistributed'] ?? 0, target: 200, color: AppTheme.secondary),
+                    ]),
+                  ),
+                  const SizedBox(height: 24),
+                  // Live Map View for Janakpur territory
+                  const SectionHeader(title: 'Live Territory Map (Janakpur)'),
                   const SizedBox(height: 12),
-                  _TargetRow(label: 'Orders (₹)', achieved: 75000, target: 250000, color: AppTheme.primary),
+                  Container(
+                    height: 250,
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardDark, 
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white12)
+                    ),
+                    clipBehavior: Clip.hardEdge,
+                    child: FlutterMap(
+                      options: MapOptions(
+                        initialCenter: const LatLng(26.7288, 85.9260),
+                        initialZoom: 14.0,
+                        interactionOptions: const InteractionOptions(flags: InteractiveFlag.all & ~InteractiveFlag.rotate),
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'np.com.vedantatrade.app',
+                        ),
+                        MarkerLayer(markers: [
+                          Marker(
+                            point: const LatLng(26.7288, 85.9260), 
+                            width: 30, height: 30, 
+                            child: Icon(Icons.person_pin_circle_rounded, color: AppTheme.mrColor, size: 30),
+                          ),
+                          Marker(
+                            point: const LatLng(26.7310, 85.9220), 
+                            width: 30, height: 30, 
+                            child: Icon(Icons.local_hospital_rounded, color: AppTheme.doctorColor, size: 30),
+                          ),
+                        ]),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Recent Visits
+                  SectionHeader(title: 'Recent Visits', trailing: TextButton(onPressed: () => context.go('/mr/visits'), child: const Text('View All', style: TextStyle(color: AppTheme.mrColor)))),
                   const SizedBox(height: 12),
-                  _TargetRow(label: 'Samples', achieved: _stats?['samplesDistributed'] ?? 0, target: 200, color: AppTheme.secondary),
+                  if (_recentVisits.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(32),
+                      decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
+                      child: Center(child: Column(children: [
+                        Icon(Icons.medical_services_rounded, size: 40, color: AppTheme.mrColor.withOpacity(0.4)),
+                        const SizedBox(height: 12),
+                        const Text('No visits yet. Log your first visit!', style: TextStyle(color: Colors.white38)),
+                      ])),
+                    )
+                  else
+                    ...(_recentVisits.map((v) => _VisitCard(visit: v)).toList()),
                 ]),
-              ),
-              const SizedBox(height: 24),
-              // Recent Visits
-              SectionHeader(title: 'Recent Visits', trailing: TextButton(onPressed: () => context.go('/mr/visits'), child: const Text('View All', style: TextStyle(color: AppTheme.mrColor)))),
-              const SizedBox(height: 12),
-              if (_recentVisits.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(16)),
-                  child: Center(child: Column(children: [
-                    Icon(Icons.medical_services_rounded, size: 40, color: AppTheme.mrColor.withOpacity(0.4)),
-                    const SizedBox(height: 12),
-                    const Text('No visits yet. Log your first visit!', style: TextStyle(color: Colors.white38)),
-                  ])),
-                )
-              else
-                ...(_recentVisits.map((v) => _VisitCard(visit: v)).toList()),
-            ]),
+              );
+            }
           ),
+
     );
   }
 }

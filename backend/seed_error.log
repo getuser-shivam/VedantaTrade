@@ -1,0 +1,20 @@
+I:\Path\Projects\VedantaTrade\backend\node_modules\ts-node\src\index.ts:859
+    return new TSError(diagnosticText, diagnosticCodes, diagnostics);
+           ^
+TSError: G¿» Unable to compile TypeScript:
+src/seed.ts(62,127): error TS2353: Object literal may only specify known properties, and 'is_active' does not exist in type '(Without<UsersCreateInput, UsersUncheckedCreateInput> & UsersUncheckedCreateInput) | (Without<...> & UsersCreateInput)'.
+src/seed.ts(66,131): error TS2353: Object literal may only specify known properties, and 'is_active' does not exist in type '(Without<UsersCreateInput, UsersUncheckedCreateInput> & UsersUncheckedCreateInput) | (Without<...> & UsersCreateInput)'.
+src/seed.ts(70,128): error TS2353: Object literal may only specify known properties, and 'is_active' does not exist in type '(Without<UsersCreateInput, UsersUncheckedCreateInput> & UsersUncheckedCreateInput) | (Without<...> & UsersCreateInput)'.
+System.Management.Automation.RemoteException
+    at createTSError (I:\Path\Projects\VedantaTrade\backend\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (I:\Path\Projects\VedantaTrade\backend\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (I:\Path\Projects\VedantaTrade\backend\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (I:\Path\Projects\VedantaTrade\backend\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (I:\Path\Projects\VedantaTrade\backend\node_modules\ts-node\src\index.ts:1617:30)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1564:10)
+    at Object.require.extensions.<computed> [as .ts] (I:\Path\Projects\VedantaTrade\backend\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1287:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1103:12)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:168:12) {
+  diagnosticCodes: [ 2353, 2353, 2353 ]
+}
