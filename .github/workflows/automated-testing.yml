@@ -1,0 +1,325 @@
+name: Automated Testing Pipeline
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - unit
+        - integration
+        - widget
+        - performance
+      coverage:
+        description: 'Generate coverage report'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+  NODE_VERSION: '20.x'
+  JAVA_VERSION: '17'
+
+jobs:
+  # Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'unit' || github.event.inputs.test_type == ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run unit tests
+        run: flutter test --coverage --no-sound-null-safety
+
+      - name: Generate coverage report
+        if: github.event.inputs.coverage == 'true' || github.event.inputs.coverage == ''
+        run: |
+          genhtml coverage/lcov.info -o coverage/html
+          echo "coverage=$(lcov --summary coverage/lcov.info | grep -E '[0-9]+%' | tail -1 | awk '{print $1}' | sed 's/%//')" >> $GITHUB_OUTPUT
+
+      - name: Upload coverage to Codecov
+        if: github.event.inputs.coverage == 'true' || github.event.inputs.coverage == ''
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-results
+          path: coverage/
+          retention-days: 7
+
+  # Widget Tests
+  widget-tests:
+    name: Widget Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'widget' || github.event.inputs.test_type == ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run widget tests
+        run: flutter test test/widget/ --coverage
+
+      - name: Upload widget test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: widget-test-results
+          path: coverage/
+          retention-days: 7
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'integration' || github.event.inputs.test_type == ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build test APK
+        run: flutter build apk --debug
+
+      - name: Start emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: |
+            flutter drive --driver=test_driver/app_test.dart --target=integration_test/app_test.dart
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-test-results
+          path: test_driver/
+          retention-days: 7
+
+  # Performance Tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'performance' || github.event.inputs.test_type == ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run performance tests
+        run: |
+          flutter test test/performance/ --performance
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-test-results
+          path: test/performance/
+          retention-days: 7
+
+  # Golden Tests
+  golden-tests:
+    name: Golden Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run golden tests
+        run: flutter test --update-goldens
+
+      - name: Upload golden test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: golden-test-results
+          path: test/goldens/
+          retention-days: 7
+
+  # Test Report Generation
+  test-report:
+    name: Generate Test Report
+    runs-on: ubuntu-latest
+    needs: [unit-tests, widget-tests, integration-tests, performance-tests, golden-tests]
+    if: always()
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v3
+        with:
+          path: test-results/
+
+      - name: Generate comprehensive test report
+        run: |
+          echo "# Test Report" > test-report.md
+          echo "Generated on: $(date)" >> test-report.md
+          echo "" >> test-report.md
+          echo "## Test Results Summary" >> test-report.md
+          echo "" >> test-report.md
+          
+          # Add test results from each job
+          echo "### Unit Tests" >> test-report.md
+          if [ -d "test-results/unit-test-results" ]; then
+            echo "✅ Unit tests completed successfully" >> test-report.md
+          else
+            echo "❌ Unit tests failed or were skipped" >> test-report.md
+          fi
+          
+          echo "### Widget Tests" >> test-report.md
+          if [ -d "test-results/widget-test-results" ]; then
+            echo "✅ Widget tests completed successfully" >> test-report.md
+          else
+            echo "❌ Widget tests failed or were skipped" >> test-report.md
+          fi
+          
+          echo "### Integration Tests" >> test-report.md
+          if [ -d "test-results/integration-test-results" ]; then
+            echo "✅ Integration tests completed successfully" >> test-report.md
+          else
+            echo "❌ Integration tests failed or were skipped" >> test-report.md
+          fi
+          
+          echo "### Performance Tests" >> test-report.md
+          if [ -d "test-results/performance-test-results" ]; then
+            echo "✅ Performance tests completed successfully" >> test-report.md
+          else
+            echo "❌ Performance tests failed or were skipped" >> test-report.md
+          fi
+          
+          echo "### Golden Tests" >> test-report.md
+          if [ -d "test-results/golden-test-results" ]; then
+            echo "✅ Golden tests completed successfully" >> test-report.md
+          else
+            echo "❌ Golden tests failed or were skipped" >> test-report.md
+          fi
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: test-report.md
+          retention-days: 30
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('test-report.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+  # Quality Gate
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [unit-tests, widget-tests, integration-tests]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          UNIT_RESULT="${{ needs.unit-tests.result }}"
+          WIDGET_RESULT="${{ needs.widget-tests.result }}"
+          INTEGRATION_RESULT="${{ needs.integration-tests.result }}"
+          
+          if [[ "$UNIT_RESULT" == "failure" || "$WIDGET_RESULT" == "failure" || "$INTEGRATION_RESULT" == "failure" ]]; then
+            echo "❌ Quality gate failed - some tests failed"
+            exit 1
+          else
+            echo "✅ Quality gate passed - all tests passed"
+          fi
+
+  # Notification
+  notify:
+    name: Notify Test Results
+    runs-on: ubuntu-latest
+    needs: [unit-tests, widget-tests, integration-tests, performance-tests, golden-tests, quality-gate]
+    if: always()
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#testing'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          text: |
+            Test Results Summary:
+            - Unit Tests: ${{ needs.unit-tests.result }}
+            - Widget Tests: ${{ needs.widget-tests.result }}
+            - Integration Tests: ${{ needs.integration-tests.result }}
+            - Performance Tests: ${{ needs.performance-tests.result }}
+            - Golden Tests: ${{ needs.golden-tests.result }}
+            - Quality Gate: ${{ needs.quality-gate.result }}

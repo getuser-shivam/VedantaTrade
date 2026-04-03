@@ -73,112 +73,36 @@ This document outlines the comprehensive CI/CD pipeline implementation for Vedan
 
 7. **Monitoring & Rollback**
    - Health checks post-deployment
-   - Performance monitoring
-   - Automatic rollback on failure
-   - Notification system
+---
+
+## **🎯 Pipeline Features**
+
+### **🔄 Automated Triggers**
+- **Push Events** - Automatic execution on code pushes
+- **Pull Requests** - Pre-merge validation
+- **Manual Triggers** - On-demand pipeline execution
+- **Scheduled Runs** - Regular quality checks
+- **Tag Releases** - Automated deployment on version tags
+
+### **🏗️ Build Matrix**
+- **Flutter Applications** - Multi-platform builds
+- **Android** - APK and App Bundle generation
+- **iOS** - iOS build configuration
+- **Web** - CanvasKit renderer optimization
+- **Testing** - Multiple test categories
+
+### **📊 Quality Gates**
+- **Code Coverage** - Minimum 80% coverage requirement
+- **Security Scans** - Zero high-severity vulnerabilities
+- **Performance** - Performance benchmark validation
+- **Accessibility** - WCAG compliance checks
+- **Documentation** - Complete API documentation
 
 ---
 
-### **2. Test Automation Suite** (`test-automation.yml`)
+## **� Configuration Details**
 
-**Test Types:**
-- **Unit Tests**: Core business logic testing
-- **Widget Tests**: UI component testing
-- **Integration Tests**: API and service integration
-- **E2E Tests**: End-to-end user workflows
-- **Performance Tests**: Application performance
-- **Accessibility Tests**: WCAG compliance testing
-
-**Features:**
-- Parallel test execution
-- Coverage reporting with Codecov integration
-- Test result aggregation
-- Quality metrics calculation
-- PR comments with test results
-
----
-
-### **3. Deployment Automation** (`deployment-automation.yml`)
-
-**Deployment Environments:**
-- **Staging**: Automated deployment on main branch
-- **Production**: Tag-based deployment with manual approval
-- **Test**: On-demand testing deployment
-
-**Deployment Features:**
-- Multi-platform builds (Web, Android, iOS)
-- Backend API deployment
-- Database migrations
-- Health checks and smoke tests
-- Automatic rollback on failure
-- Release management with GitHub releases
-
-**Mobile Store Deployment:**
-- Google Play Store (Android)
-- Apple App Store (iOS)
-- Automated signing and upload
-
----
-
-### **4. Monitoring and Alerting** (`monitoring-alerting.yml`)
-
-**Monitoring Types:**
-- **Health Monitoring**: Service availability and connectivity
-- **Performance Monitoring**: Response times and resource usage
-- **Security Monitoring**: Vulnerability scanning and threat detection
-- **Uptime Monitoring**: Service availability tracking
-- **Log Monitoring**: Error detection and analysis
-- **Resource Monitoring**: Disk space, network, SSL certificates
-
-**Alerting System:**
-- Slack notifications for critical issues
-- Email alerts for stakeholders
-- GitHub issue creation for critical alerts
-- Multi-level alerting (info, warning, critical)
-
-**Dashboard Features:**
-- Real-time monitoring dashboard
-- Historical data tracking
-- Automated report generation
-- Performance metrics visualization
-
----
-
-## 🔐 Required Secrets
-
-### **GitHub Secrets Configuration**
-
-```bash
-# Slack Integration
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
-
-# Mobile App Signing
-ANDROID_KEYSTORE_BASE64=base64_encoded_keystore
-ANDROID_KEYSTORE_PASSWORD=keystore_password
-ANDROID_KEY_PASSWORD=key_password
-ANDROID_KEY_ALIAS=key_alias
-
-# Database
-DATABASE_URL=postgresql://user:pass@host:port/db
-PROD_DATABASE_URL=postgresql://user:pass@host:port/prod_db
-
-# API Keys (if needed)
-API_KEY=your_api_key
-SECRET_KEY=your_secret_key
-
-# Email (for notifications)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=email@example.com
-SMTP_PASS=password
-```
-
----
-
-## 📊 Pipeline Configuration
-
-### **Environment Variables**
-
+### **📝 Environment Variables**
 ```yaml
 env:
   FLUTTER_VERSION: '3.19.0'
@@ -187,186 +111,164 @@ env:
   RUBY_VERSION: '3.0'
 ```
 
-### **Branch Strategy**
+### **🔐 Required Secrets**
+- **`FIREBASE_SERVICE_ACCOUNT`** - Firebase hosting deployment
+- **`GOOGLE_PLAY_SERVICE_ACCOUNT`** - Google Play deployment
+- **`SLACK_WEBHOOK`** - Slack notifications
+- **`EMAIL_USERNAME`/`EMAIL_PASSWORD`** - Email notifications
+- **`LHCI_GITHUB_APP_TOKEN`** - Lighthouse CI integration
+- **`NOTIFICATION_EMAIL`** - Notification recipient
 
-- **`main`**: Production branch with automated deployment
-- **`develop`**: Development branch with CI checks
-- **Feature branches**: PR-based workflow with testing
-- **Tags**: `v*.*.*` format for releases
+### **🌍 Deployment Environments**
+- **Staging** - `https://vedanta-trade-staging.web.app`
+- **Production** - `https://vedanta-trade.app`
+- **Test** - Internal testing environment
 
 ---
 
-## 🚀 Deployment Process
+## **� Pipeline Execution Flow**
 
-### **Automated Deployment Flow**
+### **🚀 Development Workflow**
+```
+1. Code Push → Trigger CI/CD Pipeline
+2. Code Quality Analysis → Security Scanning
+3. Build Applications → Run Tests
+4. Deploy to Staging → Health Checks
+5. Manual Approval → Deploy to Production
+6. Post-Deployment Monitoring → Notifications
+```
 
-1. **Code Commit** → Push to branch
-2. **CI Pipeline** → Quality checks, tests, builds
-3. **Staging Deploy** → Automated for main branch
-4. **Production Deploy** → Manual approval required
-5. **Mobile Stores** → Automated for tagged releases
-6. **Monitoring** → Continuous health checks
-7. **Alerting** → Issue detection and notification
+### **🧪 Testing Strategy**
+```
+Unit Tests → Widget Tests → Integration Tests
+     ↓              ↓              ↓
+Coverage → Performance → Accessibility
+     ↓              ↓              ↓
+Quality Gate → Security Scan → Documentation
+```
 
-### **Manual Deployment Options**
+### **🚀 Deployment Strategy**
+```
+Build → Test → Staging → Approval → Production
+   ↓      ↓        ↓         ↓          ↓
+APK/AAB → Health → Staging → Manual → Release
+   ↓      ↓        ↓         ↓          ↓
+Web    → Check  → Verify  → Review  → Monitor
+```
 
+---
+
+## **📈 Quality Metrics**
+
+### **🎯 Quality Gates**
+- **Code Coverage**: ≥80%
+- **Security**: Zero high-severity issues
+- **Performance**: Lighthouse score ≥90
+- **Accessibility**: WCAG 2.1 AA compliance
+- **Documentation**: 100% public API coverage
+
+### **📊 Monitoring & Reporting**
+- **Test Results**: Comprehensive test reports
+- **Coverage Reports**: Detailed coverage analysis
+- **Security Reports**: Vulnerability assessments
+- **Performance Reports**: Lighthouse scores
+- **Quality Reports**: Overall quality metrics
+
+---
+
+## **� Setup Instructions**
+
+### **📋 Prerequisites**
+1. **GitHub Repository** - VedantaTrade repository
+2. **Firebase Project** - Web hosting configuration
+3. **Google Play Console** - App deployment setup
+4. **Slack Workspace** - Notification integration
+5. **Email Service** - Notification configuration
+
+### **🔧 Configuration Steps**
+1. **Set up Secrets** - Configure all required secrets
+2. **Enable Workflows** - Activate GitHub Actions
+3. **Configure Environments** - Set up staging/production
+4. **Test Pipeline** - Run initial pipeline validation
+5. **Monitor Execution** - Observe pipeline performance
+
+### **✅ Validation Checklist**
+- [ ] All secrets configured correctly
+- [ ] Firebase hosting connected
+- [ ] Google Play service account ready
+- [ ] Slack webhook configured
+- [ ] Email notifications working
+- [ ] Test pipeline executes successfully
+- [ ] Deployment to staging works
+- [ ] Production deployment verified
+
+---
+
+## **� Usage Examples**
+
+### **🔄 Manual Pipeline Execution**
 ```bash
+# Trigger comprehensive CI/CD
+gh workflow run comprehensive-ci-cd.yml
+
+# Run specific test suite
+gh workflow run automated-testing.yml -f test_type=unit
+
 # Deploy to staging
-gh workflow run deployment-automation \
-  --field environment=staging
-
-# Deploy to production
-gh workflow run deployment-automation \
-  --field environment=production \
-  --field version=v3.2.1
-
-# Rollback deployment
-gh workflow run deployment-automation \
-  --field environment=production \
-  --field rollback=true
+gh workflow run deployment-automation.yml -f environment=staging
 ```
 
----
-
-## 📈 Quality Gates
-
-### **Code Quality Requirements**
-
-- ✅ **Flutter Analyze**: No fatal infos or warnings
-- ✅ **Code Formatting**: Dart format compliance
-- ✅ **Test Coverage**: Minimum 80% coverage
-- ✅ **Security Scan**: No high-severity vulnerabilities
-- ✅ **Build Success**: All platforms build successfully
-
-### **Performance Requirements**
-
-- ✅ **Response Time**: < 500ms average
-- ✅ **Memory Usage**: < 80% of available memory
-- ✅ **CPU Usage**: < 70% average utilization
-- ✅ **Uptime**: > 99.5% availability
-
----
-
-## 🔍 Monitoring Dashboard
-
-### **Key Metrics Tracked**
-
-1. **Application Health**
-   - Service availability
-   - Response times
-   - Error rates
-   - Throughput metrics
-
-2. **Infrastructure Health**
-   - Server resources
-   - Database performance
-   - Network connectivity
-   - SSL certificate status
-
-3. **Security Metrics**
-   - Vulnerability scan results
-   - Authentication attempts
-   - Rate limiting status
-   - Suspicious activity detection
-
-4. **Business Metrics**
-   - User engagement
-   - Feature usage
-   - Conversion rates
-   - Performance benchmarks
-
----
-
-## 📧 Notification System
-
-### **Alert Levels**
-
-- **🔴 Critical**: Service downtime, security breaches
-- **🟡 Warning**: Performance degradation, high error rates
-- **🔵 Info**: Deployments, maintenance windows
-
-### **Notification Channels**
-
-- **Slack**: Real-time alerts and updates
-- **Email**: Daily/weekly reports and critical alerts
-- **GitHub Issues**: Automatic issue creation for critical problems
-- **Dashboard**: Real-time monitoring interface
-
----
-
-## 🔄 Rollback Strategy
-
-### **Automatic Rollback Triggers**
-
-- Health check failures
-- Performance threshold breaches
-- Error rate spikes
-- Security vulnerability detection
-
-### **Manual Rollback Process**
-
+### **📊 Pipeline Monitoring**
 ```bash
-# Trigger manual rollback
-gh workflow run deployment-automation \
-  --field environment=production \
-  --field rollback=true
+# Check pipeline status
+gh run list --workflow=comprehensive-ci-cd.yml
 
-# Or via GitHub Actions UI
-# 1. Go to Actions tab
-# 2. Select "Deployment Automation"
-# 3. Click "Run workflow"
-# 4. Set environment and rollback=true
+# View specific run details
+gh run view <run-id>
+
+# Download artifacts
+gh run download <run-id> --name=test-results
 ```
 
 ---
 
-## 📊 Reporting
+## **🎯 Best Practices**
 
-### **Automated Reports**
+### **📝 Commit Guidelines**
+- **Semantic Commits** - Use conventional commit format
+- **Descriptive Messages** - Clear commit descriptions
+- **Branch Protection** - Protect main branch
+- **PR Reviews** - Code review requirements
 
-- **Daily**: Health and performance summary
-- **Weekly**: Comprehensive analysis and trends
-- **Monthly**: Executive summary and recommendations
-- **Release**: Deployment and release notes
+### **🔧 Pipeline Maintenance**
+- **Regular Updates** - Keep dependencies updated
+- **Security Scans** - Monitor security vulnerabilities
+- **Performance Monitoring** - Track pipeline performance
+- **Documentation** - Keep documentation current
 
-### **Report Distribution**
-
-- **Slack**: Daily summaries and alerts
-- **Email**: Weekly reports to stakeholders
-- **GitHub**: Issues and discussions
-- **Dashboard**: Real-time metrics
-
----
-
-## 🛠️ Maintenance
-
-### **Regular Tasks**
-
-- **Weekly**: Review performance metrics and alerts
-- **Monthly**: Update dependencies and security scans
-- **Quarterly**: Review and optimize CI/CD pipeline
-- **Annually**: Major infrastructure updates
-
-### **Troubleshooting**
-
-1. **Pipeline Failures**: Check logs in GitHub Actions
-2. **Deployment Issues**: Review deployment logs and health checks
-3. **Performance Issues**: Analyze monitoring dashboard
-4. **Security Issues**: Review security scan results
+### **🚀 Deployment Best Practices**
+- **Gradual Rollout** - Staged deployment approach
+- **Health Checks** - Post-deployment verification
+- **Rollback Planning** - Emergency rollback procedures
+- **Monitoring** - Continuous application monitoring
 
 ---
 
-## 🎯 Best Practices
+## **📊 Troubleshooting**
 
-### **Development Workflow**
+### **🔍 Common Issues**
+- **Secret Configuration** - Verify all secrets are set
+- **Permission Errors** - Check GitHub Actions permissions
+- **Build Failures** - Review build logs for errors
+- **Deployment Issues** - Verify deployment configuration
+- **Test Failures** - Analyze test failure reports
 
-1. **Feature Branches**: Create branches for new features
-2. **PR Reviews**: Require code review before merge
-3. **Automated Testing**: Ensure tests pass before deployment
-4. **Incremental Deployment**: Deploy to staging first
-5. **Monitoring**: Monitor after every deployment
-
-### **CI/CD Optimization**
+### **🛠️ Debugging Steps**
+1. **Check Logs** - Review workflow execution logs
+2. **Verify Configuration** - Validate all settings
+3. **Test Locally** - Reproduce issues locally
+4. **Check Dependencies** - Verify dependency versions
+5. **Monitor Resources** - Check resource utilization
 
 1. **Parallel Execution**: Run tests in parallel where possible
 2. **Caching**: Use build and dependency caching

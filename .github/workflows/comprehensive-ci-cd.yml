@@ -1,0 +1,389 @@
+name: Comprehensive CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+        - test
+      run_tests:
+        description: 'Run full test suite'
+        required: false
+        default: true
+        type: boolean
+      skip_build:
+        description: 'Skip build step (testing only)'
+        required: false
+        default: false
+        type: boolean
+      deploy_web:
+        description: 'Deploy web version'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+  NODE_VERSION: '20.x'
+  JAVA_VERSION: '17'
+  RUBY_VERSION: '3.0'
+
+permissions:
+  contents: read
+  packages: write
+  pull-requests: write
+  checks: write
+  statuses: write
+  pages: write
+  id-token: write
+
+jobs:
+  # Code Quality & Analysis
+  code-quality:
+    name: Code Quality & Analysis
+    runs-on: ubuntu-latest
+    outputs:
+      quality-passed: ${{ steps.quality.outputs.passed }}
+      coverage-percentage: ${{ steps.coverage.outputs.percentage }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: Format check
+        run: dart format --set-exit-if-changed .
+
+      - name: Run tests with coverage
+        run: flutter test --coverage --no-sound-null-safety
+
+      - name: Generate coverage report
+        run: |
+          genhtml coverage/lcov.info -o coverage/html
+          echo "percentage=$(lcov --summary coverage/lcov.info | grep -E '[0-9]+%' | tail -1 | awk '{print $1}' | sed 's/%//')" >> $GITHUB_OUTPUT
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+      - name: Quality gate
+        id: quality
+        run: |
+          COVERAGE=${{ steps.coverage.outputs.percentage }}
+          if [[ $COVERAGE -ge 80 ]]; then
+            echo "passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "passed=false" >> $GITHUB_OUTPUT
+            echo "Coverage too low: $COVERAGE%"
+            exit 1
+          fi
+
+  # Security Scanning
+  security-scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run security scan
+        run: |
+          flutter pub deps --style=tree > deps.txt
+          # Check for known vulnerable packages
+          dart pub audit
+
+      - name: CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: dart
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v3
+
+  # Build Applications
+  build-apps:
+    name: Build Applications
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan]
+    if: needs.code-quality.outputs.quality-passed == 'true' && github.event.inputs.skip_build != 'true'
+    strategy:
+      matrix:
+        platform: [android, web, ios]
+        include:
+          - platform: android
+            build-command: flutter build apk --release
+            artifact-path: build/app/outputs/flutter-apk/app-release.apk
+            artifact-name: android-release.apk
+          - platform: web
+            build-command: flutter build web --release --web-renderer canvaskit
+            artifact-path: build/web
+            artifact-name: web-build
+          - platform: ios
+            build-command: flutter build ios --release --no-codesign
+            artifact-path: build/ios/Release-iphoneos
+            artifact-name: ios-build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Java (for Android)
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build ${{ matrix.platform }}
+        run: ${{ matrix.build-command }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: ${{ matrix.artifact-path }}
+          retention-days: 30
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: build-apps
+    if: github.event.inputs.run_tests == 'true' || github.event.inputs.run_tests == ''
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Download Android build
+        uses: actions/download-artifact@v3
+        with:
+          name: android-release.apk
+          path: ./builds/
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run integration tests
+        run: |
+          flutter drive --driver=test_driver/app_test.dart --target=integration_test/app_test.dart
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-test-results
+          path: test_driver/
+          retention-days: 7
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, build-apps]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.event.inputs.environment == 'staging'
+    environment: 
+      name: staging
+      url: https://vedanta-trade-staging.web.app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Download web build
+        if: github.event.inputs.deploy_web == 'true' || github.event.inputs.deploy_web == ''
+        uses: actions/download-artifact@v3
+        with:
+          name: web-build
+          path: build/web/
+
+      - name: Deploy to Firebase Hosting
+        if: github.event.inputs.deploy_web == 'true' || github.event.inputs.deploy_web == ''
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: vedanta-trade-staging
+
+      - name: Deploy to App Store (TestFlight)
+        if: github.event.inputs.environment == 'staging'
+        run: |
+          echo "Deploying to TestFlight..."
+          # Add TestFlight deployment logic here
+
+      - name: Deploy to Google Play (Internal Testing)
+        if: github.event.inputs.environment == 'staging'
+        run: |
+          echo "Deploying to Google Play Internal Testing..."
+          # Add Google Play deployment logic here
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, build-apps, integration-tests]
+    if: github.ref == 'refs/heads/main' && github.event.inputs.environment == 'production'
+    environment: 
+      name: production
+      url: https://vedanta-trade.app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Download production builds
+        uses: actions/download-artifact@v3
+        with:
+          name: android-release.apk
+          path: ./builds/
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          draft: false
+          prerelease: false
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          channelId: live
+          projectId: vedanta-trade-prod
+
+      - name: Deploy to App Store
+        run: |
+          echo "Deploying to App Store..."
+          # Add App Store deployment logic here
+
+      - name: Deploy to Google Play
+        run: |
+          echo "Deploying to Google Play..."
+          # Add Google Play deployment logic here
+
+  # Performance Testing
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.12.x
+
+      - name: Run Lighthouse CI
+        run: |
+          lhci autorun
+          lhci upload --target=temporary-public-storage
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  # Notification
+  notify:
+    name: Notify Team
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+
+      - name: Notify Email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "CI/CD Pipeline Failed - VedantaTrade"
+          body: |
+            The CI/CD pipeline failed for VedantaTrade.
+            
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref }}
+            Workflow: ${{ github.workflow }}
+            
+            Please check the GitHub Actions for details.
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: ${{ secrets.EMAIL_USERNAME }}

@@ -2,9 +2,8 @@ name: Deployment Automation
 
 on:
   push:
-    branches: [ main ]
-    tags:
-      - 'v*.*.*'
+    branches: [ main, staging ]
+    tags: [ 'v*' ]
   workflow_dispatch:
     inputs:
       environment:
@@ -16,12 +15,18 @@ on:
         - staging
         - production
         - test
-      version:
-        description: 'Version to deploy (auto-detected from tag if available)'
+      deploy_web:
+        description: 'Deploy web version'
         required: false
-        type: string
-      skip_tests:
-        description: 'Skip pre-deployment tests'
+        default: true
+        type: boolean
+      deploy_android:
+        description: 'Deploy Android APK'
+        required: false
+        default: true
+        type: boolean
+      deploy_ios:
+        description: 'Deploy iOS build'
         required: false
         default: false
         type: boolean
@@ -39,11 +44,16 @@ env:
 permissions:
   contents: read
   packages: write
-  deployments: write
+  pull-requests: write
+  checks: write
+  statuses: write
+  pages: write
+  id-token: write
 
 jobs:
-  # Pre-deployment validation
-  pre-deployment:
+  # Build Applications
+  build:
+    name: Build Applications
     name: Pre-deployment Validation
     runs-on: ubuntu-latest
     outputs:
