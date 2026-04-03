@@ -78,7 +78,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                 width: 250, height: 250,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.blueAccent.withOpacity(0.05),
+                  color: Colors.blue.withOpacity(0.05),
                 ),
               ),
             ),
@@ -90,7 +90,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.lock_reset, size: 70, color: Colors.blueAccent),
+                      const Icon(Icons.lock_reset, size: 70, color: Colors.blue),
                       const SizedBox(height: 16),
                       Text(
                         _isResetMode ? 'New Password' : 'Reset Access',
@@ -154,7 +154,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                         onPressed: () => context.go('/login'),
                         child: const Text(
                           'Back to Login',
-                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600),
+                          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],

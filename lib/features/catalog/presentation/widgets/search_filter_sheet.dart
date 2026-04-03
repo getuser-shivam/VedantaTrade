@@ -54,7 +54,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
               ),
               TextButton(
                 onPressed: _clearFilters,
-                child: const Text('Reset', style: TextStyle(color: Colors.blueAccent)),
+                child: const Text('Reset', style: TextStyle(color: Colors.blue)),
               ),
             ],
           ),

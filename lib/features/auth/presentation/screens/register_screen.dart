@@ -74,7 +74,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 width: 300, height: 300,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.blueAccent.withOpacity(0.05),
+                  color: Colors.blue.withOpacity(0.05),
                 ),
               ),
             ),
@@ -86,7 +86,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.app_registration, size: 60, color: Colors.blueAccent),
+                      const Icon(Icons.app_registration, size: 60, color: Colors.blue),
                       const SizedBox(height: 16),
                       const Text(
                         'Join VedantaTrade',
@@ -151,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     value: _agreeToTerms,
                                     onChanged: (v) => setState(() => _agreeToTerms = v ?? false),
                                     side: const BorderSide(color: Colors.white24),
-                                    activeColor: Colors.blueAccent,
+                                    activeColor: Colors.blue,
                                   ),
                                   const Expanded(
                                     child: Text(
@@ -177,7 +177,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onPressed: () => context.go('/login'),
                         child: const Text(
                           'Already have an account? Sign in',
-                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600),
+                          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],

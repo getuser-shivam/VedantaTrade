@@ -249,7 +249,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.category, size: 40, color: Colors.blueAccent),
+                const Icon(Icons.category, size: 40, color: Colors.blue),
                 const SizedBox(height: 12),
                 Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold)),
               ],

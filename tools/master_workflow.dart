@@ -962,20 +962,7 @@ void main(List<String> args) async {
     debugPrint('');
   }
 
-  /// Install dependencies
-  static Future<void> installDependencies() async {
-    debugPrint('📦 Installing dependencies...');
-    
-    // Frontend
-    debugPrint('  Installing Flutter packages...');
-    await Process.run('flutter', ['pub', 'get'], workingDirectory: projectRoot);
-    
-    // Backend
-    final backendDir = Directory('$projectRoot/backend');
-    if (backendDir.existsSync()) {
-      debugPrint('  Installing npm packages...');
-      await Process.run('npm', ['install'], workingDirectory: backendDir.path);
-    }
+  static String get projectRoot => Directory.current.path;
     
     debugPrint('  ✅ Dependencies installed\n');
   }

@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: 300, height: 300,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.blueAccent.withOpacity(0.1),
+                  color: Colors.blue.withOpacity(0.1),
                 ),
               ),
             ),
@@ -92,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.medication, size: 80, color: Colors.blueAccent),
+                      const Icon(Icons.medication, size: 80, color: Colors.blue),
                       const SizedBox(height: 16),
                       const Text(
                         'VedantaTrade',
@@ -153,14 +153,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () => context.go('/auth/forgot-password'),
                         child: const Text(
                           'Forgot Password?',
-                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600),
+                          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
                         ),
                       ),
                       TextButton(
                         onPressed: () => context.go('/auth/register'),
                         child: const Text(
                           'Don\'t have access? Register',
-                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600),
+                          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
