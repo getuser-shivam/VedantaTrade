@@ -1,7 +1,9 @@
 # VedantaTrade: Enterprise Pharmaceutical Distribution (Nepal)
 
-[![Flutter CI](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/flutter-ci.yml/badge.svg)](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/flutter-ci.yml)
-[![Deploy](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/deploy.yml/badge.svg)](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/deploy.yml)
+[![Enhanced CI/CD](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/enhanced-ci-cd.yml/badge.svg)](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/enhanced-ci-cd.yml)
+[![Test Automation](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/test-automation.yml/badge.svg)](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/test-automation.yml)
+[![Deployment Automation](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/deployment-automation.yml/badge.svg)](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/deployment-automation.yml)
+[![Monitoring & Alerting](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/monitoring-alerting.yml/badge.svg)](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/monitoring-alerting.yml)
 [![GitHub Pages](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/github-pages.yml/badge.svg)](https://getuser-shivam.github.io/VedantaTrade/)
 [![codecov](https://codecov.io/gh/getuser-shivam/VedantaTrade/branch/main/graph/badge.svg)](https://codecov.io/gh/getuser-shivam/VedantaTrade)
 
@@ -11,7 +13,34 @@ VedantaTrade is a hardened, enterprise-grade pharmaceutical distribution platfor
 
 ---
 
-## ✨ Latest Features (v3.2.0-alpha)
+## ✨ Latest Features (v3.2.1-alpha)
+
+### 🚀 Comprehensive CI/CD Pipeline
+- **Enhanced CI/CD Workflow**: Automated quality checks, testing, and deployment
+- **Test Automation Suite**: Unit, widget, integration, E2E, performance, and accessibility tests
+- **Deployment Automation**: Multi-platform deployment with rollback capabilities
+- **Monitoring & Alerting**: Real-time health checks, performance monitoring, and security scanning
+- **Release Management**: Automated version tagging and GitHub releases
+
+### 🛠️ Advanced Development Tools
+- **Master Workflow**: Complete development lifecycle management
+- **GitHub Automation**: Repository management and release automation
+- **Development Workflow**: Day-to-day development tasks and code analysis
+- **Code Quality Tools**: Comprehensive linting, formatting, and security scanning
+
+### 🎨 Enhanced UI Components
+- **Micro-interactions**: Advanced button animations and user feedback
+- **Responsive Design**: Adaptive layouts for all screen sizes
+- **Accessibility Widgets**: WCAG compliant components with semantic labels
+- **Enhanced Loading**: Multiple loading animations with glassmorphic effects
+- **Glassmorphic Design**: Premium UI with consistent branding
+
+### 🔧 Code Quality Improvements
+- **Print Statement Cleanup**: All print statements replaced with debugPrint
+- **Barrel Export Optimization**: Removed non-existent file references
+- **Import Optimization**: Cleaned up unused dependencies
+- **Static Analysis**: Reduced lint issues from 2,319+ to 171
+- **Production Readiness**: All critical issues resolved
 
 ### 🗺️ Geospatial Field Force
 - **Background GPS Service**: Continuous MR tracking with persistent storage
