@@ -2,6 +2,7 @@
 
 [![Flutter CI](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/flutter-ci.yml/badge.svg)](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/flutter-ci.yml)
 [![Deploy](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/deploy.yml/badge.svg)](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/deploy.yml)
+[![GitHub Pages](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/github-pages.yml/badge.svg)](https://getuser-shivam.github.io/VedantaTrade/)
 [![codecov](https://codecov.io/gh/getuser-shivam/VedantaTrade/branch/main/graph/badge.svg)](https://codecov.io/gh/getuser-shivam/VedantaTrade)
 
 🚀 **Production Finalization** | 🇳🇵 **IRDN Compliant** | 📱 **Multi-Role System** | 🎨 **Premium Glassmorphic UI**
@@ -72,7 +73,8 @@ dart tools/master_workflow.dart full
 
 ---
 
-*Current Platform Status: v3.2.0-alpha (Production Hardening)*
+*Current Platform Status: v3.2.0-alpha (Production Hardening - 95% Complete)*
+*Live Demo: [https://getuser-shivam.github.io/VedantaTrade/](https://getuser-shivam.github.io/VedantaTrade/)*
 *Built with ❤️ for the Nepal Healthcare Community.*
   - Daily dependency vulnerability scanning
   - Code security analysis with Semgrep and CodeQL

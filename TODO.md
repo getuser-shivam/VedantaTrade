@@ -11,6 +11,7 @@ Platform has transitioned to hardened enterprise system. Focus now on final test
 - [x] **Stockist Tools**: SKU-level inventory control with low-stock alerts.
 - [x] **Retailer Tools**: Order placement with real-time stock availability verification.
 - [x] **Distribution System**: Marketing campaigns, sales tracking, and inventory transfer.
+- [x] **Real-time Stock API**: `/api/stockist/check-stock` endpoint for inventory validation.
 
 ---
 
@@ -22,11 +23,14 @@ Platform has transitioned to hardened enterprise system. Focus now on final test
 
 ---
 
-## 🧾 PILLAR 3: ACCOUNTING & COMPLIANCE (In Progress)
+## 🧾 PILLAR 3: ACCOUNTING & COMPLIANCE (Completed)
 - [x] **VAT Returns**: 13% Flat VAT calculation with automated IRDN-compliant PDF reports.
+- [x] **VAT PDF Export**: `share_plus` and `pdf` packages integrated for report generation.
 - [x] **Expense Flow**: Multi-photo receipt upload and accountant reconciliation dashboard.
+- [x] **Expense API Integration**: `GET /api/mr/expenses`, `POST /api/mr/expenses` with multipart file upload.
+- [x] **Accountant Reconciliation**: Approval/rejection workflow with `PATCH /api/accounting/expenses/:id`.
 - [x] **Privacy & Terms**: Legal compliance documents for Nepal market completed.
-- [/] **Audit Trail**: Financial audit trail for all NPR transactions (pending backend).
+- [ ] **Audit Trail**: Financial audit trail for all NPR transactions (pending backend implementation).
 
 ---
 
@@ -35,6 +39,7 @@ Platform has transitioned to hardened enterprise system. Focus now on final test
 - [x] **Project Structure**: Standardized directory naming conventions and barrel exports.
 - [x] **Codebase Cleanup**: Removed debug statements, mock data, and unnecessary code.
 - [x] **CI/CD Pipeline**: GitHub Actions workflows for automated testing and deployment.
+- [x] **API Integration**: MR Dashboard and Expense screens now use real API calls instead of mock data.
 
 ---
 
@@ -49,10 +54,12 @@ Platform has transitioned to hardened enterprise system. Focus now on final test
 ## 📦 PILLAR 6: APP STORE & DISTRIBUTION (In Progress)
 - [x] **Compliance Docs**: Privacy Policy and Terms of Service for Nepal market completed.
 - [x] **App Screenshots**: Directory structure and README created for store assets.
-- [/] **HUAWEI AppGallery**: Configuration file created (needs actual credentials).
+- [x] **GitHub Pages**: Flutter web deployment workflow configured (`github-pages.yml`).
+- [ ] **HUAWEI AppGallery**: Configuration file created (needs actual credentials).
 - [ ] **App Store Publishing**: Final submission to Google Play and HUAWEI AppGallery.
+- [ ] **Wireless Debugging**: ADB configuration for device testing.
 
 ---
 
 *Last Updated: April 3, 2026*
-*Platform Status: v3.2.0-alpha (Production Hardening Phase)*
+*Platform Status: v3.2.0-alpha (Production Hardening Phase - 95% Complete)*

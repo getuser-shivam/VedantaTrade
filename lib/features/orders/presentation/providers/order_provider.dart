@@ -1,121 +1,158 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'package:dio/dio.dart';
+import 'package:vedanta_trade/core/api_config.dart';
 import 'package:vedanta_trade/features/orders/domain/models/order.dart';
 import 'package:vedanta_trade/features/cart/domain/models/cart_item.dart';
 
 class OrderProvider extends ChangeNotifier {
   List<Order> _orders = [];
   bool _isLoading = false;
+  String? _authToken;
 
   List<Order> get orders => _orders;
   bool get isLoading => _isLoading;
 
-  OrderProvider() {
-    _loadOrders();
+  void setAuthToken(String token) {
+    _authToken = token;
   }
 
-  Future<void> _loadOrders() async {
+  Future<void> fetchOrders() async {
+    if (_authToken == null) return;
+    
+    _isLoading = true;
+    notifyListeners();
+    
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final ordersData = prefs.getString('orders');
+      final dio = Dio();
+      final res = await dio.get(
+        '${ApiConfig.baseUrl}/orders',
+        options: Options(headers: {'Authorization': 'Bearer $_authToken'}),
+      );
       
-      if (ordersData != null) {
-        final List<dynamic> decoded = json.decode(ordersData);
-        _orders = decoded.map((order) => Order.fromJson(order)).toList();
-        notifyListeners();
-      }
+      final List<dynamic> data = res.data['data'] ?? [];
+      _orders = data.map((json) => Order.fromJson(json)).toList();
     } catch (e) {
-      debugPrint('Error loading orders: $e');
+      debugPrint('Error fetching orders: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
-  Future<void> _saveOrders() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final ordersData = json.encode(_orders.map((order) => order.toJson()).toList());
-      await prefs.setString('orders', ordersData);
-    } catch (e) {
-      debugPrint('Error saving orders: $e');
-    }
-  }
-
-  Future<String> createOrder({
+  Future<Map<String, dynamic>> createOrder({
     required List<CartItem> cartItems,
     required double totalAmount,
     required double deliveryFee,
     required double finalAmount,
     required String deliveryAddress,
+    required String retailerId,
     String paymentMethod = 'Cash on Delivery',
   }) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      final orderItems = cartItems.map((cartItem) => OrderItem(
-        productId: cartItem.productId,
-        productName: cartItem.productName,
-        productForm: cartItem.productForm,
-        price: cartItem.price,
-        quantity: cartItem.quantity,
-        imageUrl: cartItem.imageUrl,
-      )).toList();
-
-      final order = Order(
-        id: 'ORD${DateTime.now().millisecondsSinceEpoch}',
-        items: orderItems,
-        totalAmount: totalAmount,
-        deliveryFee: deliveryFee,
-        finalAmount: finalAmount,
-        status: 'Processing',
-        orderDate: DateTime.now(),
-        deliveryAddress: deliveryAddress,
-        paymentMethod: paymentMethod,
-        trackingNumber: 'TRK${DateTime.now().millisecondsSinceEpoch}',
+      final dio = Dio();
+      final headers = {'Authorization': 'Bearer $_authToken'};
+      
+      // Check stock availability first
+      final stockCheck = await _checkStockAvailability(cartItems);
+      if (!stockCheck['available']) {
+        return {
+          'success': false,
+          'message': 'Insufficient stock: ${stockCheck['message']}',
+        };
+      }
+      
+      final orderItems = cartItems.map((item) => {
+        'productId': item.productId,
+        'productName': item.productName,
+        'quantity': item.quantity,
+        'price': item.price,
+      }).toList();
+      
+      final payload = {
+        'retailerId': retailerId,
+        'items': orderItems,
+        'totalAmount': totalAmount,
+        'deliveryFee': deliveryFee,
+        'finalAmount': finalAmount,
+        'deliveryAddress': deliveryAddress,
+        'paymentMethod': paymentMethod,
+        'status': 'PENDING',
+      };
+      
+      final res = await dio.post(
+        '${ApiConfig.baseUrl}/stockist/orders',
+        data: payload,
+        options: Options(headers: headers),
       );
-
-      _orders.insert(0, order);
-      await _saveOrders();
       
-      _isLoading = false;
-      notifyListeners();
+      await fetchOrders();
       
-      return order.id;
+      return {
+        'success': true,
+        'orderId': res.data['data']?['id'],
+        'message': 'Order created successfully',
+      };
     } catch (e) {
       debugPrint('Error creating order: $e');
+      return {
+        'success': false,
+        'message': 'Failed to create order: $e',
+      };
+    } finally {
       _isLoading = false;
       notifyListeners();
-      rethrow;
+    }
+  }
+  
+  Future<Map<String, dynamic>> _checkStockAvailability(List<CartItem> items) async {
+    try {
+      final dio = Dio();
+      final headers = {'Authorization': 'Bearer $_authToken'};
+      
+      final productIds = items.map((i) => i.productId).toList();
+      final res = await dio.post(
+        '${ApiConfig.baseUrl}/stockist/check-stock',
+        data: {'productIds': productIds},
+        options: Options(headers: headers),
+      );
+      
+      final stockData = res.data['data'] ?? {};
+      
+      for (final item in items) {
+        final availableStock = stockData[item.productId]?['quantity'] ?? 0;
+        if (item.quantity > availableStock) {
+          return {
+            'available': false,
+            'message': '${item.productName} - Requested: ${item.quantity}, Available: $availableStock',
+          };
+        }
+      }
+      
+      return {'available': true};
+    } catch (e) {
+      return {
+        'available': false,
+        'message': 'Stock check failed: $e',
+      };
     }
   }
 
   Future<void> updateOrderStatus(String orderId, String newStatus) async {
     try {
-      final orderIndex = _orders.indexWhere((order) => order.id == orderId);
-      if (orderIndex != -1) {
-        // Update status
-        final updatedOrder = Order(
-          id: _orders[orderIndex].id,
-          items: _orders[orderIndex].items,
-          totalAmount: _orders[orderIndex].totalAmount,
-          deliveryFee: _orders[orderIndex].deliveryFee,
-          finalAmount: _orders[orderIndex].finalAmount,
-          status: newStatus,
-          orderDate: _orders[orderIndex].orderDate,
-          deliveryDate: newStatus == 'Delivered' ? DateTime.now() : null,
-          deliveryAddress: _orders[orderIndex].deliveryAddress,
-          paymentMethod: _orders[orderIndex].paymentMethod,
-          trackingNumber: _orders[orderIndex].trackingNumber,
-        );
-
-        _orders[orderIndex] = updatedOrder;
-        await _saveOrders();
-        notifyListeners();
-      }
+      final dio = Dio();
+      final headers = {'Authorization': 'Bearer $_authToken'};
+      
+      await dio.patch(
+        '${ApiConfig.baseUrl}/stockist/orders/$orderId',
+        data: {'status': newStatus},
+        options: Options(headers: headers),
+      );
+      
+      await fetchOrders();
     } catch (e) {
       debugPrint('Error updating order status: $e');
     }

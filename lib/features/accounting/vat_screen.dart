@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:vedanta_trade/core/api_config.dart';
+import 'package:vedanta_trade/core/utils/vat_pdf_generator.dart';
+import 'package:vedanta_trade/shared/widgets/toast_notification.dart';
 
 class VatScreen extends StatefulWidget {
   const VatScreen({super.key});
@@ -52,6 +54,14 @@ class _VatScreenState extends State<VatScreen> {
       roleColor: AppTheme.accountantColor,
       navItems: _navItems,
       selectedIndex: 3,
+      actions: [
+        // Export PDF button
+        IconButton(
+          icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+          tooltip: 'Export IRDN PDF',
+          onPressed: _loading || _summary == null ? null : _exportVatPdf,
+        ),
+      ],
       body: _loading
         ? const Center(child: CircularProgressIndicator(color: AppTheme.accountantColor))
         : ListView(
@@ -94,5 +104,23 @@ class _VatScreenState extends State<VatScreen> {
             ],
           ),
     );
+  }
+
+  Future<void> _exportVatPdf() async {
+    try {
+      await VatPdfGenerator.exportAndShare(
+        month: _month,
+        year: _year,
+        summary: _summary!,
+        records: _records,
+      );
+      if (mounted) {
+        context.showSuccess('VAT report exported successfully');
+      }
+    } catch (e) {
+      if (mounted) {
+        context.showError('Failed to export VAT report: $e');
+      }
+    }
   }
 }

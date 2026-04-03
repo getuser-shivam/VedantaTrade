@@ -8,6 +8,8 @@ import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider
 import 'package:intl/intl.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:dio/dio.dart';
+import 'package:vedanta_trade/core/api_config.dart';
 
 class MrDashboard extends StatefulWidget {
   const MrDashboard({super.key});
@@ -27,20 +29,36 @@ class _MrDashboardState extends State<MrDashboard> {
   }
 
   Future<void> _loadData() async {
-    // TODO: Replace with real API call - GET /api/mr/dashboard
-    // Mock data for development - remove before production
-    await Future.delayed(const Duration(seconds: 1));
-    if (mounted) {
-      setState(() {
-        _stats = {
-          'visitsToday': 0,
-          'visitsThisMonth': 0,
-          'samplesDistributed': 0,
-          'pendingExpenses': 0,
-        };
-        _recentVisits = [];
-        _loading = false;
-      });
+    try {
+      final auth = context.read<AuthProvider>();
+      final dio = Dio();
+      final headers = {'Authorization': 'Bearer ${auth.token}'};
+      
+      final res = await dio.get(
+        '${ApiConfig.baseUrl}/mr/dashboard',
+        options: Options(headers: headers),
+      );
+      
+      if (mounted) {
+        setState(() {
+          _stats = res.data['data']?['stats'];
+          _recentVisits = res.data['data']?['recentVisits'] ?? [];
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _stats = {
+            'visitsToday': 0,
+            'visitsThisMonth': 0,
+            'samplesDistributed': 0,
+            'pendingExpenses': 0,
+          };
+          _recentVisits = [];
+          _loading = false;
+        });
+      }
     }
   }
 

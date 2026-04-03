@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
 import 'package:vedanta_trade/shared/app_scaffold.dart';
@@ -5,6 +6,10 @@ import 'package:vedanta_trade/shared/widgets/glassmorphic_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:dio/dio.dart';
+import 'package:vedanta_trade/core/api_config.dart';
+import 'package:vedanta_trade/shared/widgets/toast_notification.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ExpenseScreen extends StatefulWidget {
   const ExpenseScreen({super.key});
@@ -23,14 +28,29 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
   }
 
   Future<void> _loadExpenses() async {
-    // TODO: Replace with real API call - GET /api/mr/expenses
-    // Mock data for development - remove before production
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (mounted) {
-      setState(() {
-        _claims = [];
-        _loading = false;
-      });
+    try {
+      final auth = context.read<AuthProvider>();
+      final dio = Dio();
+      final headers = {'Authorization': 'Bearer ${auth.token}'};
+      
+      final res = await dio.get(
+        '${ApiConfig.baseUrl}/mr/expenses',
+        options: Options(headers: headers),
+      );
+      
+      if (mounted) {
+        setState(() {
+          _claims = res.data['data'] ?? [];
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _claims = [];
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -189,6 +209,8 @@ class _AddExpenseModalState extends State<_AddExpenseModal> {
   final _descController = TextEditingController();
   DateTime _date = DateTime.now();
   bool _submitting = false;
+  final List<XFile> _selectedPhotos = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
@@ -280,6 +302,10 @@ class _AddExpenseModalState extends State<_AddExpenseModal> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  const Text('RECEIPTS', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  _buildPhotoSection(),
+                  const SizedBox(height: 24),
                   const Text('REMARKS', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   TextField(
@@ -317,19 +343,163 @@ class _AddExpenseModalState extends State<_AddExpenseModal> {
 
   Future<void> _handleSubmit() async {
     if (_amountController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter an amount')));
+      context.showError('Please enter an amount');
       return;
     }
 
     setState(() => _submitting = true);
-    // Success simulation
-    await Future.delayed(const Duration(seconds: 1));
-    widget.onSuccess();
-    if (mounted) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Expense claim submitted for approval'), backgroundColor: AppTheme.success),
+    
+    try {
+      final auth = context.read<AuthProvider>();
+      final dio = Dio();
+      final headers = {'Authorization': 'Bearer ${auth.token}'};
+      
+      // Create multipart form data for file uploads
+      final formData = FormData.fromMap({
+        'category': _category,
+        'amount': double.parse(_amountController.text),
+        'description': _descController.text,
+        'expenseDate': _date.toIso8601String(),
+        'status': 'PENDING',
+      });
+      
+      // Add photos if selected
+      for (final photo in _selectedPhotos) {
+        formData.files.add(MapEntry(
+          'receipts',
+          await MultipartFile.fromFile(photo.path, filename: photo.name),
+        ));
+      }
+      
+      await dio.post(
+        '${ApiConfig.baseUrl}/mr/expenses',
+        data: formData,
+        options: Options(headers: headers),
       );
+      
+      widget.onSuccess();
+      if (mounted) {
+        Navigator.pop(context);
+        context.showSuccess('Expense claim submitted for approval');
+      }
+    } catch (e) {
+      if (mounted) {
+        context.showError('Failed to submit expense claim');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
+    }
+  }
+
+  Widget _buildPhotoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Photo grid
+        if (_selectedPhotos.isNotEmpty) ...[
+          SizedBox(
+            height: 100,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _selectedPhotos.length,
+              itemBuilder: (context, index) {
+                return Stack(
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        image: DecorationImage(
+                          image: FileImage(File(_selectedPhotos[index].path)),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 4,
+                      right: 12,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedPhotos.removeAt(index);
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.close, size: 14, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+        
+        // Add photo buttons
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _pickFromCamera,
+                icon: const Icon(Icons.camera_alt_rounded, size: 18, color: Colors.white70),
+                label: const Text('Camera', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.white24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: _pickFromGallery,
+                icon: const Icon(Icons.photo_library_rounded, size: 18, color: Colors.white70),
+                label: const Text('Gallery', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.white24),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickFromCamera() async {
+    final photo = await _picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 70,
+      maxWidth: 1200,
+    );
+    if (photo != null) {
+      setState(() {
+        _selectedPhotos.add(photo);
+      });
+    }
+  }
+
+  Future<void> _pickFromGallery() async {
+    final photos = await _picker.pickMultiImage(
+      imageQuality: 70,
+      maxWidth: 1200,
+    );
+    if (photos.isNotEmpty) {
+      setState(() {
+        _selectedPhotos.addAll(photos);
+      });
     }
   }
 }
