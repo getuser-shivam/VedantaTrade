@@ -229,7 +229,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => _LogVisitModal(
         onSuccess: () => _loadVisits(),
-        getCurrentLocation: _getCurrentHighAccuracyLocation,
+        getCurrentLocation: _gpsService.getCurrentPosition,
       ),
     );
   }
