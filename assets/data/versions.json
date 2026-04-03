@@ -1,5 +1,42 @@
 [
   {
+    "version": "3.2.0-alpha",
+    "releaseDate": "2026-04-03",
+    "status": "Alpha",
+    "buildNumber": "3200",
+    "platform": "Multi-Platform",
+    "description": "Production Hardening Phase: CI/CD, Legal Compliance, Clean Architecture, and Enhanced UX.",
+    "screenshots": [
+      "assets/screenshots/v3_2_0_gps_tracking.png",
+      "assets/screenshots/v3_2_0_product_catalog.png",
+      "assets/screenshots/v3_2_0_distribution.png",
+      "assets/screenshots/v3_2_0_ui_transitions.png"
+    ],
+    "features": [
+      "Background GPS Service with Persistent Storage",
+      "High-Accuracy GPS Validation (<50m Requirement)",
+      "Product Catalog with Clean Architecture",
+      "Distribution & Marketing Management",
+      "Sales Analytics & Campaign Tracking",
+      "Privacy Policy & Terms of Service (Nepal)",
+      "Enhanced UI/UX: Transitions, Skeleton Loading, Toast Notifications",
+      "CI/CD Pipeline with GitHub Actions",
+      "Project Structure Standardization"
+    ],
+    "changelog": [
+      "Implemented BackgroundGpsService for continuous MR tracking",
+      "Added mandatory <50m GPS accuracy validation",
+      "Created Product Catalog with Clean Architecture pattern",
+      "Built Distribution & Marketing Management system",
+      "Added Privacy Policy and Terms of Service for Nepal market",
+      "Enhanced UX with page transitions and skeleton loading",
+      "Implemented toast notification system",
+      "Setup CI/CD pipeline with automated testing",
+      "Standardized project structure with barrel exports"
+    ],
+    "isFeatured": true
+  },
+  {
     "version": "3.1.1-alpha",
     "releaseDate": "2026-03-30",
     "status": "Alpha",
