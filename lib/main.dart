@@ -6,7 +6,7 @@ import 'package:vedanta_trade/providers/theme_provider.dart';
 import 'package:vedanta_trade/features/catalog/presentation/providers/product_provider.dart';
 import 'package:vedanta_trade/features/catalog/data/services/product_catalog_service.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(
@@ -14,10 +14,10 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProxyProvider<AuthProvider, ProductProvider>(
-          create: (_) => ProductProvider(catalogService: const ProductCatalogService()),
+          create: (_) => ProductProvider(catalogService: ProductCatalogService()),
           update: (context, auth, previous) => ProductProvider(
-            catalogService: const ProductCatalogService(),
-            token: auth.token,
+            catalogService: ProductCatalogService(),
+            token: auth?.token,
           ),
         ),
       ],

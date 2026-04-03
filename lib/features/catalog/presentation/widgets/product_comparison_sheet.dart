@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../shared/widgets/glassmorphic_widgets.dart';
-import '../models/product.dart';
+import '../../domain/models/product.dart';
 
 class ProductComparisonSheet extends StatelessWidget {
   final List<Product> products;

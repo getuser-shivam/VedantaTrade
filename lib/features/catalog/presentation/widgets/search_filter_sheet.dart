@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../shared/widgets/glassmorphic_widgets.dart';
-import '../models/product.dart';
+import '../../domain/models/product.dart';
+import '../../../app/theme/app_theme.dart';
 
 class SearchFilterSheet extends StatefulWidget {
   final List<Category> categories;
@@ -78,9 +79,14 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
 
           const SizedBox(height: 30),
           
-          GlassmorphicButton(
-            text: 'Apply Filters',
+          ElevatedButton(
             onPressed: _applyFilters,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+            ),
+            child: const Text('Apply Filters', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -96,12 +102,27 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: options.map((option) {
+          children: options.map<Widget>((option) {
             final isSelected = selectedValue == option;
-            return GlassmorphicChip(
-              label: option,
-              selected: isSelected,
-              onTap: () => onSelected(isSelected ? null : option),
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: isSelected
+                    ? LinearGradient(colors: [Colors.blue, Colors.blue.withOpacity(0.8)])
+                    : LinearGradient(colors: [Colors.white.withOpacity(0.05), Colors.white.withOpacity(0.02)]),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? Colors.blue : Colors.white.withOpacity(0.2),
+                ),
+              ),
+              child: Text(
+                option,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.white70,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 12,
+                ),
+              ),
             );
           }).toList(),
         ),

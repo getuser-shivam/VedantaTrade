@@ -11,8 +11,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:vedanta_trade/features/accountant/widgets/vat_report_card.dart';
-import 'package:vedanta_trade/features/accountant/widgets/expense_reconciliation_card.dart';
+import 'package:vedanta_trade/features/accountant/widgets/accountant_widgets.dart';
 
 /// Accountant Dashboard with VAT Returns and Expense Reconciliation
 class AccountantDashboard extends StatefulWidget {
