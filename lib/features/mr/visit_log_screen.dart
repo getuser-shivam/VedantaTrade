@@ -88,29 +88,12 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
   }
 
   Future<void> _loadVisits() async {
-    // Mocking for Phase 5 demo
+    // TODO: Replace with real API call - GET /api/mr/visits
+    // Mock data for development - remove before production
     await Future.delayed(const Duration(seconds: 1));
     if (mounted) {
       setState(() {
-        _visits = [
-          {
-            'doctor': {'name': 'Dr. Santosh Mahaseth', 'clinicName': 'Janakpur City Hospital', 'specialization': 'Cardiologist'},
-            'visitType': 'ROUTINE',
-            'visitDate': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
-            'notes': 'Discussed new range of hypertension medications. Sample provided.',
-            'nextFollowUp': DateTime.now().add(const Duration(days: 14)).toIso8601String(),
-            'latitude': 26.7288,
-            'longitude': 85.9260,
-          },
-          {
-            'doctor': {'name': 'Dr. Anjali Jha', 'clinicName': 'Jha Poly Clinic', 'specialization': 'Pediatrician'},
-            'visitType': 'SAMPLE',
-            'visitDate': DateTime.now().subtract(const Duration(days: 1, hours: 4)).toIso8601String(),
-            'notes': 'Follow-up on previous sample results. Positive feedback.',
-            'latitude': 26.7310,
-            'longitude': 85.9220,
-          },
-        ];
+        _visits = [];
         _loading = false;
       });
     }

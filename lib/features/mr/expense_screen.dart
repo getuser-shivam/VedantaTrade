@@ -23,33 +23,12 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
   }
 
   Future<void> _loadExpenses() async {
-    // Mocking for Phase 5 demo
+    // TODO: Replace with real API call - GET /api/mr/expenses
+    // Mock data for development - remove before production
     await Future.delayed(const Duration(milliseconds: 800));
     if (mounted) {
       setState(() {
-        _claims = [
-          {
-            'category': 'TRAVEL',
-            'amount': 450,
-            'description': 'Fuel for Janakpur territory coverage',
-            'expenseDate': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
-            'status': 'PENDING',
-          },
-          {
-            'category': 'FOOD',
-            'amount': 220,
-            'description': 'Lunch during field visit',
-            'expenseDate': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
-            'status': 'APPROVED',
-          },
-          {
-            'category': 'STAY',
-            'amount': 1800,
-            'description': 'Hotel stay for overnight coverage',
-            'expenseDate': DateTime.now().subtract(const Duration(days: 3)).toIso8601String(),
-            'status': 'APPROVED',
-          },
-        ];
+        _claims = [];
         _loading = false;
       });
     }

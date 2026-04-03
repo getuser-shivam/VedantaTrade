@@ -92,11 +92,9 @@ class BackgroundGpsService {
       );
 
       _trackingStatusController.add(true);
-      debugPrint('BackgroundGPS: Tracking started for MR: $mrId');
       
       return true;
     } catch (e) {
-      debugPrint('BackgroundGPS: Start tracking error: $e');
       _isTracking = false;
       return false;
     }
@@ -111,8 +109,6 @@ class BackgroundGpsService {
     
     // Persist final trajectory
     await _persistTrajectory();
-    
-    debugPrint('BackgroundGPS: Tracking stopped. Points captured: ${_trajectoryPoints.length}');
   }
 
   /// Handle position updates
@@ -153,7 +149,7 @@ class BackgroundGpsService {
       await prefs.setString('bg_gps_started_at', _trackingStartedAt?.toIso8601String() ?? '');
       await prefs.setString('bg_gps_mr_id', _currentMrId ?? '');
     } catch (e) {
-      debugPrint('BackgroundGPS: Persist error: $e');
+      // Silent fail - will retry on next persist cycle
     }
   }
 
@@ -179,7 +175,7 @@ class BackgroundGpsService {
       
       _currentMrId = mrId;
     } catch (e) {
-      debugPrint('BackgroundGPS: Load error: $e');
+      // Silent fail on load - start fresh
     }
   }
 
@@ -209,7 +205,6 @@ class BackgroundGpsService {
         timeLimit: const Duration(seconds: 15),
       );
     } catch (e) {
-      debugPrint('BackgroundGPS: Get current position error: $e');
       return null;
     }
   }

@@ -27,28 +27,18 @@ class _MrDashboardState extends State<MrDashboard> {
   }
 
   Future<void> _loadData() async {
-    // Mocking data for now as per instructions to ensure UI is ready
+    // TODO: Replace with real API call - GET /api/mr/dashboard
+    // Mock data for development - remove before production
     await Future.delayed(const Duration(seconds: 1));
     if (mounted) {
       setState(() {
         _stats = {
-          'visitsToday': 8,
-          'visitsThisMonth': 42,
-          'samplesDistributed': 156,
-          'pendingExpenses': 1250,
+          'visitsToday': 0,
+          'visitsThisMonth': 0,
+          'samplesDistributed': 0,
+          'pendingExpenses': 0,
         };
-        _recentVisits = [
-          {
-            'doctor': {'name': 'Dr. Santosh Mahaseth', 'clinicName': 'Janakpur City Hospital'},
-            'visitType': 'ROUTINE',
-            'visitDate': DateTime.now().toIso8601String(),
-          },
-          {
-            'doctor': {'name': 'Dr. Anjali Jha', 'clinicName': 'Jha Poly Clinic'},
-            'visitType': 'SAMPLE',
-            'visitDate': DateTime.now().subtract(const Duration(hours: 3)).toIso8601String(),
-          },
-        ];
+        _recentVisits = [];
         _loading = false;
       });
     }
