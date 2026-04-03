@@ -6,7 +6,33 @@
 
 🚀 **Production Finalization** | 🇳🇵 **IRDN Compliant** | 📱 **Multi-Role System** | 🎨 **Premium Glassmorphic UI**
 
-VedantaTrade is a hardened, enterprise-grade pharmaceutical distribution platform specifically engineered for the Nepal market. It transforms complex supply chain logistics into a seamless, role-based ecosystem featuring advanced geospatial field force tracking and real-time inventory dynamics.
+VedantaTrade is a hardened, enterprise-grade pharmaceutical distribution platform specifically engineered for the Nepal market. It transforms complex supply chain logistics into a seamless, role-based ecosystem featuring advanced geospatial field force tracking, real-time inventory dynamics, and comprehensive marketing management.
+
+---
+
+## ✨ Latest Features (v3.2.0-alpha)
+
+### 🗺️ Geospatial Field Force
+- **Background GPS Service**: Continuous MR tracking with persistent storage
+- **High-Accuracy Validation**: Mandatory <50m GPS accuracy for visit logging
+- **Live Trajectory**: Real-time movement visualization on interactive maps
+
+### 📦 Product & Distribution
+- **Product Catalog**: Clean Architecture implementation with category filtering
+- **Sales Analytics**: Track product sales by center, campaign, and date
+- **Marketing Campaigns**: Create campaigns with product discounts and special pricing
+- **Inventory Transfer**: Move stock between distribution centers
+
+### 🎨 Premium UI/UX
+- **Page Transitions**: Smooth slide, fade, and scale animations
+- **Skeleton Loading**: Perceived performance enhancement
+- **Toast Notifications**: Non-intrusive user feedback system
+- **Micro-interactions**: Haptic feedback and animated buttons
+
+### 📋 Legal & Compliance
+- **Privacy Policy**: Nepal market-compliant with GDPR-style rights
+- **Terms of Service**: 6-role specific legal provisions
+- **GPS Consent**: Data retention and tracking policies
 
 ---
 
@@ -46,7 +72,7 @@ dart tools/master_workflow.dart full
 
 ---
 
-*Current Platform Status: v3.1.1-alpha (In Depth Finalization)*
+*Current Platform Status: v3.2.0-alpha (Production Hardening)*
 *Built with ❤️ for the Nepal Healthcare Community.*
   - Daily dependency vulnerability scanning
   - Code security analysis with Semgrep and CodeQL

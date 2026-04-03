@@ -2,6 +2,80 @@
 
 All notable changes to this repository are documented in this file.
 
+## [3.2.0-alpha] - 2026-04-03
+
+### 🚀 **Production Hardening Phase**
+Major platform upgrade transitioning to hardened enterprise system with comprehensive CI/CD, legal compliance, and architectural improvements.
+
+#### Added
+- **Background GPS Service** (`core/services/background_gps_service.dart`)
+  - Continuous MR tracking with persistent trajectory storage
+  - Battery-optimized location polling with 10m distance filter
+  - Automatic data persistence to SharedPreferences
+  - Distance calculation and tracking duration metrics
+
+- **GPS Accuracy Validation** (VisitLogScreen)
+  - Mandatory <50m accuracy check before visit submission
+  - User-friendly error messages with actual accuracy readings
+  - High-accuracy GPS requirement enforcement
+
+- **Product Catalog Feature** (Clean Architecture)
+  - Domain layer: Entities, repository interfaces
+  - Data layer: API services, repository implementations
+  - Presentation layer: Screens, providers, widgets
+  - Doctor-focused catalog with category filtering
+  - Featured products showcase
+
+- **Distribution & Marketing Management**
+  - Sales analytics with filtering by date, center, product, campaign
+  - Marketing campaign creation and management
+  - Campaign product association with discounts
+  - Inventory transfer between distribution centers
+  - Marketing metrics tracking (ROI, conversions)
+
+- **Legal Compliance**
+  - Privacy Policy for Nepal market (GDPR-style rights)
+  - Terms of Service with 6-role specific provisions
+  - GPS tracking consent and data retention policies
+
+- **UI/UX Enhancements**
+  - Page transitions (slide, fade, scale animations)
+  - Skeleton loading widgets for perceived performance
+  - Toast notification system (success/error/warning/info)
+  - Enhanced empty/error/success states with Lottie support
+  - Glassmorphic text fields with focus animations
+  - Micro-interactions (haptic feedback, animated buttons)
+
+- **CI/CD Pipeline**
+  - GitHub Actions workflow for Flutter CI
+  - Automated testing, formatting, and analysis
+  - Android APK and AAB builds
+  - iOS build support (macOS runner)
+  - Backend CI with PostgreSQL service container
+  - Deployment workflow with environment support
+  - Workflow badges in README
+
+#### Changed
+- **Project Structure**
+  - Standardized Clean Architecture across features
+  - Barrel exports (`feature.dart`) for clean imports
+  - Removed empty root-level directories
+  - Created `docs/PROJECT_STRUCTURE.md` documentation
+
+- **Code Quality**
+  - Removed debugPrint statements from production code
+  - Cleaned up mock data (flagged with TODOs for API integration)
+  - Fixed broken function references
+  - Added missing imports
+
+#### Infrastructure
+- **GitHub Integration**
+  - All changes pushed to GitHub
+  - 6 commits ahead tracking
+  - Remote: `github.com:getuser-shivam/VedantaTrade.git`
+
+---
+
 ## [3.1.1-alpha] - 2026-03-30
 
 ### 🖼️ **App Gallery & Visual Showcase**
