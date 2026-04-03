@@ -228,7 +228,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _LogVisitModal(
+      builder: (context) => LogVisitModal(
         onSuccess: () => _loadVisits(),
         getCurrentLocation: _getHighAccuracyLocation,
       ),
@@ -257,7 +257,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (context) => const _GpsLoadingDialog(),
+          builder: (context) => const GpsLoadingDialog(),
         );
       }
 

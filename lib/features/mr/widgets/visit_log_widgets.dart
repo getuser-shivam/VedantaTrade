@@ -4,14 +4,14 @@ import 'package:geolocator/geolocator.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
 
 /// GPS Loading Dialog for high-accuracy location capture
-class _GpsLoadingDialog extends StatefulWidget {
-  const _GpsLoadingDialog();
+class GpsLoadingDialog extends StatefulWidget {
+  const GpsLoadingDialog({Key? key}) : super(key: key);
 
   @override
-  State<_GpsLoadingDialog> createState() => _GpsLoadingDialogState();
+  State<GpsLoadingDialog> createState() => _GpsLoadingDialogState();
 }
 
-class _GpsLoadingDialogState extends State<_GpsLoadingDialog> with SingleTickerProviderStateMixin {
+class GpsLoadingDialogState extends State<GpsLoadingDialog> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   int _dots = 0;
@@ -147,20 +147,21 @@ class _GpsLoadingDialogState extends State<_GpsLoadingDialog> with SingleTickerP
 }
 
 /// Enhanced Visit Log Modal with GPS validation
-class _LogVisitModal extends StatefulWidget {
+class LogVisitModal extends StatefulWidget {
   final VoidCallback onSuccess;
   final Future<Position?> Function() getCurrentLocation;
 
-  const _LogVisitModal({
+  const LogVisitModal({
+    Key? key,
     required this.onSuccess,
     required this.getCurrentLocation,
-  });
+  }) : super(key: key);
 
   @override
-  State<_LogVisitModal> createState() => _LogVisitModalState();
+  State<LogVisitModal> createState() => LogVisitModalState();
 }
 
-class _LogVisitModalState extends State<_LogVisitModal> {
+class LogVisitModalState extends State<LogVisitModal> {
   final _doctorController = TextEditingController();
   final _notesController = TextEditingController();
   final _purposeController = TextEditingController();

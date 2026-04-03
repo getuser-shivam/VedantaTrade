@@ -98,30 +98,68 @@ class AuthProvider extends ChangeNotifier {
         await _handleAuthSuccess({
           'token': 'mock_token_${demoUser['role']}',
           'refresh_token': 'mock_refresh',
-          'user': {
-            'role': demoUser['role'],
-            'email': demoUser['email'],
-            'name': demoUser['name'],
-            'user_id': 999,
-          }
+          'user': demoUser,
+          'expires_at': DateTime.now().add(const Duration(days: 1)).toIso8601String(),
         });
         _isLoading = false;
         notifyListeners();
         return true;
-      }
-
-      // 2. Fallback to real API if not a demo role
-      final response = await _authService.login(email, password);
-      if (response['success'] == true) {
-        await _handleAuthSuccess(response);
-        _isLoading = false;
-        notifyListeners();
-        return true;
       } else {
-        _error = response['message'] ?? 'Login failed';
+        // 2. Check biometric authentication first if requested
+        if (useBiometric) {
+          final canCheckBiometrics = await LocalAuthentication().canCheckBiometrics;
+          if (canCheckBiometrics) {
+            final isDeviceSupported = await LocalAuthentication().isDeviceSupported();
+            if (isDeviceSupported) {
+              final didAuthenticate = await LocalAuthentication().authenticate(
+                localizedReason: 'Authenticate to access VedantaTrade',
+                options: const AuthenticationOptions(
+                  biometricOnly: true,
+                  stickyAuth: true,
+                ),
+              );
+
+              if (didAuthenticate) {
+                // Get user from storage for biometric user
+                final userJson = await _storage.read(key: 'user');
+                if (userJson != null) {
+                  final user = json.decode(userJson);
+                  await _handleAuthSuccess({
+                    'token': 'biometric_token_${user['role']}',
+                    'refresh_token': 'biometric_refresh',
+                    'user': user,
+                    'expires_at': DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+                  });
+                  _isLoading = false;
+                  notifyListeners();
+                  return true;
+                } else {
+                  _setError('No user found for biometric authentication');
+                }
+              } else {
+                _setError('Biometric authentication failed');
+              }
+            } else {
+              _setError('Biometric authentication not available');
+            }
+          } else {
+            _setError('Biometric authentication not supported');
+          }
+        } else {
+          // 3. Regular password authentication
+          final response = await _authService.login(email, password);
+          if (response['success'] == true) {
+            await _handleAuthSuccess(response);
+            _isLoading = false;
+            notifyListeners();
+            return true;
+          } else {
+            _setError(response['message'] ?? 'Login failed');
+          }
+        }
       }
     } catch (e) {
-      _error = 'Auth error. Please check your connection.';
+      _setError('An error occurred during login: ${e.toString()}');
     }
 
     _isLoading = false;
@@ -172,6 +210,17 @@ class AuthProvider extends ChangeNotifier {
     _user = response['user'];
     await _storage.write(key: 'token', value: _token);
     await _storage.write(key: 'user', value: json.encode(_user));
+  }
+
+  Future<void> _setError(String error) async {
+    _error = error;
+    notifyListeners();
+  }
+
+  Future<void> toggleBiometric() async {
+    _biometricEnabled = !_biometricEnabled;
+    await _storage.write(key: 'biometric_enabled', value: _biometricEnabled.toString());
+    notifyListeners();
   }
 
   Future<bool> resetPassword(String email) async {

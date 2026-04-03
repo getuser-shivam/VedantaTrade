@@ -3,8 +3,10 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:cross_file/cross_file.dart';
 
 /// IRDN-compliant VAT Return PDF Generator for Nepal
 class VatPdfGenerator {
@@ -23,23 +25,23 @@ class VatPdfGenerator {
     final pdf = pw.Document();
 
     // Load fonts
-    final regularFont = await rootBundle.load('assets/fonts/NotoSans-Regular.ttf');
-    final boldFont = await rootBundle.load('assets/fonts/NotoSans-Bold.ttf');
+    final regularFont = await PdfGoogleFonts.notoSans();
+    final boldFont = await PdfGoogleFonts.notoSansBold();
 
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(40),
-        header: (context) => _buildHeader(context, month, year),
-        footer: (context) => _buildFooter(context),
+        header: (context) => _buildHeader(context, month, year, regularFont, boldFont),
+        footer: (context) => _buildFooter(context, regularFont),
         build: (context) => [
-          _buildCompanyInfo(companyName, panNumber),
+          _buildCompanyInfo(companyName, panNumber, regularFont, boldFont),
           pw.SizedBox(height: 20),
-          _buildSummarySection(summary),
+          _buildSummarySection(summary, regularFont, boldFont),
           pw.SizedBox(height: 20),
-          _buildTransactionsTable(records),
+          _buildTransactionsTable(records, regularFont, boldFont),
           pw.SizedBox(height: 20),
-          _buildDeclarationSection(),
+          _buildDeclarationSection(regularFont, boldFont),
         ],
       ),
     );
@@ -47,197 +49,154 @@ class VatPdfGenerator {
     return pdf.save();
   }
 
-  /// Build PDF Header with IRDN branding
-  static pw.Widget _buildHeader(pw.Context context, int month, int year) {
-    return pw.Column(
-      children: [
-        pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.center,
-          children: [
-            pw.Column(
-              children: [
-                pw.Text(
-                  _irdnHeader,
-                  style: pw.TextStyle(
-                    fontSize: 18,
-                    fontWeight: pw.FontWeight.bold,
-                    color: PdfColors.blue800,
+  /// Build PDF header
+  static pw.Widget _buildHeader(
+    pw.Context context,
+    int month,
+    int year,
+    pw.Font regularFont,
+    pw.Font boldFont,
+  ) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(10),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Text(
+            _irdnHeader,
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
+            font: boldFont,
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text(
+            _formName,
+            style: const pw.TextStyle(fontSize: 9),
+            font: regularFont,
+          ),
+          pw.SizedBox(height: 20),
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'Tax Period',
+                    style: const pw.TextStyle(fontSize: 8),
+                    font: regularFont,
                   ),
-                ),
-                pw.Text(
-                  'वित्त विभाग, अन्तःशुल्क विभाग',
-                  style: pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
-                ),
-                pw.SizedBox(height: 8),
-                pw.Text(
-                  _formName,
-                  style: pw.TextStyle(
-                    fontSize: 14,
-                    fontWeight: pw.FontWeight.bold,
+                  pw.Container(width: 150, height: 1, color: PdfColors.black),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    'Signature of Taxpayer',
+                    style: const pw.TextStyle(fontSize: 8),
+                    font: regularFont,
                   ),
-                ),
-                pw.Text(
-                  'For Period: ${_getMonthName(month)} $year',
-                  style: pw.TextStyle(fontSize: 10),
-                ),
-              ],
-            ),
-          ],
-        ),
-        pw.Divider(thickness: 2, color: PdfColors.blue800),
-        pw.SizedBox(height: 10),
-      ],
+                ],
+              ),
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'Date',
+                    style: const pw.TextStyle(fontSize: 8),
+                    font: regularFont,
+                  ),
+                  pw.Container(width: 150, height: 1, color: PdfColors.black),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    'Signature of Officer',
+                    style: const pw.TextStyle(fontSize: 8),
+                    font: regularFont,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   /// Build company information section
-  static pw.Widget _buildCompanyInfo(String? companyName, String? panNumber) {
+  static pw.Widget _buildCompanyInfo(
+    String? companyName,
+    String? panNumber,
+    pw.Font regularFont,
+    pw.Font boldFont,
+  ) {
     return pw.Container(
-      padding: const pw.EdgeInsets.all(12),
+      padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PdfColors.grey400),
-        borderRadius: pw.BorderRadius.circular(4),
+        border: pw.Border.all(color: PdfColors.grey300),
+        borderRadius: pw.BorderRadius.circular(5),
       ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(
-            'Taxpayer Information',
-            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+            'Company Information',
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+            font: boldFont,
           ),
-          pw.SizedBox(height: 8),
-          pw.Row(
-            children: [
-              pw.Expanded(
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('Business Name:', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
-                    pw.Text(companyName ?? 'VedantaTrade Pharmaceuticals', style: const pw.TextStyle(fontSize: 11)),
-                  ],
-                ),
-              ),
-              pw.Expanded(
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('PAN Number:', style: pw.TextStyle(fontSize: 10, color: PdfColors.grey700)),
-                    pw.Text(panNumber ?? '123456789', style: const pw.TextStyle(fontSize: 11)),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          pw.SizedBox(height: 10),
+          if (companyName != null)
+            pw.Text('Name: $companyName', style: const pw.TextStyle(fontSize: 8), font: regularFont),
+          if (panNumber != null)
+            pw.Text('PAN: $panNumber', style: const pw.TextStyle(fontSize: 8), font: regularFont),
         ],
       ),
     );
   }
 
-  /// Build VAT summary section
-  static pw.Widget _buildSummarySection(Map<String, dynamic> summary) {
-    final totalTaxable = summary['totalTaxable'] ?? 0;
-    final totalVat = summary['totalVat'] ?? 0;
-    final totalVatSales = summary['totalVatSales'] ?? 0;
-    final totalVatPurchases = summary['totalVatPurchases'] ?? 0;
-    final netVatPayable = summary['netVatPayable'] ?? 0;
-
+  /// Build summary section
+  static pw.Widget _buildSummarySection(
+    Map<String, dynamic> summary,
+    pw.Font regularFont,
+    pw.Font boldFont,
+  ) {
     return pw.Container(
-      padding: const pw.EdgeInsets.all(12),
+      padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
-        color: PdfColors.grey100,
-        border: pw.Border.all(color: PdfColors.grey400),
-        borderRadius: pw.BorderRadius.circular(4),
+        border: pw.Border.all(color: PdfColors.grey300),
+        borderRadius: pw.BorderRadius.circular(5),
       ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Text(
-            'VAT Summary',
-            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+            'Summary',
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+            font: boldFont,
           ),
-          pw.SizedBox(height: 12),
-          pw.Table(
-            border: pw.TableBorder.all(color: PdfColors.grey400, width: 0.5),
-            children: [
-              _buildSummaryRow('Total Taxable Amount', 'NPR $totalTaxable'),
-              _buildSummaryRow('Total VAT Collected (Sales)', 'NPR $totalVatSales', isPositive: true),
-              _buildSummaryRow('Total VAT Paid (Purchases)', 'NPR $totalVatPurchases', isPositive: false),
-              _buildSummaryRow('Net VAT Payable', 'NPR $netVatPayable', isBold: true, 
-                color: (netVatPayable as num) > 0 ? PdfColors.red : PdfColors.green),
-            ],
-          ),
+          pw.SizedBox(height: 10),
+          ...summary.entries.map((entry) => pw.Padding(
+            padding: const pw.EdgeInsets.symmetric(vertical: 2),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(entry.key, style: const pw.TextStyle(fontSize: 8), font: regularFont),
+                pw.Text(entry.value.toString(), style: const pw.TextStyle(fontSize: 8), font: regularFont),
+              ],
+            ),
+          )),
         ],
       ),
-    );
-  }
-
-  /// Build summary table row
-  static pw.TableRow _buildSummaryRow(
-    String label,
-    String value, {
-    bool isBold = false,
-    bool isPositive = false,
-    PdfColor? color,
-  }) {
-    return pw.TableRow(
-      children: [
-        pw.Padding(
-          padding: const pw.EdgeInsets.all(8),
-          child: pw.Text(
-            label,
-            style: pw.TextStyle(
-              fontSize: 10,
-              fontWeight: isBold ? pw.FontWeight.bold : null,
-            ),
-          ),
-        ),
-        pw.Padding(
-          padding: const pw.EdgeInsets.all(8),
-          child: pw.Text(
-            value,
-            style: pw.TextStyle(
-              fontSize: 10,
-              fontWeight: isBold ? pw.FontWeight.bold : null,
-              color: color,
-            ),
-            textAlign: pw.TextAlign.right,
-          ),
-        ),
-      ],
     );
   }
 
   /// Build transactions table
-  static pw.Widget _buildTransactionsTable(List<dynamic> records) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Text(
-          'Transaction Details',
-          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
-        ),
-        pw.SizedBox(height: 12),
-        pw.Table(
-          border: pw.TableBorder.all(color: PdfColors.grey400, width: 0.5),
-          columnWidths: {
-            0: const pw.FlexColumnWidth(3),
-            1: const pw.FlexColumnWidth(2),
-            2: const pw.FlexColumnWidth(2),
-            3: const pw.FlexColumnWidth(2),
-          },
-          children: [
-            // Header row
-            pw.TableRow(
-              decoration: const pw.BoxDecoration(color: PdfColors.blue100),
-              children: [
-                _buildTableHeader('Invoice Number'),
-                _buildTableHeader('Taxable Amount'),
-                _buildTableHeader('VAT Amount'),
-                _buildTableHeader('Rate'),
-              ],
-            ),
-            // Data rows
-            ...records.map((record) {
+  static pw.Widget _buildTransactionsTable(
+    List<dynamic> records,
+    pw.Font regularFont,
+    pw.Font boldFont,
+  ) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.grey300),
+        borderRadius: pw.BorderRadius.circular(5),
               final invoice = record['invoice']?['invoiceNumber'] ?? 'N/A';
               final taxable = record['taxableAmount'] ?? 0;
               final vat = record['totalVat'] ?? 0;
@@ -377,9 +336,9 @@ class VatPdfGenerator {
       final file = File('${tempDir.path}/$fileName');
       await file.writeAsBytes(pdfBytes);
 
-      // Share the file
-      await Share.shareXFiles(
-        [XFile(file.path)],
+      // Share file
+      await Share.shareFiles(
+        [file.path],
         subject: 'VAT Return Report - ${VatPdfGenerator._getMonthName(month)} $year',
         text: 'IRDN-compliant VAT Return Report for ${VatPdfGenerator._getMonthName(month)} $year',
       );
