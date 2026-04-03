@@ -10,6 +10,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
 import 'package:vedanta_trade/core/services/background_gps_service.dart';
+import 'package:vedanta_trade/features/mr/widgets/visit_log_widgets.dart';
 
 class VisitLogScreen extends StatefulWidget {
   const VisitLogScreen({super.key});
@@ -229,9 +230,102 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => _LogVisitModal(
         onSuccess: () => _loadVisits(),
-        getCurrentLocation: _gpsService.getCurrentPosition,
+        getCurrentLocation: _getHighAccuracyLocation,
       ),
     );
+  }
+
+  /// Get high-accuracy GPS location with validation
+  Future<Position?> _getHighAccuracyLocation() async {
+    try {
+      // Check permissions first
+      bool hasPermission = await _gpsService.initialize();
+      if (!hasPermission) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('GPS permission required. Please enable location services.'),
+              backgroundColor: AppTheme.error,
+            ),
+          );
+        }
+        return null;
+      }
+
+      // Show loading indicator
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const _GpsLoadingDialog(),
+        );
+      }
+
+      try {
+        // Request high-accuracy location
+        final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 30),
+        );
+
+        // Validate accuracy (must be < 50 meters for Nepal field operations)
+        if (position.accuracy > 50.0) {
+          if (mounted) {
+            Navigator.of(context).pop(); // Close loading dialog
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('GPS accuracy too high (${position.accuracy.toStringAsFixed(1)}m). Please try again in an open area.'),
+                backgroundColor: AppTheme.error,
+                duration: const Duration(seconds: 5),
+                action: SnackBarAction(
+                  label: 'Retry',
+                  textColor: Colors.white,
+                  onPressed: () => _showAddVisitDialog(),
+                ),
+              ),
+            );
+          }
+          return null;
+        }
+
+        // Close loading dialog
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('GPS location captured (${position.accuracy.toStringAsFixed(1)}m accuracy)'),
+              backgroundColor: AppTheme.success,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+
+        return position;
+      } catch (e) {
+        if (mounted) {
+          Navigator.of(context).pop(); // Close loading dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to get GPS location: ${e.toString()}'),
+              backgroundColor: AppTheme.error,
+              duration: const Duration(seconds: 5),
+              action: SnackBarAction(
+                label: 'Retry',
+                textColor: Colors.white,
+                onPressed: () => _showAddVisitDialog(),
+              ),
+            ),
+          );
+        }
+        return null;
+      }
+    } catch (e) {
+      debugPrint('GPS Error: $e');
+      return null;
+    }
   }
 }
 
