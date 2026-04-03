@@ -510,6 +510,21 @@ class _LogVisitModalState extends State<_LogVisitModal> {
       return;
     }
 
+    // Validate GPS accuracy (<50m required)
+    if (pos.accuracy > 50) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('GPS accuracy too low (${pos.accuracy.toStringAsFixed(1)}m). Required: <50m. Move to open area.'),
+            backgroundColor: AppTheme.error,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      return;
+    }
+
     // Success simulation
     await Future.delayed(const Duration(seconds: 1));
     widget.onSuccess();
