@@ -1,5 +1,9 @@
 # VedantaTrade: Enterprise Pharmaceutical Distribution (Nepal)
 
+[![Flutter CI](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/flutter-ci.yml/badge.svg)](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/flutter-ci.yml)
+[![Deploy](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/deploy.yml/badge.svg)](https://github.com/getuser-shivam/VedantaTrade/actions/workflows/deploy.yml)
+[![codecov](https://codecov.io/gh/getuser-shivam/VedantaTrade/branch/main/graph/badge.svg)](https://codecov.io/gh/getuser-shivam/VedantaTrade)
+
 🚀 **Production Finalization** | 🇳🇵 **IRDN Compliant** | 📱 **Multi-Role System** | 🎨 **Premium Glassmorphic UI**
 
 VedantaTrade is a hardened, enterprise-grade pharmaceutical distribution platform specifically engineered for the Nepal market. It transforms complex supply chain logistics into a seamless, role-based ecosystem featuring advanced geospatial field force tracking and real-time inventory dynamics.
