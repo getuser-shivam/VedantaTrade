@@ -29,6 +29,10 @@ class AppTheme {
   static const Color glassSurface = Color(0x1AFFFFFF); // Glass effect
   static const Color glassBorder = Color(0x33FFFFFF); // Glass border
 
+  // Legacy colors for backward compatibility
+  static const Color background = bgDark;
+  static const Color cardColor = cardDark;
+
   // Glassmorphic Colors
   static const Color glassBg = Color(0x1AFFFFFF);
   static const Color glassBorderLight = Color(0x33FFFFFF);
@@ -91,7 +95,8 @@ class AppTheme {
       titleTextStyle: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
     ),
     textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
-    inputDecorationTheme: InputDecorationTheme(
+    static InputDecoration inputDecoration(String hint) {
+    return InputDecoration(
       filled: true,
       fillColor: cardDark,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -100,7 +105,9 @@ class AppTheme {
       labelStyle: const TextStyle(color: Colors.white54),
       hintStyle: const TextStyle(color: Colors.white38),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-    ),
+      hintText: hint,
+    );
+  }
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: primary,

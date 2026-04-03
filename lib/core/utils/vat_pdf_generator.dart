@@ -24,108 +24,33 @@ class VatPdfGenerator {
   }) async {
     final pdf = pw.Document();
 
-    // Load fonts
-    final regularFont = await PdfGoogleFonts.notoSans();
-    final boldFont = await PdfGoogleFonts.notoSansBold();
+    try {
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(40),
+          build: (pw.Context context) => [
+            _buildCompanyInfo(companyName, panNumber),
+            pw.SizedBox(height: 20),
+            _buildSummarySection(summary),
+            pw.SizedBox(height: 20),
+            _buildTransactionsTable(records),
+            pw.SizedBox(height: 20),
+            _buildDeclarationSection(),
+          ],
+        ),
+      );
 
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40),
-        header: (context) => _buildHeader(context, month, year, regularFont, boldFont),
-        footer: (context) => _buildFooter(context, regularFont),
-        build: (context) => [
-          _buildCompanyInfo(companyName, panNumber, regularFont, boldFont),
-          pw.SizedBox(height: 20),
-          _buildSummarySection(summary, regularFont, boldFont),
-          pw.SizedBox(height: 20),
-          _buildTransactionsTable(records, regularFont, boldFont),
-          pw.SizedBox(height: 20),
-          _buildDeclarationSection(regularFont, boldFont),
-        ],
-      ),
-    );
-
-    return pdf.save();
-  }
-
-  /// Build PDF header
-  static pw.Widget _buildHeader(
-    pw.Context context,
-    int month,
-    int year,
-    pw.Font regularFont,
-    pw.Font boldFont,
-  ) {
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(10),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.center,
-        children: [
-          pw.Text(
-            _irdnHeader,
-            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
-            font: boldFont,
-          ),
-          pw.SizedBox(height: 8),
-          pw.Text(
-            _formName,
-            style: const pw.TextStyle(fontSize: 9),
-            font: regularFont,
-          ),
-          pw.SizedBox(height: 20),
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    'Tax Period',
-                    style: const pw.TextStyle(fontSize: 8),
-                    font: regularFont,
-                  ),
-                  pw.Container(width: 150, height: 1, color: PdfColors.black),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    'Signature of Taxpayer',
-                    style: const pw.TextStyle(fontSize: 8),
-                    font: regularFont,
-                  ),
-                ],
-              ),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    'Date',
-                    style: const pw.TextStyle(fontSize: 8),
-                    font: regularFont,
-                  ),
-                  pw.Container(width: 150, height: 1, color: PdfColors.black),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    'Signature of Officer',
-                    style: const pw.TextStyle(fontSize: 8),
-                    font: regularFont,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+      return pdf.save();
+    } catch (e) {
+      // Using print instead of debugPrint for web compatibility
+      print('Error generating VAT PDF: $e');
+      rethrow;
+    }
   }
 
   /// Build company information section
-  static pw.Widget _buildCompanyInfo(
-    String? companyName,
-    String? panNumber,
-    pw.Font regularFont,
-    pw.Font boldFont,
-  ) {
+  static pw.Widget _buildCompanyInfo(String? companyName, String? panNumber) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
@@ -138,24 +63,19 @@ class VatPdfGenerator {
           pw.Text(
             'Company Information',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
-            font: boldFont,
           ),
           pw.SizedBox(height: 10),
           if (companyName != null)
-            pw.Text('Name: $companyName', style: const pw.TextStyle(fontSize: 8), font: regularFont),
+            pw.Text('Name: $companyName', style: const pw.TextStyle(fontSize: 8)),
           if (panNumber != null)
-            pw.Text('PAN: $panNumber', style: const pw.TextStyle(fontSize: 8), font: regularFont),
+            pw.Text('PAN: $panNumber', style: const pw.TextStyle(fontSize: 8)),
         ],
       ),
     );
   }
 
   /// Build summary section
-  static pw.Widget _buildSummarySection(
-    Map<String, dynamic> summary,
-    pw.Font regularFont,
-    pw.Font boldFont,
-  ) {
+  static pw.Widget _buildSummarySection(Map<String, dynamic> summary) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
@@ -168,78 +88,95 @@ class VatPdfGenerator {
           pw.Text(
             'Summary',
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
-            font: boldFont,
           ),
           pw.SizedBox(height: 10),
-          ...summary.entries.map((entry) => pw.Padding(
-            padding: const pw.EdgeInsets.symmetric(vertical: 2),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Text(entry.key, style: const pw.TextStyle(fontSize: 8), font: regularFont),
-                pw.Text(entry.value.toString(), style: const pw.TextStyle(fontSize: 8), font: regularFont),
-              ],
-            ),
-          )),
+          pw.Row(
+            children: [
+              pw.Expanded(
+                child: pw.Text(
+                  'Total Sales: ${summary['totalSales'] ?? 0}',
+                  style: const pw.TextStyle(fontSize: 8),
+                ),
+              ),
+              pw.Expanded(
+                child: pw.Text(
+                  'VAT Amount: ${summary['vatAmount'] ?? 0}',
+                  style: const pw.TextStyle(fontSize: 8),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
   /// Build transactions table
-  static pw.Widget _buildTransactionsTable(
-    List<dynamic> records,
-    pw.Font regularFont,
-    pw.Font boldFont,
-  ) {
+  static pw.Widget _buildTransactionsTable(List<dynamic> records) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
         border: pw.Border.all(color: PdfColors.grey300),
         borderRadius: pw.BorderRadius.circular(5),
-              final invoice = record['invoice']?['invoiceNumber'] ?? 'N/A';
-              final taxable = record['taxableAmount'] ?? 0;
-              final vat = record['totalVat'] ?? 0;
-              final rate = record['vatRate'] ?? 13;
-
-              return pw.TableRow(
-                children: [
-                  _buildTableCell(invoice),
-                  _buildTableCell('NPR $taxable', alignRight: true),
-                  _buildTableCell('NPR $vat', alignRight: true),
-                  _buildTableCell('$rate%', alignRight: true),
-                ],
-              );
-            }).toList(),
-          ],
-        ),
-      ],
-    );
-  }
-
-  /// Build table header cell
-  static pw.Widget _buildTableHeader(String text) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.all(8),
-      child: pw.Text(
-        text,
-        style: pw.TextStyle(
-          fontSize: 9,
-          fontWeight: pw.FontWeight.bold,
-          color: PdfColors.blue800,
-        ),
       ),
-    );
-  }
-
-  /// Build table data cell
-  static pw.Widget _buildTableCell(String text, {bool alignRight = false}) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.all(6),
-      child: pw.Text(
-        text,
-        style: const pw.TextStyle(fontSize: 9),
-        textAlign: alignRight ? pw.TextAlign.right : null,
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(
+            'Transactions',
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10),
+          ),
+          pw.SizedBox(height: 10),
+          // Table header
+          pw.Row(
+            children: [
+              pw.Expanded(
+                child: pw.Text(
+                  'Date',
+                  style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+              pw.Expanded(
+                child: pw.Text(
+                  'Description',
+                  style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+              pw.Expanded(
+                child: pw.Text(
+                  'Amount',
+                  style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 5),
+          // Table rows
+          ...records.map((record) {
+            return pw.Row(
+              children: [
+                pw.Expanded(
+                  child: pw.Text(
+                    record['date'] ?? '',
+                    style: const pw.TextStyle(fontSize: 8),
+                  ),
+                ),
+                pw.Expanded(
+                  child: pw.Text(
+                    record['description'] ?? '',
+                    style: const pw.TextStyle(fontSize: 8),
+                  ),
+                ),
+                pw.Expanded(
+                  child: pw.Text(
+                    record['amount']?.toString() ?? '0',
+                    style: const pw.TextStyle(fontSize: 8),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ],
       ),
     );
   }
@@ -261,7 +198,7 @@ class VatPdfGenerator {
           ),
           pw.SizedBox(height: 8),
           pw.Text(
-            'I hereby declare that the information furnished in this VAT return is true and correct to the best of my knowledge and belief.',
+            'I hereby declare that information furnished in this VAT return is true and correct to best of my knowledge and belief.',
             style: const pw.TextStyle(fontSize: 9),
           ),
           pw.SizedBox(height: 20),
@@ -291,24 +228,20 @@ class VatPdfGenerator {
     );
   }
 
-  /// Build footer with page numbers
-  static pw.Widget _buildFooter(pw.Context context) {
-    return pw.Container(
-      padding: const pw.EdgeInsets.only(top: 10),
-      child: pw.Row(
-        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-        children: [
-          pw.Text(
-            'Generated by VedantaTrade System',
-            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
-          ),
-          pw.Text(
-            'Page ${context.pageNumber} of ${context.pagesCount}',
-            style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600),
-          ),
-        ],
-      ),
-    );
+  /// Save and share PDF
+  static Future<void> saveAndSharePdf(Uint8List pdfBytes, String fileName) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsBytes(pdfBytes);
+      
+      // Share file
+      final xFile = XFile.fromData(pdfBytes, name: fileName);
+      await Share.shareXFiles([xFile]);
+    } catch (e) {
+      print('Error saving/sharing PDF: $e');
+      throw Exception('Failed to save PDF: $e');
+    }
   }
 
   /// Export and share PDF
@@ -330,7 +263,6 @@ class VatPdfGenerator {
         panNumber: panNumber,
       );
 
-      // Save to temp directory
       final tempDir = await getTemporaryDirectory();
       final fileName = 'VAT_Return_${year}_${month.toString().padLeft(2, '0')}.pdf';
       final file = File('${tempDir.path}/$fileName');
@@ -339,15 +271,16 @@ class VatPdfGenerator {
       // Share file
       await Share.shareFiles(
         [file.path],
-        subject: 'VAT Return Report - ${VatPdfGenerator._getMonthName(month)} $year',
-        text: 'IRDN-compliant VAT Return Report for ${VatPdfGenerator._getMonthName(month)} $year',
+        subject: 'VAT Return Report - ${_getMonthName(month)} $year',
+        text: 'IRDN-compliant VAT Return Report for ${_getMonthName(month)} $year',
       );
     } catch (e) {
-      throw Exception('Failed to export VAT PDF: $e');
+      print('Error exporting PDF: $e');
+      throw Exception('Failed to export PDF: $e');
     }
   }
 
-  /// Get month name from number
+  /// Get month name
   static String _getMonthName(int month) {
     const months = [
       'January', 'February', 'March', 'April', 'May', 'June',

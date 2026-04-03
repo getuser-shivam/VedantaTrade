@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geolocator_platform_interface/src/enums/location_accuracy.dart';
 
 /// Background GPS Service for continuous MR tracking
 /// Runs independently of UI - persists even when app is backgrounded
@@ -29,111 +30,90 @@ class BackgroundGpsService {
   
   bool get isTracking => _isTracking;
   List<LatLng> get trajectoryPoints => List.unmodifiable(_trajectoryPoints);
-  DateTime? get trackingStartedAt => _trackingStartedAt;
 
-  /// Initialize and check permissions
+  /// Initialize GPS service and load persisted data
   Future<bool> initialize() async {
     try {
+      // Check location permissions
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        serviceEnabled = await Geolocator.openLocationSettings();
-        return serviceEnabled;
+        return false;
       }
 
       LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      
-      if (permission == LocationPermission.deniedForever) {
+      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
         return false;
       }
 
       // Load persisted trajectory
       await _loadPersistedTrajectory();
       
-      return permission == LocationPermission.whileInUse || 
-             permission == LocationPermission.always;
+      return true;
     } catch (e) {
-      debugPrint('BackgroundGPS: Initialization error: $e');
+      if (kDebugMode) {
+        debugPrint('GPS Service init error: $e');
+      }
       return false;
     }
   }
 
-  /// Start continuous background tracking
+  /// Start GPS tracking for MR
   Future<bool> startTracking({String? mrId}) async {
     if (_isTracking) return true;
-    
-    final hasPermission = await initialize();
-    if (!hasPermission) {
-      debugPrint('BackgroundGPS: Permission denied');
-      return false;
-    }
 
     try {
-      _currentMrId = mrId;
-      _trackingStartedAt = DateTime.now();
-      _isTracking = true;
-      
-      // Settings optimized for field force tracking
-      const LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // Update every 10 meters
-      );
+      final hasPermission = await initialize();
+      if (!hasPermission) return false;
 
+      _currentMrId = mrId;
+      _isTracking = true;
+      _trackingStartedAt = DateTime.now();
+      
       _positionStream = Geolocator.getPositionStream(
-        locationSettings: locationSettings,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 5.0, // Update every 5 meters
+        ),
       ).listen(
-        _onPositionUpdate,
-        onError: (error) {
-          debugPrint('BackgroundGPS: Stream error: $error');
+        (Position position) {
+          _currentPosition = position;
+          _locationController.add(position);
+          
+          // Add to trajectory if accuracy is good
+          if (position.accuracy <= 50.0) {
+            final newPoint = LatLng(position.latitude, position.longitude);
+            _trajectoryPoints.add(newPoint);
+            _trajectoryController.add(List.from(_trajectoryPoints));
+            
+            // Persist periodically
+            _persistTrajectory();
+          }
         },
-        cancelOnError: false,
+        onError: (error) {
+          debugPrint('GPS Stream Error: $error');
+        },
       );
 
       _trackingStatusController.add(true);
-      
       return true;
     } catch (e) {
-      _isTracking = false;
+      debugPrint('Start tracking error: $e');
       return false;
     }
   }
 
-  /// Stop tracking
+  /// Stop GPS tracking
   Future<void> stopTracking() async {
+    if (!_isTracking) return;
+
+    _isTracking = false;
     await _positionStream?.cancel();
     _positionStream = null;
-    _isTracking = false;
+    _trackingStartedAt = null;
     _trackingStatusController.add(false);
     
     // Persist final trajectory
     await _persistTrajectory();
-  }
-
-  /// Handle position updates
-  void _onPositionUpdate(Position position) {
-    if (!_isTracking) return;
-    
-    final point = LatLng(position.latitude, position.longitude);
-    _trajectoryPoints.add(point);
-    
-    // Keep only last 500 points to prevent memory issues
-    if (_trajectoryPoints.length > 500) {
-      _trajectoryPoints.removeAt(0);
-    }
-    
-    // Broadcast to UI listeners
-    _trajectoryController.add(List.unmodifiable(_trajectoryPoints));
-    _locationController.add(position);
-    
-    // Persist every 10 points
-    if (_trajectoryPoints.length % 10 == 0) {
-      _persistTrajectory();
-    }
-    
-    // TODO: Sync to backend
-    _syncToBackend(position);
   }
 
   /// Persist trajectory to local storage
@@ -239,7 +219,7 @@ class BackgroundGpsService {
     return '${hours}h ${minutes}m';
   }
 
-  /// Dispose streams
+  /// Dispose resources
   void dispose() {
     _positionStream?.cancel();
     _trajectoryController.close();

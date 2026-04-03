@@ -8,6 +8,8 @@ import '../models/product.dart';
 import '../widgets/product_card.dart';
 import '../widgets/search_filter_sheet.dart';
 import '../widgets/product_comparison_sheet.dart';
+import '../widgets/barcode_scanner_widget.dart';
+import '../widgets/inventory_status_widget.dart';
 
 class ProductCatalogScreen extends StatefulWidget {
   const ProductCatalogScreen({Key? key}) : super(key: key);
@@ -127,6 +129,11 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
       title: const Text('Product Catalog'),
       actions: [
         IconButton(
+          onPressed: _showBarcodeScanner,
+          icon: const Icon(Icons.qr_code_scanner),
+          tooltip: 'Scan Product Barcode',
+        ),
+        IconButton(
           onPressed: _toggleSearch,
           icon: Icon(_isSearching ? Icons.close : Icons.search),
         ),
@@ -199,34 +206,50 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
   Widget _buildProductsGrid(List<Product> products) {
     return RefreshIndicator(
       onRefresh: () => Provider.of<ProductProvider>(context, listen: false).refresh(),
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.68,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          final product = products[index];
-          final isSelected = _selectedProducts.any((p) => p.id == product.id);
+      child: Column(
+        children: [
+          // Inventory Status Overview
+          Container(
+            margin: const EdgeInsets.all(16),
+            child: StockAlertWidget(
+              lowStockProducts: ['ARGIVIT', 'MEGA-O'], // Example data
+              outOfStockProducts: [], // Example data
+            ),
+          ),
           
-          return ProductCard(
-            product: product,
-            isSelected: isSelected,
-            onTap: () => _navigateToProductDetails(product),
-            onSelectionChanged: (selected) {
-              setState(() {
-                if (selected) {
-                  _selectedProducts.add(product);
-                } else {
-                  _selectedProducts.removeWhere((p) => p.id == product.id);
-                }
-              });
-            },
-          );
-        },
+          // Products Grid
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.68,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                final isSelected = _selectedProducts.any((p) => p.id == product.id);
+                
+                return ProductCard(
+                  product: product,
+                  isSelected: isSelected,
+                  onTap: () => _navigateToProductDetails(product),
+                  onSelectionChanged: (selected) {
+                    setState(() {
+                      if (selected) {
+                        _selectedProducts.add(product);
+                      } else {
+                        _selectedProducts.removeWhere((p) => p.id == product.id);
+                      }
+                    });
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -325,6 +348,30 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
             width: 150,
           ),
         ],
+      ),
+    );
+  }
+
+  void _showBarcodeScanner() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BarcodeScannerScreen(
+          onBarcodeDetected: (barcode) {
+            _searchForProductByBarcode(barcode);
+          },
+        ),
+      ),
+    );
+  }
+
+  void _searchForProductByBarcode(String barcode) {
+    // TODO: Implement barcode-based product search
+    // For now, show a snackbar with the scanned barcode
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Searching for product with barcode: $barcode'),
+        backgroundColor: AppTheme.primary,
+        duration: const Duration(seconds: 2),
       ),
     );
   }

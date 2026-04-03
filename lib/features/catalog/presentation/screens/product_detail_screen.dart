@@ -6,6 +6,8 @@ import 'package:vedanta_trade/features/wishlist/presentation/providers/wishlist_
 import 'package:vedanta_trade/features/reviews/presentation/providers/review_provider.dart';
 import 'package:vedanta_trade/features/reviews/presentation/widgets/review_widget.dart';
 import 'package:vedanta_trade/features/reviews/presentation/screens/add_review_screen.dart';
+import '../widgets/inventory_status_widget.dart';
+import '../widgets/barcode_scanner_widget.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
@@ -27,6 +29,8 @@ class ProductDetailScreen extends StatelessWidget {
               children: [
                 _buildProductImage(context),
                 _buildProductInfo(context),
+                _buildInventoryStatus(context),
+                _buildBarcodeSection(context),
                 _buildRatingSection(context),
                 _buildIngredients(context),
                 _buildDosageInfo(context),
@@ -451,6 +455,28 @@ class ProductDetailScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildInventoryStatus(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: RealTimeStockMonitor(
+        productId: product.id,
+        onStockUpdate: (stock) {
+          // Handle stock updates if needed
+        },
+      ),
+    );
+  }
+
+  Widget _buildBarcodeSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: ProductBarcodeWidget(
+        barcode: product.id, // Using product ID as barcode for demo
+        productName: product.name,
+      ),
     );
   }
 

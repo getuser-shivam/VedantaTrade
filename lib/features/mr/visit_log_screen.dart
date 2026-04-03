@@ -19,7 +19,7 @@ class VisitLogScreen extends StatefulWidget {
 }
 
 class _VisitLogScreenState extends State<VisitLogScreen> {
-  List<dynamic> _visits = [];
+  List<Map<String, dynamic>> _visits = [];
   bool _loading = true;
   List<LatLng> _trajectoryPoints = [];
   bool _isTracking = false;
@@ -88,15 +88,29 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
     }
   }
 
+  /// Load visit data from API
   Future<void> _loadVisits() async {
-    // TODO: Replace with real API call - GET /api/mr/visits
-    // Mock data for development - remove before production
-    await Future.delayed(const Duration(seconds: 1));
-    if (mounted) {
-      setState(() {
-        _visits = [];
-        _loading = false;
-      });
+    try {
+      // TODO: Replace with real API call - GET /api/mr/visits
+      // Mock data for development - remove before production
+      await Future.delayed(const Duration(seconds: 1));
+      if (mounted) {
+        setState(() {
+          _visits = [];
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading visits: $e');
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load visits: $e'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
     }
   }
 
@@ -122,7 +136,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
         label: const Text('Log Visit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: _loading
-          ? const Center(child: LoadingAnimation())
+          ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 // GPS Pulsating Status Bar
