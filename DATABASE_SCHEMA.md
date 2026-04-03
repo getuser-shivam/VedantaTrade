@@ -446,4 +446,4 @@ CREATE POLICY users_own_data ON users FOR ALL USING (id = current_user_id());
 - Data integrity checks
 - Performance impact assessment
 
-This schema provides a robust foundation for the Neutralitical e-commerce platform with proper relationships, constraints, and performance optimizations.
+This schema provides a robust foundation for the VedantaTrade e-commerce platform with proper relationships, constraints, and performance optimizations.

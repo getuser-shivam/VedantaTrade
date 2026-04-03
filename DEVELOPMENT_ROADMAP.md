@@ -1,4 +1,4 @@
-# Neutralitical App Development Roadmap
+# VedantaTrade App Development Roadmap
 
 ## 📋 **Project Analysis & Current Status**
 
@@ -216,4 +216,4 @@
 4. Focus on performance and testing
 5. Prepare for production release
 
-This roadmap ensures systematic development with clear priorities and measurable goals for the Neutralitical app.
+This roadmap ensures systematic development with clear priorities and measurable goals for the VedantaTrade app.

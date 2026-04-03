@@ -118,7 +118,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Neutralitical',
+                    'VedantaTrade',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

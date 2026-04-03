@@ -10,55 +10,75 @@ router.get('/', authenticate, async (req: any, res) => {
     const { status, page = 1, limit = 20 } = req.query;
     const where: any = {};
     if (status) where.status = status;
-    const orders = await prisma.order.findMany({
-      where, skip: (Number(page)-1)*Number(limit), take: Number(limit),
-      include: { items: { include: { product: true } }, stockist: true, retailer: true, doctor: true, invoices: true },
-      orderBy: { createdAt: 'desc' },
+    const orders = await prisma.salesOrder.findMany({
+      where, skip: (Number(page) - 1) * Number(limit), take: Number(limit),
+      include: { 
+        SalesOrderItems: { include: { InventoryItem: true } }, 
+        Customer: true, 
+        Currency: true 
+      },
+      orderBy: { order_date: 'desc' },
     });
-    const total = await prisma.order.count({ where });
+    const total = await prisma.salesOrder.count({ where });
     return res.json({ success: true, data: orders, pagination: { page: Number(page), limit: Number(limit), total } });
   } catch (error) {
+    console.error('Orders fetch error:', error);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
 router.post('/', authenticate, async (req, res) => {
   try {
-    const { orderType, stockistId, retailerId, doctorId, items, notes } = req.body;
-    const count = await prisma.order.count();
-    const orderNumber = `VTL-ORD-${Date.now()}-${count + 1}`;
+    const { customerId, items, notes, currencyId = 1 } = req.body;
+    const count = await prisma.salesOrder.count();
+    const referenceNumber = `VTL-ORD-${Date.now()}-${count + 1}`;
     
-    const subtotal = items.reduce((sum: number, item: any) => sum + (item.unitPrice * item.quantity), 0);
-    const gstAmount = subtotal * 0.12;
-    const totalAmount = subtotal + gstAmount;
+    let totalAmount = 0;
+    const orderItemsData = [];
 
-    const order = await prisma.order.create({
+    for (const item of items) {
+      const product = await prisma.inventoryItem.findFirst({
+        where: { item_id: Number(item.productId) }
+      });
+
+      if (!product) continue;
+
+      const itemTotal = (product.mrp || 0) * Number(item.quantity);
+      totalAmount += itemTotal;
+
+      orderItemsData.push({
+        item_id: product.item_id,
+        quantity: Number(item.quantity),
+        unit_price: product.mrp || 0,
+      });
+    }
+
+    const order = await prisma.salesOrder.create({
       data: {
-        orderNumber, orderType,
-        stockistId: stockistId ? Number(stockistId) : null,
-        retailerId: retailerId ? Number(retailerId) : null,
-        doctorId: doctorId ? Number(doctorId) : null,
-        subtotal, gstAmount, totalAmount, notes,
-        items: { create: items.map((item: any) => ({
-          productId: Number(item.productId), productName: item.productName,
-          quantity: Number(item.quantity), unitPrice: Number(item.unitPrice),
-          discount: Number(item.discount || 0), gstPercent: Number(item.gstPercent || 12),
-          totalPrice: Number(item.unitPrice) * Number(item.quantity),
-        })) },
+        reference_number: referenceNumber,
+        customer_id: Number(customerId),
+        order_date: new Date().toISOString(),
+        total_amount: totalAmount,
+        currency_id: Number(currencyId),
+        status: 'PENDING',
+        SalesOrderItems: {
+          create: orderItemsData
+        }
       },
-      include: { items: { include: { product: true } }, stockist: true, retailer: true },
+      include: { SalesOrderItems: { include: { InventoryItem: true } }, Customer: true },
     });
     return res.status(201).json({ success: true, data: order });
   } catch (error) {
+    console.error('Order creation error:', error);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
-router.put('/:id/status', authenticate, authorize('ADMIN', 'STOCKIST'), async (req, res) => {
+router.put('/:id/status', authenticate, authorize('ADMIN', 'ACCOUNTANT'), async (req, res) => {
   try {
-    const order = await prisma.order.update({
-      where: { id: Number(req.params.id) },
-      data: { status: req.body.status, updatedAt: new Date() },
+    const order = await prisma.salesOrder.update({
+      where: { so_id: Number(req.params.id) },
+      data: { status: req.body.status },
     });
     return res.json({ success: true, data: order });
   } catch (error) {

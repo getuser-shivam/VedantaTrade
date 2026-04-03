@@ -8,6 +8,7 @@ import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import productRoutes from './routes/products';
+import productCatalogRoutes from './routes/product_catalog';
 import orderRoutes from './routes/orders';
 import mrRoutes from './routes/mr';
 import accountingRoutes from './routes/accounting';
@@ -16,6 +17,8 @@ import stockistRoutes from './routes/stockists';
 import retailerRoutes from './routes/retailers';
 import scraperRoutes from './routes/scraper';
 import notificationRoutes from './routes/notifications';
+import distributionRoutes from './routes/distribution';
+import marketingRoutes from './routes/marketing';
 
 dotenv.config();
 
@@ -55,6 +58,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/products', productCatalogRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/mr', mrRoutes);
 app.use('/api/accounting', accountingRoutes);
@@ -63,6 +67,8 @@ app.use('/api/stockists', stockistRoutes);
 app.use('/api/retailers', retailerRoutes);
 app.use('/api/scraper', scraperRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/distribution', distributionRoutes);
+app.use('/api/marketing', marketingRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

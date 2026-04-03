@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:vedanta_trade/core/api_config.dart';
 import 'package:vedanta_trade/features/catalog/domain/models/product.dart';
 
@@ -36,11 +38,17 @@ class ProductCatalogService {
   }
 
   Future<List<Product>> _loadLocalProducts() async {
-    // This could still be used as a fallback
-    return [];
+    try {
+      final String response = await rootBundle.loadString('assets/data/products.json');
+      final List<dynamic> data = json.decode(response);
+      return data.map((json) => Product.fromJson(json)).toList();
+    } catch (e) {
+      debugPrint('Failed to load local products JSON: $e');
+      return [];
+    }
   }
 
-  Future<List<String>> loadCategories({String? token}) async {
+  Future<List<Category>> loadCategories({String? token}) async {
     try {
       final response = await _dio.get(
         ApiConfig.categories,
@@ -51,12 +59,48 @@ class ProductCatalogService {
       
       if (response.data['success'] == true) {
         final List<dynamic> data = response.data['data'];
-        return data.map((json) => json['name'] as String).toList();
+        return data.map((json) => Category.fromJson(json)).toList();
       }
       return [];
     } catch (e) {
       debugPrint('Failed to load categories: $e');
+      // Fallback to local
+      try {
+        final String response = await rootBundle.loadString('assets/data/products.json');
+        final List<dynamic> data = json.decode(response);
+        final Set<String> categoryNames = data.map((j) => (j['category'] ?? 'Uncategorized') as String).toSet();
+        return categoryNames.map((name) => Category(name: name)).toList();
+      } catch (_) {
+        return [];
+      }
+    }
+  }
+
+  Future<List<Manufacturer>> loadManufacturers({String? token}) async {
+    try {
+      final response = await _dio.get(
+        '/api/manufacturers', // Assuming this endpoint or similar exists in ApiConfig
+        options: Options(
+          headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+        ),
+      );
+      
+      if (response.data['success'] == true) {
+        final List<dynamic> data = response.data['data'];
+        return data.map((json) => Manufacturer.fromJson(json)).toList();
+      }
       return [];
+    } catch (e) {
+      debugPrint('Failed to load manufacturers: $e');
+      // Fallback to local
+      try {
+        final String response = await rootBundle.loadString('assets/data/products.json');
+        final List<dynamic> data = json.decode(response);
+        final Set<String> mfgNames = data.map((j) => (j['manufacturer'] ?? 'Vedanta TradeLink') as String).toSet();
+        return mfgNames.map((name) => Manufacturer(name: name)).toList();
+      } catch (_) {
+        return [];
+      }
     }
   }
 }

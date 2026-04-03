@@ -28,7 +28,7 @@ import 'package:vedanta_trade/features/products/products_screen.dart';
 import 'package:vedanta_trade/features/doctors_list/doctors_list_screen.dart';
 import 'package:vedanta_trade/features/orders/orders_screen.dart';
 import 'package:vedanta_trade/features/profile/profile_screen.dart';
-import 'package:vedanta_trade/features/catalog/presentation/screens/catalog_screen.dart';
+import 'package:vedanta_trade/features/catalog/presentation/screens/product_catalog_screen.dart';
 
 class VedantaTradeApp extends StatelessWidget {
   const VedantaTradeApp({super.key});
@@ -68,7 +68,7 @@ class VedantaTradeApp extends StatelessWidget {
         GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
         GoRoute(path: '/profile', builder: (c, s) => const ProfileScreen()),
         GoRoute(path: '/products', builder: (c, s) => const ProductsScreen()),
-        GoRoute(path: '/catalog', builder: (c, s) => const CatalogScreen()),
+        GoRoute(path: '/catalog', builder: (c, s) => const ProductCatalogScreen()),
         GoRoute(path: '/doctors-list', builder: (c, s) => const DoctorsListScreen()),
         GoRoute(path: '/orders', builder: (c, s) => const OrdersScreen()),
 

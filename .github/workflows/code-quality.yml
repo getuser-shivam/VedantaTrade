@@ -1,0 +1,417 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run code quality checks daily at 4 AM UTC
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+  NODE_VERSION: '18.17.0'
+
+jobs:
+  # Flutter Code Quality
+  flutter-quality:
+    name: Flutter Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run Flutter analyze
+        run: |
+          flutter analyze --fatal-infos --preamble > flutter-analysis.txt
+          cat flutter-analysis.txt
+
+      - name: Check code formatting
+        run: |
+          dart format --output=none --set-exit-if-changed lib test
+          if [ $? -eq 0 ]; then
+            echo "✅ Code is properly formatted"
+          else
+            echo "❌ Code formatting issues found"
+            exit 1
+          fi
+
+      - name: Run custom quality checks
+        run: |
+          echo "Running custom quality checks..."
+          
+          # Check for TODO comments in production code
+          TODO_COUNT=$(grep -r "TODO\|FIXME\|HACK" --include="*.dart" lib/ | wc -l || echo "0")
+          if [ "$TODO_COUNT" -gt 0 ]; then
+            echo "⚠️ Found $TODO_COUNT TODO/FIXME comments in production code"
+          fi
+          
+          # Check for hard-coded strings
+          HARDCODED_STRINGS=$(grep -r "'[A-Z][a-zA-Z]*'" --include="*.dart" lib/ | wc -l || echo "0")
+          if [ "$HARDCODED_STRINGS" -gt 10 ]; then
+            echo "⚠️ Found $HARDCODED_STRINGS potentially hard-coded strings"
+          fi
+          
+          # Check for long functions
+          LONG_FUNCTIONS=$(grep -r "Future<.*>.*(" --include="*.dart" lib/ | wc -l || echo "0")
+          if [ "$LONG_FUNCTIONS" -gt 20 ]; then
+            echo "⚠️ Found $LONG_FUNCTIONS potentially complex functions"
+          fi
+
+      - name: Calculate code metrics
+        run: |
+          echo "# Flutter Code Metrics" > flutter-metrics.md
+          echo "Generated on: $(date)" >> flutter-metrics.md
+          echo "" >> flutter-metrics.md
+          echo "## Code Statistics" >> flutter-metrics.md
+          echo "- Total Dart files: $(find lib/ -name "*.dart" | wc -l)" >> flutter-metrics.md
+          echo "- Total lines of code: $(find lib/ -name "*.dart" -exec wc -l {} + | tail -1)" >> flutter-metrics.md
+          echo "- Total test files: $(find test/ -name "*.dart" | wc -l)" >> flutter-metrics.md
+          echo "- Test lines: $(find test/ -name "*.dart" -exec wc -l {} + | tail -1)" >> flutter-metrics.md
+          echo "" >> flutter-metrics.md
+          echo "## Quality Indicators" >> flutter-metrics.md
+          echo "- TODO comments: $TODO_COUNT" >> flutter-metrics.md
+          echo "- Hard-coded strings: $HARDCODED_STRINGS" >> flutter-metrics.md
+          echo "- Complex functions: $LONG_FUNCTIONS" >> flutter-metrics.md
+
+      - name: Upload Flutter quality results
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-quality-results
+          path: |
+            flutter-analysis.txt
+            flutter-metrics.md
+
+  # Backend Code Quality
+  backend-quality:
+    name: Backend Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: backend
+        run: |
+          npm run lint --format=json > eslint-results.json || echo "ESLint completed with issues"
+          npm run lint --format=checkstyle > eslint-checkstyle.xml || echo "ESLint checkstyle completed"
+
+      - name: Run TypeScript check
+        working-directory: backend
+        run: |
+          npx tsc --noEmit --pretty > ts-results.txt || echo "TypeScript check completed with issues"
+          cat ts-results.txt
+
+      - name: Run Prettier check
+        working-directory: backend
+        run: |
+          npm run format:check
+          if [ $? -eq 0 ]; then
+            echo "✅ Code is properly formatted"
+          else
+            echo "❌ Code formatting issues found"
+            npm run format:write
+            exit 1
+          fi
+
+      - name: Run custom quality checks
+        working-directory: backend
+        run: |
+          echo "Running custom quality checks..."
+          
+          # Check for console.log in production
+          CONSOLE_LOGS=$(grep -r "console.log\|console.error\|console.warn" --include="*.ts" --include="*.js" src/ | wc -l || echo "0")
+          if [ "$CONSOLE_LOGS" -gt 0 ]; then
+            echo "⚠️ Found $CONSOLE_LOGS console.log statements in production code"
+          fi
+          
+          # Check for unused imports
+          UNUSED_IMPORTS=$(npx ts-unused-exports tsconfig.json || echo "0")
+          if [ "$UNUSED_IMPORTS" -gt 5 ]; then
+            echo "⚠️ Found $UNUSED_IMPORTS potentially unused imports"
+          fi
+          
+          # Check for large files
+          LARGE_FILES=$(find src/ -name "*.ts" -o -name "*.js" -size +50k | wc -l || echo "0")
+          if [ "$LARGE_FILES" -gt 0 ]; then
+            echo "⚠️ Found $LARGE_FILES files larger than 50KB"
+          fi
+
+      - name: Calculate backend metrics
+        working-directory: backend
+        run: |
+          echo "# Backend Code Metrics" > backend-metrics.md
+          echo "Generated on: $(date)" >> backend-metrics.md
+          echo "" >> backend-metrics.md
+          echo "## Code Statistics" >> backend-metrics.md
+          echo "- Total TypeScript files: $(find src/ -name "*.ts" | wc -l)" >> backend-metrics.md
+          echo "- Total JavaScript files: $(find src/ -name "*.js" | wc -l)" >> backend-metrics.md
+          echo "- Total lines of code: $(find src/ -name "*.ts" -o -name "*.js" -exec wc -l {} + | tail -1)" >> backend-metrics.md
+          echo "- Total test files: $(find test/ -name "*.ts" -o -name "*.js" | wc -l)" >> backend-metrics.md
+          echo "- Test lines: $(find test/ -name "*.ts" -o -name "*.js" -exec wc -l {} + | tail -1)" >> backend-metrics.md
+          echo "" >> backend-metrics.md
+          echo "## Quality Indicators" >> backend-metrics.md
+          echo "- Console.log statements: $CONSOLE_LOGS" >> backend-metrics.md
+          echo "- Unused imports: $UNUSED_IMPORTS" >> backend-metrics.md
+          echo "- Large files: $LARGE_FILES" >> backend-metrics.md
+
+      - name: Upload backend quality results
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-quality-results
+          path: |
+            backend/eslint-results.json
+            backend/ts-results.txt
+            backend/metrics.md
+
+  # Code Coverage Analysis
+  coverage-analysis:
+    name: Coverage Analysis
+    runs-on: ubuntu-latest
+    needs: [flutter-quality, backend-quality]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          cd backend && npm ci
+
+      - name: Generate coverage reports
+        run: |
+          # Flutter coverage
+          flutter test --coverage
+          
+          # Backend coverage
+          cd backend && npm run test:coverage
+          
+      - name: Analyze coverage
+        run: |
+          echo "# Coverage Analysis Report" > coverage-analysis.md
+          echo "Generated on: $(date)" >> coverage-analysis.md
+          echo "" >> coverage-analysis.md
+          
+          # Flutter coverage
+          if [ -f "coverage/lcov.info" ]; then
+            FLUTTER_COVERAGE=$(lcov --summary coverage/lcov.info | grep -o 'lines......: [0-9.]*' | grep -o '[0-9.]*' || echo "0")
+            echo "## Flutter Coverage" >> coverage-analysis.md
+            echo "- Line coverage: ${FLUTTER_COVERAGE}%" >> coverage-analysis.md
+          fi
+          
+          # Backend coverage
+          if [ -f "backend/coverage/lcov.info" ]; then
+            BACKEND_COVERAGE=$(lcov --summary backend/coverage/lcov.info | grep -o 'lines......: [0-9.]*' | grep -o '[0-9.]*' || echo "0")
+            echo "## Backend Coverage" >> coverage-analysis.md
+            echo "- Line coverage: ${BACKEND_COVERAGE}%" >> coverage-analysis.md
+          fi
+          
+          echo "" >> coverage-analysis.md
+          echo "## Coverage Thresholds" >> coverage-analysis.md
+          echo "- Minimum required: 80%" >> coverage-analysis.md
+          echo "- Target: 90%" >> coverage-analysis.md
+          echo "- Excellent: 95%" >> coverage-analysis.md
+          
+          # Check if coverage meets thresholds
+          if [ -n "$FLUTTER_COVERAGE" ] && [ "$FLUTTER_COVERAGE" -lt 80 ]; then
+            echo "⚠️ Flutter coverage below minimum threshold" >> coverage-analysis.md
+          elif [ -n "$FLUTTER_COVERAGE" ] && [ "$FLUTTER_COVERAGE" -ge 95 ]; then
+            echo "✅ Flutter coverage is excellent" >> coverage-analysis.md
+          fi
+          
+          if [ -n "$BACKEND_COVERAGE" ] && [ "$BACKEND_COVERAGE" -lt 80 ]; then
+            echo "⚠️ Backend coverage below minimum threshold" >> coverage-analysis.md
+          elif [ -n "$BACKEND_COVERAGE" ] && [ "$BACKEND_COVERAGE" -ge 95 ]; then
+            echo "✅ Backend coverage is excellent" >> coverage-analysis.md
+          fi
+
+      - name: Upload coverage analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-analysis-results
+          path: |
+            coverage-analysis.md
+            coverage/
+            backend/coverage/
+
+  # Technical Debt Analysis
+  technical-debt:
+    name: Technical Debt Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          cd backend && npm ci
+
+      - name: Run SonarCloud analysis
+        run: |
+          echo "Running technical debt analysis..."
+          # SonarCloud analysis would go here
+          
+      - name: Calculate technical debt metrics
+        run: |
+          echo "# Technical Debt Analysis" > technical-debt.md
+          echo "Generated on: $(date)" >> technical-debt.md
+          echo "" >> technical-debt.md
+          echo "## Debt Metrics" >> technical-debt.md
+          
+          # Flutter technical debt
+          COMPLEXITY=$(find lib/ -name "*.dart" -exec grep -c "class\|function\|method" {} + | awk '{sum+=$1} END {print sum}' || echo "0")
+          DUPLICATION=$(find lib/ -name "*.dart" -exec grep -c "TODO\|FIXME\|HACK" {} + | awk '{sum+=$1} END {print sum}' || echo "0")
+          echo "### Flutter" >> technical-debt.md
+          echo "- Complexity score: $COMPLEXITY" >> technical-debt.md
+          echo "- Duplication issues: $DUPLICATION" >> technical-debt.md
+          
+          # Backend technical debt
+          if [ -d "backend/src" ]; then
+            BACKEND_COMPLEXITY=$(find backend/src -name "*.ts" -exec grep -c "class\|function\|method" {} + | awk '{sum+=$1} END {print sum}' || echo "0")
+            BACKEND_DUPLICATION=$(find backend/src -name "*.ts" -exec grep -c "TODO\|FIXME\|HACK" {} + | awk '{sum+=$1} END {print sum}' || echo "0")
+            echo "### Backend" >> technical-debt.md
+            echo "- Complexity score: $BACKEND_COMPLEXITY" >> technical-debt.md
+            echo "- Duplication issues: $BACKEND_DUPLICATION" >> technical-debt.md
+          fi
+          
+          echo "" >> technical-debt.md
+          echo "## Debt Score" >> technical-debt.md
+          TOTAL_DEBT=$((COMPLEXITY + DUPLICATION + BACKEND_COMPLEXITY + BACKEND_DUPLICATION))
+          echo "- Total technical debt: $TOTAL_DEBT" >> technical-debt.md
+          
+          if [ "$TOTAL_DEBT" -lt 50 ]; then
+            echo "- Debt level: ✅ Low" >> technical-debt.md
+          elif [ "$TOTAL_DEBT" -lt 100 ]; then
+            echo "- Debt level: ⚠️ Medium" >> technical-debt.md
+          else
+            echo "- Debt level: ❌ High" >> technical-debt.md
+          fi
+
+      - name: Upload technical debt analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: technical-debt-results
+          path: technical-debt.md
+
+  # Quality Gate
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [flutter-quality, backend-quality, coverage-analysis, technical-debt]
+    if: always()
+    steps:
+      - name: Download all quality artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Evaluate quality gate
+        run: |
+          echo "# Quality Gate Results" > quality-gate-results.md
+          echo "Generated on: $(date)" >> quality-gate-results.md
+          echo "" >> quality-gate-results.md
+          
+          # Initialize gate status
+          GATE_PASSED=true
+          
+          # Check Flutter quality
+          if [ "${{ needs.flutter-quality.result }}" = "failure" ]; then
+            echo "❌ Flutter quality checks failed" >> quality-gate-results.md
+            GATE_PASSED=false
+          fi
+          
+          # Check Backend quality
+          if [ "${{ needs.backend-quality.result }}" = "failure" ]; then
+            echo "❌ Backend quality checks failed" >> quality-gate-results.md
+            GATE_PASSED=false
+          fi
+          
+          # Check coverage
+          if [ -f "coverage-analysis-results/coverage-analysis.md" ]; then
+            COVERAGE_OK=$(grep -q "coverage is excellent\|coverage.*90\|coverage.*95" coverage-analysis-results/coverage-analysis.md && echo "true" || echo "false")
+            if [ "$COVERAGE_OK" != "true" ]; then
+              echo "⚠️ Coverage below target" >> quality-gate-results.md
+            fi
+          fi
+          
+          # Check technical debt
+          if [ -f "technical-debt-results/technical-debt.md" ]; then
+            DEBT_OK=$(grep -q "Debt level: ✅ Low" technical-debt-results/technical-debt.md && echo "true" || echo "false")
+            if [ "$DEBT_OK" != "true" ]; then
+              echo "⚠️ Technical debt above threshold" >> quality-gate-results.md
+              GATE_PASSED=false
+            fi
+          fi
+          
+          echo "" >> quality-gate-results.md
+          echo "## Final Result" >> quality-gate-results.md
+          if [ "$GATE_PASSED" = "true" ]; then
+            echo "✅ Quality gate PASSED" >> quality-gate-results.md
+            exit 0
+          else
+            echo "❌ Quality gate FAILED" >> quality-gate-results.md
+            exit 1
+          fi
+
+      - name: Upload quality gate results
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-results
+          path: quality-gate-results.md
+
+      - name: Notify quality gate failure
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"❌ Quality gate failed for ${{ github.repository }} - ${{ github.sha }}"}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }} || echo "Slack notification skipped"

@@ -17,7 +17,7 @@ async function seed() {
   await prisma.stockist.deleteMany();
   await prisma.retailer.deleteMany();
   await prisma.session.deleteMany();
-  await prisma.users.deleteMany();
+  await prisma.user.deleteMany();
   await prisma.category.deleteMany();
 
   console.log('Sweep complete');
@@ -28,7 +28,7 @@ async function seed() {
   console.log('✅ Categories created');
 
   // Create sample products (InventoryItems - plural)
-  await prisma.inventoryItems.create({
+  await prisma.inventoryItem.create({
     data: {
       item_name: 'Amoxicillin 500mg', generic_name: 'Amoxicillin', sku: 'VTL-AMX-500',
       category_id: catAntibiotics.id, manufacturer: 'Vedanta Labs',
@@ -44,15 +44,15 @@ async function seed() {
   const mrPw = await bcrypt.hash('MR@123', 12);
   const docPw = await bcrypt.hash('Doc@123', 12);
 
-  const admin = await prisma.users.create({
+  const admin = await prisma.user.create({
     data: { name: 'Vedanta Admin', username: 'admin@vedanta.com', password_hash: adminPw, role: 'ADMIN', phone: '9800000001', is_active: true },
   });
 
-  const mrUser = await prisma.users.create({
+  const mrUser = await prisma.user.create({
     data: { name: 'Ramesh Kumar (MR)', username: 'mr@vedanta.com', password_hash: mrPw, role: 'MEDICAL_REP', phone: '9800000002', is_active: true },
   });
 
-  const doctorUser = await prisma.users.create({
+  const doctorUser = await prisma.user.create({
     data: { name: 'Dr. Anil Verma', username: 'doctor@vedanta.com', password_hash: docPw, role: 'DOCTOR', phone: '9800000004', is_active: true },
   });
 
@@ -87,3 +87,4 @@ async function seed() {
 }
 
 seed().catch((e) => { console.error(e); process.exit(1); }).finally(() => prisma.$disconnect());
+

@@ -1,1 +1,171 @@
-import 'package:flutter/material.dart';\nimport 'package:go_router/go_router.dart';\nimport 'package:provider/provider.dart';\nimport 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';\nimport 'package:vedanta_trade/app/theme/app_theme.dart';\nimport 'package:vedanta_trade/shared/widgets/validators.dart';\n\nclass PasswordResetScreen extends StatefulWidget {\n  final String? token;\n  const PasswordResetScreen({super.key, this.token});\n  \n  @override\n  State<PasswordResetScreen> createState() => _PasswordResetScreenState();\n}\n\nclass _PasswordResetScreenState extends State<PasswordResetScreen> with SingleTickerProviderStateMixin {\n  final _formKey = GlobalKey<FormState>();\n  final _emailCtrl = TextEditingController();\n  final _passwordCtrl = TextEditingController();\n  final _confirmPasswordCtrl = TextEditingController();\n  \n  bool _obscurePassword = true;\n  bool _obscureConfirmPassword = true;\n  bool _isResetMode = false;\n  late AnimationController _animCtrl;\n  late Animation<double> _slideAnim;\n\n  @override\n  void initState() {\n    super.initState();\n    _isResetMode = widget.token != null;\n    _animCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));\n    _slideAnim = Tween<double>(begin: 60, end: 0).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut));\n    _animCtrl.forward();\n  }\n\n  @override\n  void dispose() { \n    _animCtrl.dispose(); \n    _emailCtrl.dispose(); \n    _passwordCtrl.dispose(); \n    _confirmPasswordCtrl.dispose();\n    super.dispose(); \n  }\n\n  Future<void> _requestReset() async {\n    if (!_formKey.currentState!.validate()) return;\n\n    final auth = context.read<AuthProvider>();\n    final ok = await auth.resetPassword(_emailCtrl.text.trim());\n    \n    if (!mounted) return;\n    \n    if (ok) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        const SnackBar(\n          content: Text('Password reset instructions sent to your email'),\n          backgroundColor: AppTheme.success,\n        ),\n      );\n      context.go('/login');\n    } else {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(auth.error ?? 'Password reset failed'), backgroundColor: AppTheme.error),\n      );\n    }\n  }\n\n  Future<void> _confirmReset() async {\n    if (!_formKey.currentState!.validate()) return;\n\n    // This would call the confirm reset password API\n    // For now, we'll show a success message and redirect\n    ScaffoldMessenger.of(context).showSnackBar(\n      const SnackBar(\n        content: Text('Password reset successfully'),\n        backgroundColor: AppTheme.success,\n      ),\n    );\n    context.go('/login');\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    final auth = context.watch<AuthProvider>();\n    \n    return Scaffold(\n      backgroundColor: AppTheme.bgDark,\n      body: Row(\n        children: [\n          // Left Panel - Branding\n          Expanded(\n            flex: 5,\n            child: Container(\n              decoration: const BoxDecoration(\n                gradient: LinearGradient(colors: [Color(0xFF1A1D2E), Color(0xFF0F1117)], begin: Alignment.topLeft, end: Alignment.bottomRight),\n              ),\n              child: Column(\n                mainAxisAlignment: MainAxisAlignment.center,\n                children: [\n                  Container(\n                    width: 88, height: 88,\n                    decoration: BoxDecoration(\n                      shape: BoxShape.circle,\n                      gradient: const LinearGradient(colors: [AppTheme.primary, AppTheme.secondary]),\n                      boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.35), blurRadius: 30)],\n                    ),\n                    child: const Icon(Icons.lock_reset_rounded, size: 48, color: Colors.white),\n                  ),\n                  const SizedBox(height: 20),\n                  Text(\n                    _isResetMode ? 'Reset Password' : 'Forgot Password',\n                    style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: Colors.white),\n                  ),\n                  const SizedBox(height: 8),\n                  Text(\n                    _isResetMode \n                        ? 'Enter your new password\\nto secure your account'\n                        : 'Enter your email address\\nto receive reset instructions',\n                    textAlign: TextAlign.center,\n                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14, height: 1.5),\n                  ),\n                  const SizedBox(height: 48),\n                  // Security Tips\n                  Padding(\n                    padding: const EdgeInsets.symmetric(horizontal: 32),\n                    child: Column(\n                      crossAxisAlignment: CrossAxisAlignment.start,\n                      children: [\n                        Text('Security Tips:', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 11, letterSpacing: 1)),\n                        const SizedBox(height: 16),\n                        _SecurityTip(icon: Icons.password_rounded, title: 'Strong Password', subtitle: 'Use mix of letters, numbers & symbols'),\n                        const SizedBox(height: 12),\n                        _SecurityTip(icon: Icons.update_rounded, title: 'Regular Updates', subtitle: 'Change passwords periodically'),\n                        const SizedBox(height: 12),\n                        _SecurityTip(icon: Icons.phishing_rounded, title: 'Beware of Phishing', subtitle: 'Never share your password via email'),\n                      ],\n                    ),\n                  ),\n                ],\n              ),\n            ),\n          ),\n          // Right Panel - Reset Form\n          Expanded(\n            flex: 4,\n            child: AnimatedBuilder(\n              animation: _slideAnim,\n              builder: (_, child) => Transform.translate(offset: Offset(_slideAnim.value, 0), child: child),\n              child: Container(\n                color: AppTheme.surfaceDark,\n                padding: const EdgeInsets.symmetric(horizontal: 48),\n                child: SingleChildScrollView(\n                  child: Column(\n                    mainAxisAlignment: MainAxisAlignment.center,\n                    crossAxisAlignment: CrossAxisAlignment.start,\n                    children: [\n                      Text(\n                        _isResetMode ? 'Create New Password' : 'Reset Password',\n                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white),\n                      ),\n                      const SizedBox(height: 6),\n                      Text(\n                        _isResetMode ? 'Enter your new password below' : 'We\\'ll send you reset instructions',\n                        style: TextStyle(color: Colors.white.withOpacity(0.5)),\n                      ),\n                      const SizedBox(height: 40),\n                      Form(\n                        key: _formKey,\n                        child: Column(\n                          children: [\n                            // Email Field (for request mode)\n                            if (!_isResetMode) ...[\n                              TextFormField(\n                                controller: _emailCtrl,\n                                decoration: const InputDecoration(\n                                  labelText: 'Email Address',\n                                  prefixIcon: Icon(Icons.email_outlined, color: Colors.white38),\n                                ),\n                                style: const TextStyle(color: Colors.white),\n                                keyboardType: TextInputType.emailAddress,\n                                validator: Validators.validateEmail,\n                              ),\n                              const SizedBox(height: 24),\n                            ],\n                            \n                            // New Password Field (for reset mode)\n                            if (_isResetMode) ...[\n                              TextFormField(\n                                controller: _passwordCtrl,\n                                obscureText: _obscurePassword,\n                                decoration: InputDecoration(\n                                  labelText: 'New Password',\n                                  prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.white38),\n                                  suffixIcon: IconButton(\n                                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.white38), \n                                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword)\n                                  ),\n                                ),\n                                style: const TextStyle(color: Colors.white),\n                                validator: (value) => Validators.validatePassword(value, _confirmPasswordCtrl.text),\n                              ),\n                              const SizedBox(height: 16),\n                              \n                              // Confirm Password Field\n                              TextFormField(\n                                controller: _confirmPasswordCtrl,\n                                obscureText: _obscureConfirmPassword,\n                                decoration: InputDecoration(\n                                  labelText: 'Confirm New Password',\n                                  prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.white38),\n                                  suffixIcon: IconButton(\n                                    icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility, color: Colors.white38), \n                                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword)\n                                  ),\n                                ),\n                                style: const TextStyle(color: Colors.white),\n                                validator: (value) => Validators.validateConfirmPassword(value, _passwordCtrl.text),\n                              ),\n                              const SizedBox(height: 24),\n                            ],\n                            \n                            // Submit Button\n                            SizedBox(\n                              width: double.infinity,\n                              height: 50,\n                              child: ElevatedButton(\n                                onPressed: auth.isLoading ? null : (_isResetMode ? _confirmReset : _requestReset),\n                                child: auth.isLoading\n                                  ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))\n                                  : Text(\n                                      _isResetMode ? 'Reset Password' : 'Send Reset Instructions',\n                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),\n                                    ),\n                              ),\n                            ),\n                            const SizedBox(height: 16),\n                            \n                            // Back to Login Link\n                            Center(\n                              child: GestureDetector(\n                                onTap: () => context.go('/login'),\n                                child: Text(\n                                  'Back to Sign In',\n                                  style: TextStyle(color: AppTheme.primary, fontSize: 14, fontWeight: FontWeight.w500),\n                                ),\n                              ),\n                            ),\n                            const SizedBox(height: 24),\n                            Center(child: Text('Vedanta TradeLink Pvt. Ltd. © 2024', style: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 11))),\n                          ],\n                        ),\n                      ),\n                    ],\n                  ),\n                ),\n              ),\n            ),\n          ),\n        ],\n      ),\n    );\n  }\n}\n\nclass _SecurityTip extends StatelessWidget {\n  final IconData icon;\n  final String title;\n  final String subtitle;\n  \n  const _SecurityTip({\n    required this.icon,\n    required this.title,\n    required this.subtitle,\n  });\n\n  @override\n  Widget build(BuildContext context) {\n    return Row(\n      children: [\n        Container(\n          width: 40, height: 40,\n          decoration: BoxDecoration(\n            color: AppTheme.secondary.withOpacity(0.1),\n            borderRadius: BorderRadius.circular(10),\n          ),\n          child: Icon(icon, size: 20, color: AppTheme.secondary),\n        ),\n        const SizedBox(width: 12),\n        Expanded(\n          child: Column(\n            crossAxisAlignment: CrossAxisAlignment.start,\n            children: [\n              Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),\n              Text(subtitle, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),\n            ],\n          ),\n        ),\n      ],\n    );\n  }\n}
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../../shared/widgets/glassmorphic_widgets.dart';
+import '../providers/auth_provider.dart';
+
+class PasswordResetScreen extends StatefulWidget {
+  final String? token;
+  const PasswordResetScreen({super.key, this.token});
+
+  @override
+  State<PasswordResetScreen> createState() => _PasswordResetScreenState();
+}
+
+class _PasswordResetScreenState extends State<PasswordResetScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _confirmPasswordCtrl = TextEditingController();
+  
+  bool _isResetMode = false;
+  bool _isPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isResetMode = widget.token != null;
+  }
+
+  Future<void> _handleResetRequest() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final auth = context.read<AuthProvider>();
+    final success = await auth.resetPassword(_emailCtrl.text.trim());
+
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Reset instructions sent to your email')),
+        );
+        context.go('/login');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(auth.errorMessage ?? 'Request failed')),
+        );
+      }
+    }
+  }
+
+  Future<void> _handlePasswordReset() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    // Mock success for now
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Password reset successful!')),
+    );
+    context.go('/login');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0F172A)],
+          ),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: 100, left: -50,
+              child: Container(
+                width: 250, height: 250,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.blueAccent.withOpacity(0.05),
+                ),
+              ),
+            ),
+            Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 400),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.lock_reset, size: 70, color: Colors.blueAccent),
+                      const SizedBox(height: 16),
+                      Text(
+                        _isResetMode ? 'New Password' : 'Reset Access',
+                        style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: -1),
+                      ),
+                      Text(
+                        _isResetMode 
+                          ? 'Enter your new secure password' 
+                          : 'Enter your email to receive recovery link',
+                        style: const TextStyle(color: Colors.white54, fontSize: 13),
+                      ),
+                      const SizedBox(height: 32),
+                      GlassmorphicCard(
+                        padding: const EdgeInsets.all(24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              if (!_isResetMode) ...[
+                                GlassmorphicTextField(
+                                  controller: _emailCtrl,
+                                  hintText: 'Email Address',
+                                  prefixIcon: Icons.email_outlined,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (val) => val == null || !val.contains('@') ? 'Invalid email' : null,
+                                ),
+                              ] else ...[
+                                GlassmorphicTextField(
+                                  controller: _passwordCtrl,
+                                  hintText: 'New Password',
+                                  prefixIcon: Icons.lock_outline,
+                                  obscureText: !_isPasswordVisible,
+                                  validator: (val) => val == null || val.length < 6 ? 'Min 6 chars' : null,
+                                ),
+                                const SizedBox(height: 16),
+                                GlassmorphicTextField(
+                                  controller: _confirmPasswordCtrl,
+                                  hintText: 'Confirm Password',
+                                  prefixIcon: Icons.lock_reset,
+                                  obscureText: !_isPasswordVisible,
+                                  validator: (val) => val != _passwordCtrl.text ? 'Passwords mismatch' : null,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white38),
+                                    onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 32),
+                              Consumer<AuthProvider>(
+                                builder: (context, auth, _) => GlassmorphicButton(
+                                  text: auth.isLoading ? 'Processing...' : (_isResetMode ? 'Update Password' : 'Send Reset Link'),
+                                  onPressed: auth.isLoading ? null : (_isResetMode ? _handlePasswordReset : _handleResetRequest),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      TextButton(
+                        onPressed: () => context.go('/login'),
+                        child: const Text(
+                          'Back to Login',
+                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

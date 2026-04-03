@@ -1,1 +1,194 @@
-import 'package:flutter/material.dart';\nimport 'package:go_router/go_router.dart';\nimport 'package:provider/provider.dart';\nimport 'dart:async';\nimport 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';\nimport 'package:vedanta_trade/app/theme/app_theme.dart';\nimport 'package:vedanta_trade/shared/widgets/validators.dart';\n\nclass RegisterScreen extends StatefulWidget {\n  const RegisterScreen({super.key});\n  \n  @override\n  State<RegisterScreen> createState() => _RegisterScreenState();\n}\n\nclass _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {\n  final _formKey = GlobalKey<FormState>();\n  final _nameCtrl = TextEditingController();\n  final _emailCtrl = TextEditingController();\n  final _phoneCtrl = TextEditingController();\n  final _passwordCtrl = TextEditingController();\n  final _confirmPasswordCtrl = TextEditingController();\n  \n  bool _obscurePassword = true;\n  bool _obscureConfirmPassword = true;\n  bool _agreeToTerms = false;\n  late AnimationController _animCtrl;\n  late Animation<double> _slideAnim;\n  bool? _isBackendOnline;\n  Timer? _healthTimer;\n\n  @override\n  void initState() {\n    super.initState();\n    _animCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));\n    _slideAnim = Tween<double>(begin: 60, end: 0).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut));\n    _animCtrl.forward();\n    _checkHealth();\n    _healthTimer = Timer.periodic(const Duration(seconds: 5), (_) => _checkHealth());\n  }\n\n  Future<void> _checkHealth() async {\n    final status = await context.read<AuthProvider>().checkHealth();\n    if (mounted) setState(() => _isBackendOnline = status);\n  }\n\n  @override\n  void dispose() { \n    _animCtrl.dispose(); \n    _nameCtrl.dispose(); \n    _emailCtrl.dispose(); \n    _phoneCtrl.dispose();\n    _passwordCtrl.dispose(); \n    _confirmPasswordCtrl.dispose();\n    _healthTimer?.cancel();\n    super.dispose(); \n  }\n\n  Future<void> _register() async {\n    if (!_formKey.currentState!.validate()) return;\n    if (!_agreeToTerms) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        const SnackBar(content: Text('Please agree to the terms and conditions'), backgroundColor: AppTheme.error),\n      );\n      return;\n    }\n\n    final auth = context.read<AuthProvider>();\n    final ok = await auth.register(\n      _nameCtrl.text.trim(),\n      _emailCtrl.text.trim(),\n      _passwordCtrl.text,\n      _phoneCtrl.text.trim(),\n    );\n    \n    if (!mounted) return;\n    \n    if (ok) {\n      ScaffoldMessenger.of(context).showSnackBar(\n        const SnackBar(content: Text('Registration successful!'), backgroundColor: AppTheme.success),\n      );\n      final role = auth.userRole;\n      switch (role) {\n        case 'ADMIN': context.go('/admin'); break;\n        case 'MEDICAL_REP': context.go('/mr'); break;\n        case 'ACCOUNTANT': context.go('/accounting'); break;\n        case 'DOCTOR': context.go('/doctor'); break;\n        case 'STOCKIST': context.go('/stockist'); break;\n        case 'RETAILER': context.go('/retailer'); break;\n        default: context.go('/'); break;\n      }\n    } else {\n      ScaffoldMessenger.of(context).showSnackBar(\n        SnackBar(content: Text(auth.error ?? 'Registration failed'), backgroundColor: AppTheme.error),\n      );\n    }\n  }\n\n  @override\n  Widget build(BuildContext context) {\n    final auth = context.watch<AuthProvider>();\n    \n    return Scaffold(\n      backgroundColor: AppTheme.bgDark,\n      body: Row(\n        children: [\n          // Left Panel - Branding\n          Expanded(\n            flex: 5,\n            child: Container(\n              decoration: const BoxDecoration(\n                gradient: LinearGradient(colors: [Color(0xFF1A1D2E), Color(0xFF0F1117)], begin: Alignment.topLeft, end: Alignment.bottomRight),\n              ),\n              child: Column(\n                mainAxisAlignment: MainAxisAlignment.center,\n                children: [\n                  Container(\n                    width: 88, height: 88,\n                    decoration: BoxDecoration(\n                      shape: BoxShape.circle,\n                      gradient: const LinearGradient(colors: [AppTheme.primary, AppTheme.secondary]),\n                      boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.35), blurRadius: 30)],\n                    ),\n                    child: const Icon(Icons.local_pharmacy_rounded, size: 48, color: Colors.white),\n                  ),\n                  const SizedBox(height: 20),\n                  const Text('Join VedantaTrade', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: Colors.white)),\n                  const SizedBox(height: 8),\n                  Text('Create your account to access\\nthe pharma management platform', textAlign: TextAlign.center, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 14, height: 1.5)),\n                  const SizedBox(height: 48),\n                  // Features\n                  Padding(\n                    padding: const EdgeInsets.symmetric(horizontal: 32),\n                    child: Column(\n                      crossAxisAlignment: CrossAxisAlignment.start,\n                      children: [\n                        Text('Features:', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 11, letterSpacing: 1)),\n                        const SizedBox(height: 16),\n                        _FeatureItem(icon: Icons.security_rounded, title: 'Secure Authentication', subtitle: 'Biometric & JWT security'),\n                        const SizedBox(height: 12),\n                        _FeatureItem(icon: Icons.inventory_2_rounded, title: 'Product Management', subtitle: 'Complete catalog control'),\n                        const SizedBox(height: 12),\n                        _FeatureItem(icon: Icons.analytics_rounded, title: 'Real-time Analytics', subtitle: 'Business insights'),\n                      ],\n                    ),\n                  ),\n                ],\n              ),\n            ),\n          ),\n          // Right Panel - Registration Form\n          Expanded(\n            flex: 4,\n            child: AnimatedBuilder(\n              animation: _slideAnim,\n              builder: (_, child) => Transform.translate(offset: Offset(_slideAnim.value, 0), child: child),\n              child: Container(\n                color: AppTheme.surfaceDark,\n                padding: const EdgeInsets.symmetric(horizontal: 48),\n                child: SingleChildScrollView(\n                  child: Column(\n                    mainAxisAlignment: MainAxisAlignment.center,\n                    crossAxisAlignment: CrossAxisAlignment.start,\n                    children: [\n                      const Text('Create Account', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white)),\n                      const SizedBox(height: 6),\n                      Row(\n                        children: [\n                          Text('Fill in your details to get started', style: TextStyle(color: Colors.white.withOpacity(0.5))),\n                          const Spacer(),\n                          _BackendStatusBadge(isOnline: _isBackendOnline),\n                        ],\n                      ),\n                      const SizedBox(height: 32),\n                      Form(\n                        key: _formKey,\n                        child: Column(\n                          children: [\n                            // Name Field\n                            TextFormField(\n                              controller: _nameCtrl,\n                              decoration: const InputDecoration(\n                                labelText: 'Full Name',\n                                prefixIcon: Icon(Icons.person_outline, color: Colors.white38),\n                              ),\n                              style: const TextStyle(color: Colors.white),\n                              validator: Validators.validateName,\n                            ),\n                            const SizedBox(height: 16),\n                            \n                            // Email Field\n                            TextFormField(\n                              controller: _emailCtrl,\n                              decoration: const InputDecoration(\n                                labelText: 'Email Address',\n                                prefixIcon: Icon(Icons.email_outlined, color: Colors.white38),\n                              ),\n                              style: const TextStyle(color: Colors.white),\n                              keyboardType: TextInputType.emailAddress,\n                              validator: Validators.validateEmail,\n                            ),\n                            const SizedBox(height: 16),\n                            \n                            // Phone Field\n                            TextFormField(\n                              controller: _phoneCtrl,\n                              decoration: const InputDecoration(\n                                labelText: 'Phone Number',\n                                prefixIcon: Icon(Icons.phone_outlined, color: Colors.white38),\n                              ),\n                              style: const TextStyle(color: Colors.white),\n                              keyboardType: TextInputType.phone,\n                              validator: Validators.validatePhone,\n                            ),\n                            const SizedBox(height: 16),\n                            \n                            // Password Field\n                            TextFormField(\n                              controller: _passwordCtrl,\n                              obscureText: _obscurePassword,\n                              decoration: InputDecoration(\n                                labelText: 'Password',\n                                prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.white38),\n                                suffixIcon: IconButton(\n                                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.white38), \n                                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword)\n                                ),\n                              ),\n                              style: const TextStyle(color: Colors.white),\n                              validator: (value) => Validators.validatePassword(value, _confirmPasswordCtrl.text),\n                            ),\n                            const SizedBox(height: 16),\n                            \n                            // Confirm Password Field\n                            TextFormField(\n                              controller: _confirmPasswordCtrl,\n                              obscureText: _obscureConfirmPassword,\n                              decoration: InputDecoration(\n                                labelText: 'Confirm Password',\n                                prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.white38),\n                                suffixIcon: IconButton(\n                                  icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility, color: Colors.white38), \n                                  onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword)\n                                ),\n                              ),\n                              style: const TextStyle(color: Colors.white),\n                              validator: (value) => Validators.validateConfirmPassword(value, _passwordCtrl.text),\n                            ),\n                            const SizedBox(height: 24),\n                            \n                            // Terms Checkbox\n                            Row(\n                              children: [\n                                Checkbox(\n                                  value: _agreeToTerms,\n                                  onChanged: (value) => setState(() => _agreeToTerms = value ?? false),\n                                  fillColor: MaterialStateProperty.all(AppTheme.primary),\n                                ),\n                                Expanded(\n                                  child: GestureDetector(\n                                    onTap: () => setState(() => _agreeToTerms = !_agreeToTerms),\n                                    child: Text(\n                                      'I agree to the Terms of Service and Privacy Policy',\n                                      style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),\n                                    ),\n                                  ),\n                                ),\n                              ],\n                            ),\n                            const SizedBox(height: 24),\n                            \n                            // Register Button\n                            SizedBox(\n                              width: double.infinity,\n                              height: 50,\n                              child: ElevatedButton(\n                                onPressed: auth.isLoading ? null : _register,\n                                child: auth.isLoading\n                                  ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))\n                                  : const Text('Create Account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),\n                              ),\n                            ),\n                            const SizedBox(height: 16),\n                            \n                            // Login Link\n                            Center(\n                              child: GestureDetector(\n                                onTap: () => context.go('/login'),\n                                child: Text(\n                                  'Already have an account? Sign in',\n                                  style: TextStyle(color: AppTheme.primary, fontSize: 14, fontWeight: FontWeight.w500),\n                                ),\n                              ),\n                            ),\n                            const SizedBox(height: 24),\n                            Center(child: Text('Vedanta TradeLink Pvt. Ltd. © 2024', style: TextStyle(color: Colors.white.withOpacity(0.25), fontSize: 11))),\n                          ],\n                        ),\n                      ),\n                    ],\n                  ),\n                ),\n              ),\n            ),\n          ),\n        ],\n      ),\n    );\n  }\n}\n\nclass _FeatureItem extends StatelessWidget {\n  final IconData icon;\n  final String title;\n  final String subtitle;\n  \n  const _FeatureItem({\n    required this.icon,\n    required this.title,\n    required this.subtitle,\n  });\n\n  @override\n  Widget build(BuildContext context) {\n    return Row(\n      children: [\n        Container(\n          width: 40, height: 40,\n          decoration: BoxDecoration(\n            color: AppTheme.primary.withOpacity(0.1),\n            borderRadius: BorderRadius.circular(10),\n          ),\n          child: Icon(icon, size: 20, color: AppTheme.primary),\n        ),\n        const SizedBox(width: 12),\n        Expanded(\n          child: Column(\n            crossAxisAlignment: CrossAxisAlignment.start,\n            children: [\n              Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),\n              Text(subtitle, style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12)),\n            ],\n          ),\n        ),\n      ],\n    );\n  }\n}\n\nclass _BackendStatusBadge extends StatelessWidget {\n  final bool? isOnline;\n  const _BackendStatusBadge({this.isOnline});\n\n  @override\n  Widget build(BuildContext context) {\n    final color = isOnline == null ? Colors.white24 : (isOnline! ? AppTheme.success : AppTheme.error);\n    final text = isOnline == null ? 'Checking...' : (isOnline! ? 'Backend Online' : 'Backend Offline');\n    \n    return Container(\n      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),\n      decoration: BoxDecoration(\n        color: color.withOpacity(0.1),\n        borderRadius: BorderRadius.circular(12),\n        border: Border.all(color: color.withOpacity(0.3)),\n      ),\n      child: Row(\n        mainAxisSize: MainAxisSize.min,\n        children: [\n          Container(\n            width: 8, height: 8,\n            decoration: BoxDecoration(color: color, shape: BoxShape.circle),\n          ),\n          const SizedBox(width: 6),\n          Text(text, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700)),\n        ],\n      ),\n    );\n  }\n}
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../../shared/widgets/glassmorphic_widgets.dart';
+import '../providers/auth_provider.dart';
+
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+  final _confirmPasswordCtrl = TextEditingController();
+  
+  bool _isPasswordVisible = false;
+  bool _agreeToTerms = false;
+
+  Future<void> _handleRegister() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (!_agreeToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please agree to the terms')),
+      );
+      return;
+    }
+
+    final auth = context.read<AuthProvider>();
+    final success = await auth.register(
+      _nameCtrl.text.trim(),
+      _emailCtrl.text.trim(),
+      _passwordCtrl.text,
+      _phoneCtrl.text.trim(),
+    );
+
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Registration successful!')),
+        );
+        context.go('/login');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(auth.errorMessage ?? 'Registration failed')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0F172A)],
+          ),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              bottom: -100, left: -100,
+              child: Container(
+                width: 300, height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.blueAccent.withOpacity(0.05),
+                ),
+              ),
+            ),
+            Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 450),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.app_registration, size: 60, color: Colors.blueAccent),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Join VedantaTrade',
+                        style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: -1),
+                      ),
+                      const Text(
+                        'Enterprise Pharma Management Access',
+                        style: TextStyle(color: Colors.white54, fontSize: 13),
+                      ),
+                      const SizedBox(height: 32),
+                      GlassmorphicCard(
+                        padding: const EdgeInsets.all(24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              GlassmorphicTextField(
+                                controller: _nameCtrl,
+                                hintText: 'Full Name',
+                                prefixIcon: Icons.person_outline,
+                                validator: (val) => val == null || val.isEmpty ? 'Name required' : null,
+                              ),
+                              const SizedBox(height: 16),
+                              GlassmorphicTextField(
+                                controller: _emailCtrl,
+                                hintText: 'Email Address',
+                                prefixIcon: Icons.email_outlined,
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (val) => val == null || !val.contains('@') ? 'Invalid email' : null,
+                              ),
+                              const SizedBox(height: 16),
+                              GlassmorphicTextField(
+                                controller: _phoneCtrl,
+                                hintText: 'Phone Number',
+                                prefixIcon: Icons.phone_outlined,
+                                keyboardType: TextInputType.phone,
+                              ),
+                              const SizedBox(height: 16),
+                              GlassmorphicTextField(
+                                controller: _passwordCtrl,
+                                hintText: 'Create Password',
+                                prefixIcon: Icons.lock_outline,
+                                obscureText: !_isPasswordVisible,
+                                validator: (val) => val == null || val.length < 6 ? 'Min 6 chars' : null,
+                              ),
+                              const SizedBox(height: 16),
+                              GlassmorphicTextField(
+                                controller: _confirmPasswordCtrl,
+                                hintText: 'Confirm Password',
+                                prefixIcon: Icons.lock_reset,
+                                obscureText: !_isPasswordVisible,
+                                validator: (val) => val != _passwordCtrl.text ? 'Passwords mismatch' : null,
+                                suffixIcon: IconButton(
+                                  icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.white38),
+                                  onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: _agreeToTerms,
+                                    onChanged: (v) => setState(() => _agreeToTerms = v ?? false),
+                                    side: const BorderSide(color: Colors.white24),
+                                    activeColor: Colors.blueAccent,
+                                  ),
+                                  const Expanded(
+                                    child: Text(
+                                      'I agree to the Terms & Privacy Policy',
+                                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Consumer<AuthProvider>(
+                                builder: (context, auth, _) => GlassmorphicButton(
+                                  text: auth.isLoading ? 'Creating...' : 'Register',
+                                  onPressed: auth.isLoading ? null : _handleRegister,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      TextButton(
+                        onPressed: () => context.go('/login'),
+                        child: const Text(
+                          'Already have an account? Sign in',
+                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

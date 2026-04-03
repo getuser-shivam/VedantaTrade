@@ -2,29 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Brand Colors
-  static const Color primary = Color(0xFF6C63FF);
-  static const Color primaryDark = Color(0xFF4A42D4);
-  static const Color secondary = Color(0xFF00D4AA);
-  static const Color accent = Color(0xFFFF6B6B);
-  static const Color warning = Color(0xFFFFA500);
-  static const Color success = Color(0xFF00CC88);
-  static const Color error = Color(0xFFFF4757);
-  static const Color info = Color(0xFF1E90FF);
+  // Premium Slate & Indigo Color Palette
+  static const Color primary = Color(0xFF4F46E5); // Indigo
+  static const Color primaryDark = Color(0xFF3730A3); // Dark Indigo
+  static const Color primaryLight = Color(0xFF6366F1); // Light Indigo
+  static const Color secondary = Color(0xFF06B6D4); // Cyan
+  static const Color accent = Color(0xFFF43F5E); // Rose
+  static const Color warning = Color(0xFFF59E0B); // Amber
+  static const Color success = Color(0xFF10B981); // Emerald
+  static const Color error = Color(0xFFEF4444); // Red
+  static const Color info = Color(0xFF3B82F6); // Blue
 
-  // Role Colors
-  static const Color adminColor = Color(0xFF6C63FF);
-  static const Color mrColor = Color(0xFF00D4AA);
-  static const Color accountantColor = Color(0xFF4ECDC4);
-  static const Color doctorColor = Color(0xFF1E90FF);
-  static const Color stockistColor = Color(0xFFFFAA00);
-  static const Color retailerColor = Color(0xFFFF6B6B);
+  // Role Colors (Premium Variants)
+  static const Color adminColor = Color(0xFF4F46E5); // Indigo
+  static const Color mrColor = Color(0xFF06B6D4); // Cyan
+  static const Color accountantColor = Color(0xFF8B5CF6); // Violet
+  static const Color doctorColor = Color(0xFF3B82F6); // Blue
+  static const Color stockistColor = Color(0xFFF59E0B); // Amber
+  static const Color retailerColor = Color(0xFFF43F5E); // Rose
 
-  // Dark Theme Surfaces
-  static const Color bgDark = Color(0xFF0F1117);
-  static const Color surfaceDark = Color(0xFF1A1D2E);
-  static const Color cardDark = Color(0xFF252841);
-  static const Color dividerDark = Color(0xFF2D3057);
+  // Premium Dark Theme Surfaces (Slate)
+  static const Color bgDark = Color(0xFF0F172A); // Slate-900
+  static const Color surfaceDark = Color(0xFF1E293B); // Slate-800
+  static const Color cardDark = Color(0xFF334155); // Slate-700
+  static const Color dividerDark = Color(0xFF475569); // Slate-600
+  static const Color glassSurface = Color(0x1AFFFFFF); // Glass effect
+  static const Color glassBorder = Color(0x33FFFFFF); // Glass border
+
+  // Glassmorphic Colors
+  static const Color glassBg = Color(0x1AFFFFFF);
+  static const Color glassBorderLight = Color(0x33FFFFFF);
+  static const Color glassBorderDark = Color(0x1AFFFFFF);
+  static const Color glassShadow = Color(0x1A000000);
+
+  // Gradient Colors
+  static const LinearGradient primaryGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF4F46E5), Color(0xFF3730A3)],
+  );
+  
+  static const LinearGradient glassGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0x1AFFFFFF), Color(0x0DFFFFFF)],
+  );
 
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
@@ -39,15 +61,33 @@ class AppTheme {
       onSurface: Colors.white,
     ),
     scaffoldBackgroundColor: bgDark,
-    cardTheme: const CardThemeData(
-      color: cardDark,
+    cardTheme: CardThemeData(
+      color: glassBg,
       elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: glassBorderLight, width: 1),
+      ),
     ),
     appBarTheme: AppBarTheme(
-      backgroundColor: surfaceDark,
+      backgroundColor: glassBg,
       elevation: 0,
       centerTitle: false,
       foregroundColor: Colors.white,
+      titleTextStyle: GoogleFonts.inter(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+      ),
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: glassGradient,
+          border: Border(
+            bottom: BorderSide(color: glassBorderLight, width: 1),
+          ),
+        ),
+      ),
+    ),
       titleTextStyle: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
     ),
     textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),

@@ -1,0 +1,107 @@
+[
+  {
+    "version": "3.1.1-alpha",
+    "releaseDate": "2026-03-30",
+    "status": "Alpha",
+    "buildNumber": "3110",
+    "platform": "Multi-Platform",
+    "description": "App Gallery & Visual Showcase: Transitioning to the Master Production Roadmap.",
+    "screenshots": [
+      "assets/screenshots/v3_1_1_gallery_mockup.png"
+    ],
+    "features": [
+      "Premium Glassmorphic Gallery UI",
+      "Interactive Carousel with Auto-play",
+      "Side-by-side Version Comparison Tool",
+      "Master Roadmap Synchronization"
+    ],
+    "changelog": [
+      "Initialized the 5-Pillar Production Roadmap",
+      "Created reusable GlassmorphicBackground component",
+      "Implemented GlassmorphicGalleryCarousel widget",
+      "Synchronized TODO/README/CHANGELOG documentation"
+    ],
+    "isFeatured": true
+  },
+  {
+    "version": "3.1.0-alpha",
+    "releaseDate": "2026-03-28",
+    "status": "Alpha",
+    "buildNumber": "3100",
+    "platform": "Multi-Platform",
+    "description": "Medical Representative (MR) & Production Finalization Foundations.",
+    "screenshots": [
+      "assets/screenshots/v3_1_0_mr_dashboard_mockup.png",
+      "assets/screenshots/v3_1_0_product_catalog_mockup.png",
+      "assets/screenshots/v3_1_0_visit_trace_mockup.png"
+    ],
+    "features": [
+      "Glassmorphic MR Dashboard with StatCards",
+      "Pulsating GPS Status & Trajectory Maps",
+      "Interactive Tour Plan Calendar",
+      "Enterprise Production Hardening Start"
+    ],
+    "changelog": [
+      "Refactored MR role with premium design system",
+      "Implemented high-accuracy mandatory GPS capture",
+      "Built interactive route planning for field force",
+      "Started Prisma model consolidation for SalesOrders"
+    ],
+    "isFeatured": true
+  },
+  {
+    "version": "3.0.0",
+    "releaseDate": "2026-03-27",
+    "status": "Stable",
+    "buildNumber": "3000",
+    "platform": "Multi-Platform",
+    "description": "Main Feature Release: Enterprise Pharmaceutical Distribution Platform for Nepal.",
+    "screenshots": [
+      "assets/screenshots/v3_0_0_gps.png",
+      "assets/screenshots/v3_0_0_inventory.png",
+      "assets/screenshots/v3_0_0_vat.png"
+    ],
+    "features": [
+      "Enhanced GPS Tracking & Trajectory Visualization",
+      "Stockist-to-Retailer Order Lifecycle",
+      "SKU-Level Inventory with Low-Stock Alerts",
+      "Nepal-Compliant 13% VAT Reporting",
+      "6-Role System Implementation"
+    ],
+    "changelog": [
+      "Added Background GPS polling (10m accuracy)",
+      "Implemented full Order Lifecycle management",
+      "Added VAT Return system for IRDN compliance",
+      "Created Accountant and MR Dashboards",
+      "Premium Slate & Indigo Design System"
+    ],
+    "isFeatured": false
+  },
+  {
+    "version": "2.1.0",
+    "releaseDate": "2024-03-27",
+    "status": "Stable",
+    "buildNumber": "2100",
+    "platform": "Multi-Platform",
+    "description": "Enhanced UI/UX with modern design system and improved navigation.",
+    "screenshots": [
+      "assets/screenshots/v2_1_0_dashboard.png",
+      "assets/screenshots/v2_1_0_distribution.png"
+    ],
+    "features": [
+      "Slate & Indigo Theme System",
+      "Glassmorphic UI Components",
+      "Lottie Animation Integration",
+      "App Gallery Feature",
+      "Responsive Layout Overhaul"
+    ],
+    "changelog": [
+      "Implemented comprehensive AppTheme",
+      "Added Lottie success/error animations",
+      "Created Version Showcase carousel",
+      "Optimized navigation rail with animations",
+      "Enhanced error handling and loading states"
+    ],
+    "isFeatured": false
+  }
+]

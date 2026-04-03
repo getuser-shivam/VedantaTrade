@@ -3,65 +3,64 @@ class Product {
   final String name;
   final String category;
   final String description;
-  final String imageUrl;
-  final double mrp; // Maximum Retail Price
+  final List<String> images;
+  final double price; // This maps to MRP
+  final String form;
+  final List<String> ingredients;
+  final String dosage;
+  final String packaging;
+  final bool featured;
+  
+  // Future-proofing / Inventory fields
+  final int stockQuantity;
   final double? ptr; // Price to Retailer
   final double? pts; // Price to Stockist
-  final bool featured;
-  final String sku;
   final String manufacturer;
-  final String composition;
-  final String packSize;
-  final int stockQuantity;
-  final bool isActive;
   final String? genericName;
-  final String? unitOfMeasure;
-  final double? gstPercent;
-  final bool? requiresPrescription;
+  final bool isActive;
 
   Product({
     required this.id,
     required this.name,
     required this.category,
     this.description = '',
-    this.imageUrl = '',
-    required this.mrp,
+    this.images = const [],
+    required this.price,
+    this.form = '',
+    this.ingredients = const [],
+    this.dosage = '',
+    this.packaging = '',
+    this.featured = false,
+    this.stockQuantity = 0,
     this.ptr,
     this.pts,
-    this.featured = false,
-    this.sku = '',
     this.manufacturer = 'Vedanta TradeLink',
-    this.composition = '',
-    this.packSize = '',
-    this.stockQuantity = 0,
-    this.isActive = true,
     this.genericName,
-    this.unitOfMeasure,
-    this.gstPercent,
-    this.requiresPrescription,
+    this.isActive = true,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
+    // Handling both products.json format and potential API format
     return Product(
       id: json['id']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
+      name: json['name']?.toString() ?? json['item_name'] ?? '',
       category: json['category']?.toString() ?? 'Uncategorized',
       description: json['description']?.toString() ?? '',
-      imageUrl: json['imageUrl']?.toString() ?? '',
-      mrp: (json['price'] as num?)?.toDouble() ?? 0.0,
+      images: json['images'] != null 
+          ? List<String>.from(json['images']) 
+          : (json['imageUrl'] != null ? [json['imageUrl']] : (json['image_url'] != null ? [json['image_url']] : [])),
+      price: (json['price'] ?? json['mrp'] ?? json['unit_price'] ?? 0.0).toDouble(),
+      form: json['form']?.toString() ?? '',
+      ingredients: json['ingredients'] != null ? List<String>.from(json['ingredients']) : [],
+      dosage: json['dosage']?.toString() ?? '',
+      packaging: json['packaging']?.toString() ?? '',
+      featured: json['featured'] ?? false,
+      stockQuantity: (json['stockQuantity'] ?? json['stock'] ?? json['current_stock'] ?? 0).toInt(),
       ptr: (json['ptr'] as num?)?.toDouble(),
       pts: (json['pts'] as num?)?.toDouble(),
-      featured: json['featured'] ?? false,
-      sku: json['sku']?.toString() ?? '',
       manufacturer: json['manufacturer']?.toString() ?? 'Vedanta TradeLink',
-      composition: json['composition']?.toString() ?? '',
-      packSize: json['packSize']?.toString() ?? '',
-      stockQuantity: (json['stockQuantity'] as num?)?.toInt() ?? 0,
+      genericName: json['genericName']?.toString() ?? json['generic_name'],
       isActive: json['isActive'] ?? true,
-      genericName: json['genericName']?.toString(),
-      unitOfMeasure: json['unitOfMeasure']?.toString(),
-      gstPercent: (json['gstPercent'] as num?)?.toDouble(),
-      requiresPrescription: json['requiresPrescription'] as bool?,
     );
   }
 
@@ -71,64 +70,137 @@ class Product {
       'name': name,
       'category': category,
       'description': description,
-      'imageUrl': imageUrl,
-      'price': mrp,
+      'images': images,
+      'price': price,
+      'form': form,
+      'ingredients': ingredients,
+      'dosage': dosage,
+      'packaging': packaging,
+      'featured': featured,
+      'stockQuantity': stockQuantity,
       'ptr': ptr,
       'pts': pts,
-      'featured': featured,
-      'sku': sku,
       'manufacturer': manufacturer,
-      'composition': composition,
-      'packSize': packSize,
-      'stockQuantity': stockQuantity,
-      'isActive': isActive,
       'genericName': genericName,
-      'unitOfMeasure': unitOfMeasure,
-      'gstPercent': gstPercent,
-      'requiresPrescription': requiresPrescription,
+      'isActive': isActive,
     };
   }
 
-  // Helper method to get searchable text for filtering
+  // UI Helpers
+  String get firstImage => images.isNotEmpty ? images.first : 'assets/images/placeholder.png';
+  
   String get searchableText {
     return [
       name,
       category,
       description,
       manufacturer,
-      composition,
-      packSize,
-      sku,
       genericName ?? '',
-      unitOfMeasure ?? '',
+      ...ingredients,
+      form,
+      packaging,
     ].join(' ').toLowerCase();
   }
 
-  // Helper method to get ingredients from composition
-  List<String> get ingredients {
-    if (composition.isEmpty) return [];
-    // Split composition by common separators and clean up
-    return composition
-        .split(RegExp(r'[,+&]'))
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
+  String get formattedPrice => 'NPR ${price.toStringAsFixed(2)}';
+  
+  bool get isLowStock => stockQuantity > 0 && stockQuantity <= 10;
+  bool get isOutOfStock => stockQuantity == 0;
+  bool get isInStock => stockQuantity > 10;
+
+  String get stockStatus {
+    if (isOutOfStock) return 'out_of_stock';
+    if (isLowStock) return 'low_stock';
+    return 'in_stock';
+  }
+}
+
+class Category {
+  final String name;
+  final String? description;
+  final String? imageUrl;
+  final int productCount;
+
+  Category({
+    required this.name,
+    this.description,
+    this.imageUrl,
+    this.productCount = 0,
+  });
+
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      name: json['name'] ?? json['category'] ?? '',
+      description: json['description'],
+      imageUrl: json['imageUrl'] ?? json['image_url'],
+      productCount: json['product_count'] ?? 0,
+    );
   }
 
-  // Helper method to get form (tablet, capsule, etc.) from packSize
-  String get form {
-    if (packSize.isEmpty) return '';
-    
-    // Common pharmaceutical forms
-    final forms = ['tablet', 'capsule', 'syrup', 'injection', 'ointment', 'cream', 'gel', 'drops', 'spray'];
-    
-    for (final form in forms) {
-      if (packSize.toLowerCase().contains(form)) {
-        return form;
-      }
-    }
-    
-    // Default fallback
-    return packSize;
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'imageUrl': imageUrl,
+      'product_count': productCount,
+    };
+  }
+}
+
+class Manufacturer {
+  final String name;
+  final String? description;
+  final String? licenseNumber;
+
+  Manufacturer({
+    required this.name,
+    this.description,
+    this.licenseNumber,
+  });
+
+  factory Manufacturer.fromJson(Map<String, dynamic> json) {
+    return Manufacturer(
+      name: json['name'] ?? json['manufacturer'] ?? '',
+      description: json['description'],
+      licenseNumber: json['license_number'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'license_number': licenseNumber,
+    };
+  }
+}
+
+class ProductSearchResult {
+  final List<Product> products;
+  final int totalCount;
+  final int currentPage;
+  final int totalPages;
+  final bool hasNextPage;
+
+  ProductSearchResult({
+    required this.products,
+    required this.totalCount,
+    this.currentPage = 1,
+    this.totalPages = 1,
+    this.hasNextPage = false,
+  });
+
+  factory ProductSearchResult.fromJson(Map<String, dynamic> json) {
+    final productsList = (json['products'] as List?)
+            ?.map((p) => Product.fromJson(p))
+            .toList() ??
+        [];
+    return ProductSearchResult(
+      products: productsList,
+      totalCount: json['total'] ?? productsList.length,
+      currentPage: json['current_page'] ?? 1,
+      totalPages: json['total_pages'] ?? 1,
+      hasNextPage: json['has_next'] ?? false,
+    );
   }
 }

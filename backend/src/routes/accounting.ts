@@ -13,8 +13,8 @@ router.get('/dashboard', authenticate, authorize('ACCOUNTANT', 'ADMIN'), async (
     
     // Mapped "Receivables" to SalesOrders and "Payables" to PurchaseOrders for a localized Nepal view
     const [salesRaw, purchasesRaw] = await Promise.all([
-      prisma.salesOrders.aggregate({ where: { status: { in: ['PENDING', 'PARTIAL'] } }, _sum: { total_amount: true } }),
-      prisma.purchaseOrders.aggregate({ where: { status: { in: ['PENDING', 'PARTIAL'] } }, _sum: { total_amount: true } }),
+      prisma.salesOrder.aggregate({ where: { status: { in: ['PENDING', 'PARTIAL'] } }, _sum: { total_amount: true } }),
+      prisma.purchaseOrder.aggregate({ where: { status: { in: ['PENDING', 'PARTIAL'] } }, _sum: { total_amount: true } }),
     ]);
 
     const totalReceivables = salesRaw._sum.total_amount || 0;
@@ -40,7 +40,7 @@ router.get('/invoices', authenticate, authorize('ACCOUNTANT', 'ADMIN', 'STOCKIST
     let total = 0;
 
     if (type === 'SALE' || !type) {
-      const sales = await prisma.salesOrders.findMany({
+      const sales = await prisma.salesOrder.findMany({
         skip: (Number(page) - 1) * Number(limit), take: Number(limit),
         orderBy: { order_date: 'desc' },
       });
@@ -48,11 +48,11 @@ router.get('/invoices', authenticate, authorize('ACCOUNTANT', 'ADMIN', 'STOCKIST
         id: s.so_id, invoiceNumber: `SAL-${s.so_id}`, invoiceType: 'SALE',
         totalAmount: s.total_amount, status: s.status || 'PENDING', dueDate: s.delivery_date
       }));
-      total += await prisma.salesOrders.count();
+      total += await prisma.salesOrder.count();
     }
     
     if (type === 'PURCHASE' || !type) {
-      const purchases = await prisma.purchaseOrders.findMany({
+      const purchases = await prisma.purchaseOrder.findMany({
         skip: (Number(page) - 1) * Number(limit), take: Number(limit),
         orderBy: { order_date: 'desc' },
       });
@@ -60,7 +60,7 @@ router.get('/invoices', authenticate, authorize('ACCOUNTANT', 'ADMIN', 'STOCKIST
         id: p.po_id, invoiceNumber: `PUR-${p.po_id}`, invoiceType: 'PURCHASE',
         totalAmount: p.total_amount, status: p.status || 'PENDING', dueDate: p.delivery_date
       }))];
-      total += await prisma.purchaseOrders.count();
+      total += await prisma.purchaseOrder.count();
     }
 
     return res.json({ success: true, data: invoices, pagination: { page: Number(page), limit: Number(limit), total } });
@@ -77,7 +77,7 @@ router.post('/invoices', authenticate, authorize('ACCOUNTANT', 'ADMIN'), async (
     // Create actual Sales/Purchase orders to act as "Invoices"
     let created;
     if (invoiceType === 'SALE') {
-      created = await prisma.salesOrders.create({
+      created = await prisma.salesOrder.create({
         data: {
           customer_id: 1, // Default customer
           order_date: new Date().toISOString(), delivery_date: dueDate,
@@ -85,7 +85,7 @@ router.post('/invoices', authenticate, authorize('ACCOUNTANT', 'ADMIN'), async (
         }
       });
     } else {
-      created = await prisma.purchaseOrders.create({
+      created = await prisma.purchaseOrder.create({
         data: {
           vendor_id: 1, // Default vendor
           order_date: new Date().toISOString(), delivery_date: dueDate,
@@ -118,8 +118,8 @@ router.get('/ledger', authenticate, authorize('ACCOUNTANT', 'ADMIN'), async (req
 // GET /api/accounting/vat-report
 router.get('/vat-report', authenticate, authorize('ACCOUNTANT', 'ADMIN'), async (req, res) => {
   try {
-    const sales = await prisma.salesOrders.findMany({ where: { status: 'PENDING' } });
-    const purchases = await prisma.purchaseOrders.findMany({ where: { status: 'PENDING' } });
+    const sales = await prisma.salesOrder.findMany({ where: { status: 'PENDING' } });
+    const purchases = await prisma.purchaseOrder.findMany({ where: { status: 'PENDING' } });
     
     let totalSales = 0;
     sales.forEach(s => totalSales += (s.total_amount || 0));
@@ -155,3 +155,4 @@ router.get('/vat-report', authenticate, authorize('ACCOUNTANT', 'ADMIN'), async 
 });
 
 export default router;
+

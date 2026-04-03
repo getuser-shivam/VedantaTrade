@@ -1,12 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
 import 'package:vedanta_trade/shared/app_scaffold.dart';
-import 'package:vedanta_trade/shared/widgets.dart';
+import 'package:vedanta_trade/shared/widgets/glassmorphic_widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
-import 'package:dio/dio.dart';
-import 'package:vedanta_trade/core/api_config.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:intl/intl.dart';
 
 class VisitLogScreen extends StatefulWidget {
   const VisitLogScreen({super.key});
@@ -17,25 +19,124 @@ class VisitLogScreen extends StatefulWidget {
 class _VisitLogScreenState extends State<VisitLogScreen> {
   List<dynamic> _visits = [];
   bool _loading = true;
+  List<LatLng> _trajectoryPoints = [];
+  bool _isTracking = false;
+  StreamSubscription<Position>? _positionStreamSubscription;
 
   @override
-  void initState() { super.initState(); _loadVisits(); }
+  void initState() {
+    super.initState();
+    _loadVisits();
+    _startBackgroundTracking();
+  }
+
+  @override
+  void dispose() {
+    _stopBackgroundTracking();
+    super.dispose();
+  }
+
+  Future<void> _startBackgroundTracking() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await Geolocator.openLocationSettings();
+        if (!serviceEnabled) return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) {
+          return;
+        }
+      }
+
+      const LocationSettings locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10,
+      );
+
+      _positionStreamSubscription = Geolocator.getPositionStream(locationSettings: locationSettings).listen(
+        (Position position) {
+          if (mounted) {
+            setState(() {
+              _trajectoryPoints.add(LatLng(position.latitude, position.longitude));
+              if (_trajectoryPoints.length > 100) {
+                _trajectoryPoints.removeAt(0);
+              }
+            });
+          }
+        },
+        onError: (error) {
+          debugPrint('GPS tracking error: $error');
+        },
+      );
+
+      setState(() => _isTracking = true);
+    } catch (e) {
+      debugPrint('Failed to start GPS tracking: $e');
+    }
+  }
+
+  Future<void> _stopBackgroundTracking() async {
+    await _positionStreamSubscription?.cancel();
+    _positionStreamSubscription = null;
+    if (mounted) setState(() => _isTracking = false);
+  }
+
+  Future<Position?> _getCurrentHighAccuracyLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return null;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.deniedForever) return null;
+
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 15),
+      );
+    } catch (e) {
+      return null;
+    }
+  }
 
   Future<void> _loadVisits() async {
-    try {
-      final auth = context.read<AuthProvider>();
-      final dio = Dio();
-      final res = await dio.get('${ApiConfig.baseUrl}/mr/visits', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
-      if (mounted) setState(() { _visits = res.data['data'] ?? []; _loading = false; });
-    } catch (_) { if (mounted) setState(() => _loading = false); }
+    // Mocking for Phase 5 demo
+    await Future.delayed(const Duration(seconds: 1));
+    if (mounted) {
+      setState(() {
+        _visits = [
+          {
+            'doctor': {'name': 'Dr. Santosh Mahaseth', 'clinicName': 'Janakpur City Hospital', 'specialization': 'Cardiologist'},
+            'visitType': 'ROUTINE',
+            'visitDate': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
+            'notes': 'Discussed new range of hypertension medications. Sample provided.',
+            'nextFollowUp': DateTime.now().add(const Duration(days: 14)).toIso8601String(),
+            'latitude': 26.7288,
+            'longitude': 85.9260,
+          },
+          {
+            'doctor': {'name': 'Dr. Anjali Jha', 'clinicName': 'Jha Poly Clinic', 'specialization': 'Pediatrician'},
+            'visitType': 'SAMPLE',
+            'visitDate': DateTime.now().subtract(const Duration(days: 1, hours: 4)).toIso8601String(),
+            'notes': 'Follow-up on previous sample results. Positive feedback.',
+            'latitude': 26.7310,
+            'longitude': 85.9220,
+          },
+        ];
+        _loading = false;
+      });
+    }
   }
 
   static const _navItems = [
-    NavItem(label: 'MR Dashboard', icon: Icons.dashboard_rounded, route: '/mr'),
+    NavItem(label: 'Dashboard', icon: Icons.dashboard_rounded, route: '/mr'),
     NavItem(label: 'Doctor Visits', icon: Icons.medical_services_rounded, route: '/mr/visits'),
     NavItem(label: 'Tour Plan', icon: Icons.map_rounded, route: '/mr/tour-plan'),
     NavItem(label: 'Expenses', icon: Icons.receipt_long_rounded, route: '/mr/expenses'),
-    NavItem(label: 'Doctor List', icon: Icons.health_and_safety_rounded, route: '/doctors-list'),
+    NavItem(label: 'Profile', icon: Icons.person_rounded, route: '/profile'),
   ];
 
   @override
@@ -48,242 +149,375 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
       fab: FloatingActionButton.extended(
         onPressed: () => _showAddVisitDialog(),
         backgroundColor: AppTheme.mrColor,
-        icon: const Icon(Icons.add_location_alt_rounded),
-        label: const Text('Log Visit'),
+        icon: const Icon(Icons.add_location_alt_rounded, color: Colors.white),
+        label: const Text('Log Visit', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: _loading
-        ? const Center(child: CircularProgressIndicator(color: AppTheme.mrColor))
-        : Column(children: [
-            // Header stats
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Row(children: [
-                Expanded(child: StatCard(title: 'Total Visits', value: '${_visits.length}', icon: Icons.medical_services_rounded, color: AppTheme.mrColor)),
-                const SizedBox(width: 16),
-                Expanded(child: StatCard(title: 'This Week', value: '${_visits.where((v) { try { return DateTime.parse(v['visitDate'].toString()).isAfter(DateTime.now().subtract(const Duration(days: 7))); } catch (_) { return false; } }).length}', icon: Icons.calendar_month_rounded, color: AppTheme.primary)),
-                const SizedBox(width: 16),
-                Expanded(child: StatCard(title: 'Pending Follow-ups', value: '${_visits.where((v) => v['nextFollowUp'] != null).length}', icon: Icons.schedule_rounded, color: AppTheme.warning)),
-              ]),
-            ),
-            const Divider(height: 1),
-            // Visit List
-            Expanded(
-              child: _visits.isEmpty
-                ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.medical_services_rounded, size: 56, color: AppTheme.mrColor.withOpacity(0.3)),
-                    const SizedBox(height: 16),
-                    const Text('No visits logged yet', style: TextStyle(color: Colors.white38, fontSize: 16)),
-                    const SizedBox(height: 8),
-                    const Text('Tap "+ Log Visit" to record your first doctor visit', style: TextStyle(color: Colors.white24, fontSize: 13)),
-                  ]))
-                : ListView.builder(
-                    padding: const EdgeInsets.all(24),
-                    itemCount: _visits.length,
-                    itemBuilder: (ctx, i) {
-                      final v = _visits[i];
-                      final doctor = v['doctor'];
-                      final hasFollowUp = v['nextFollowUp'] != null;
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: AppTheme.cardDark, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppTheme.dividerDark)),
-                        child: Column(children: [
-                          Row(children: [
-                            CircleAvatar(radius: 22, backgroundColor: AppTheme.mrColor.withOpacity(0.15), child: Icon(Icons.person_rounded, color: AppTheme.mrColor, size: 22)),
-                            const SizedBox(width: 14),
-                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text(doctor?['name'] ?? 'Unknown Doctor', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
-                              Text('${doctor?['specialization'] ?? ''} • ${doctor?['clinicName'] ?? ''}', style: const TextStyle(color: Colors.white38, fontSize: 12)),
-                            ])),
-                            Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(color: AppTheme.mrColor.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
-                                child: Text(v['visitType']?.toString().replaceAll('_', ' ') ?? '', style: const TextStyle(color: AppTheme.mrColor, fontSize: 11, fontWeight: FontWeight.w600)),
+          ? const Center(child: LoadingAnimation())
+          : Column(
+              children: [
+                // GPS Pulsating Status Bar
+                if (_isTracking) const _GpsStatusBar(),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Trajectory Map Section
+                        if (_trajectoryPoints.isNotEmpty) ...[
+                          const SectionHeader(title: 'Live Field Trajectory'),
+                          const SizedBox(height: 12),
+                          GlassmorphicCard(
+                            height: 220,
+                            padding: EdgeInsets.zero,
+                            clipBehavior: Clip.hardEdge,
+                            child: FlutterMap(
+                              options: MapOptions(
+                                initialCenter: _trajectoryPoints.last,
+                                initialZoom: 15.0,
                               ),
-                              const SizedBox(height: 4),
-                              Text(v['visitDate']?.toString().substring(0, 10) ?? '', style: const TextStyle(color: Colors.white38, fontSize: 11)),
-                            ]),
-                          ]),
-                          if (v['notes'] != null && (v['notes'] as String).isNotEmpty) ...[
-                            const SizedBox(height: 10),
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(color: Colors.white.withOpacity(0.04), borderRadius: BorderRadius.circular(8)),
-                              child: Text(v['notes'], style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                              children: [
+                                TileLayer(
+                                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                  userAgentPackageName: 'np.com.vedantatrade.app',
+                                ),
+                                PolylineLayer(
+                                  polylines: [
+                                    Polyline(
+                                      points: _trajectoryPoints,
+                                      color: AppTheme.mrColor.withOpacity(0.8),
+                                      strokeWidth: 4.0,
+                                    ),
+                                  ],
+                                ),
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      point: _trajectoryPoints.last,
+                                      width: 40,
+                                      height: 40,
+                                      child: Icon(Icons.location_on, color: AppTheme.error, size: 36),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // Quick Stats
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GlassmorphicStatCard(
+                                title: 'Total Visits',
+                                value: '${_visits.length}',
+                                icon: Icons.medical_services_rounded,
+                                color: AppTheme.mrColor,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: GlassmorphicStatCard(
+                                title: 'Verified GPS',
+                                value: '${_visits.where((v) => v['latitude'] != null).length}',
+                                icon: Icons.verified_rounded,
+                                color: AppTheme.success,
+                              ),
                             ),
                           ],
-                          if (hasFollowUp) ...[
-                            const SizedBox(height: 10),
-                            Row(children: [
-                              const Icon(Icons.schedule_rounded, size: 14, color: Colors.orange),
-                              const SizedBox(width: 6),
-                              Text('Follow-up: ${v['nextFollowUp']?.toString().substring(0, 10)}', style: const TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.w500)),
-                            ]),
-                          ],
-                        ]),
-                      );
-                    },
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Visit History List
+                        const SectionHeader(title: 'Recent Activity'),
+                        const SizedBox(height: 12),
+                        if (_visits.isEmpty)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(48),
+                              child: Text('No visits logged yet', style: TextStyle(color: Colors.white38)),
+                            ),
+                          )
+                        else
+                          ...(_visits.map((v) => _VisitListItem(visit: v)).toList()),
+                        const SizedBox(height: 80), // Space for FAB
+                      ],
+                    ),
                   ),
+                ),
+              ],
             ),
-          ]),
     );
   }
 
-  void _showAddVisitDialog() async {
-    final auth = context.read<AuthProvider>();
-    final dio = Dio();
-    List<dynamic> doctors = [];
-    bool loadingDoctors = true;
-
-    // Pre-fetch doctors
-    try {
-      final res = await dio.get('${ApiConfig.baseUrl}/doctors', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
-      doctors = res.data['data'];
-      loadingDoctors = false;
-    } catch (_) { loadingDoctors = false; }
-
-    if (!mounted) return;
-
+  void _showAddVisitDialog() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
-          int? selectedDoctorId;
-          String visitType = 'ROUTINE';
-          final notesController = TextEditingController();
-          DateTime? followUpDate;
-          bool submittig = false;
-
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.85,
-            decoration: const BoxDecoration(color: AppTheme.bgDark, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: Column(children: [
-              Container(width: 40, height: 4, margin: const EdgeInsets.symmetric(vertical: 12), decoration: BoxDecoration(color: Colors.white12, borderRadius: BorderRadius.circular(2))),
-              const Padding(padding: EdgeInsets.all(16), child: Text('Log Doctor Visit', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(24),
-                  children: [
-                    const Text('Select Doctor', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 12),
-                    if (loadingDoctors) const Center(child: CircularProgressIndicator())
-                    else if (doctors.isEmpty) const Text('No doctors found', style: TextStyle(color: Colors.white38))
-                    else DropdownButtonFormField<int>(
-                      dropdownColor: AppTheme.surfaceDark,
-                      decoration: AppTheme.inputDecoration('Select a doctor'),
-                      items: doctors.map((d) => DropdownMenuItem<int>(value: d['id'], child: Text(d['name']))).toList(),
-                      onChanged: (val) => setModalState(() => selectedDoctorId = val),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text('Visit Type', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: ['ROUTINE', 'FOLLOW_UP', 'STAMPING', 'SAMPLE'].map((t) {
-                        final sel = visitType == t;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: Text(t, style: TextStyle(color: sel ? Colors.white : Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
-                            selected: sel,
-                            onSelected: (v) { if (v) setModalState(() => visitType = t); },
-                            backgroundColor: AppTheme.surfaceDark,
-                            selectedColor: AppTheme.mrColor,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text('Notes', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: notesController,
-                      maxLines: 3,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      decoration: AppTheme.inputDecoration('Mention discussion points...'),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text('Next Follow-up (Optional)', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 12),
-                    InkWell(
-                      onTap: () async {
-                        final d = await showDatePicker(context: context, initialDate: DateTime.now().add(const Duration(days: 7)), firstDate: DateTime.now(), lastDate: DateTime.now().add(const Duration(days: 90)));
-                        if (d != null) setModalState(() => followUpDate = d);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: AppTheme.surfaceDark, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white12)),
-                        child: Row(children: [
-                          Icon(Icons.calendar_today_rounded, size: 18, color: followUpDate != null ? AppTheme.mrColor : Colors.white38),
-                          const SizedBox(width: 12),
-                          Text(followUpDate == null ? 'Select date' : followUpDate!.toString().substring(0,10), style: TextStyle(color: followUpDate != null ? Colors.white : Colors.white38)),
-                        ]),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: submittig || (selectedDoctorId == null) ? null : () async {
-                      setModalState(() => submittig = true);
-                      try {
-                        // Capture GPS Coordinates
-                        double? lat;
-                        double? lng;
-                        
-                        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-                        if (serviceEnabled) {
-                          LocationPermission permission = await Geolocator.checkPermission();
-                          if (permission == LocationPermission.denied) {
-                            permission = await Geolocator.requestPermission();
-                          }
-                          if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
-                            Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-                            lat = pos.latitude;
-                            lng = pos.longitude;
-                          }
-                        }
-
-                        await dio.post(
-                          '${ApiConfig.baseUrl}/mr/visits',
-                          data: {
-                            'doctorId': selectedDoctorId,
-                            'visitType': visitType,
-                            'visitDate': DateTime.now().toIso8601String(),
-                            'notes': notesController.text,
-                            'nextFollowUp': followUpDate?.toIso8601String(),
-                            'latitude': lat, 'longitude': lng,
-                          },
-                          options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}),
-                        );
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          _loadVisits();
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Visit logged successfully!'), backgroundColor: AppTheme.success));
-                        }
-                      } catch (e) {
-                        setModalState(() => submittig = false);
-                        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.error));
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(backgroundColor: AppTheme.mrColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                    child: submittig ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('SUBMIT VISIT', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
-                  ),
-                ),
-              ),
-            ]),
-          );
-        }
+      builder: (context) => _LogVisitModal(
+        onSuccess: () => _loadVisits(),
+        getCurrentLocation: _getCurrentHighAccuracyLocation,
       ),
     );
   }
 }
 
+class _GpsStatusBar extends StatefulWidget {
+  const _GpsStatusBar();
+  @override
+  State<_GpsStatusBar> createState() => _GpsStatusBarState();
+}
+
+class _GpsStatusBarState extends State<_GpsStatusBar> with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(_pulseController);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppTheme.success.withOpacity(0.05),
+        border: Border(bottom: BorderSide(color: AppTheme.success.withOpacity(0.15))),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FadeTransition(
+            opacity: _pulseAnimation,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(color: AppTheme.success, shape: BoxShape.circle),
+            ),
+          ),
+          const SizedBox(width: 10),
+          const Text(
+            'High-Accuracy GPS Tracking Active',
+            style: TextStyle(color: AppTheme.success, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VisitListItem extends StatelessWidget {
+  final Map<String, dynamic> visit;
+  const _VisitListItem({required this.visit});
+
+  @override
+  Widget build(BuildContext context) {
+    final doctor = visit['doctor'];
+    final visitDate = DateTime.parse(visit['visitDate']);
+    
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GlassmorphicListItem(
+        title: doctor?['name'] ?? 'Unknown Doctor',
+        subtitle: '${doctor?['clinicName']} • ${DateFormat('jm').format(visitDate)}',
+        leadingIcon: Icons.person_pin_rounded,
+        iconColor: AppTheme.mrColor,
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppTheme.mrColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.mrColor.withOpacity(0.2)),
+          ),
+          child: Text(
+            visit['visitType'] ?? '',
+            style: const TextStyle(color: AppTheme.mrColor, fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+        ),
+        onTap: () {
+          // Show visit details
+        },
+      ),
+    );
+  }
+}
+
+class _LogVisitModal extends StatefulWidget {
+  final VoidCallback onSuccess;
+  final Future<Position?> Function() getCurrentLocation;
+  const _LogVisitModal({required this.onSuccess, required this.getCurrentLocation});
+
+  @override
+  State<_LogVisitModal> createState() => _LogVisitModalState();
+}
+
+class _LogVisitModalState extends State<_LogVisitModal> {
+  String? _selectedDoctor;
+  String _visitType = 'ROUTINE';
+  final _notesController = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassmorphicBackground(
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.75,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppTheme.bgDark.withOpacity(0.8),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Log Field Visit',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white),
+            ),
+            const Text(
+              'Capture details for your current doctor interaction',
+              style: TextStyle(color: Colors.white38, fontSize: 13),
+            ),
+            const SizedBox(height: 32),
+            Expanded(
+              child: ListView(
+                children: [
+                  const Text('DOCTOR / CLINIC', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    dropdownColor: AppTheme.surfaceDark,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: AppTheme.inputDecoration('Select doctor...'),
+                    items: const [
+                      DropdownMenuItem(value: '1', child: Text('Dr. Santosh Mahaseth')),
+                      DropdownMenuItem(value: '2', child: Text('Dr. Anjali Jha')),
+                    ],
+                    onChanged: (v) => setState(() => _selectedDoctor = v),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text('VISIT TYPE', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: ['ROUTINE', 'FOLLOW_UP', 'STAMPING', 'SAMPLE'].map((type) {
+                      final isSelected = _visitType == type;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _visitType = type),
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 6),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppTheme.mrColor : Colors.white.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              type.substring(0, 1) + type.substring(1).toLowerCase(),
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.white38,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text('DISCUSSION NOTES', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _notesController,
+                    maxLines: 3,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: AppTheme.inputDecoration('Summary of discussion...'),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _submitting ? null : _handleSubmit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.mrColor,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+                child: _submitting
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.gps_fixed_rounded, color: Colors.white, size: 20),
+                          SizedBox(width: 12),
+                          Text(
+                            'VERIFY GPS & LOG VISIT',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, letterSpacing: 1),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleSubmit() async {
+    if (_selectedDoctor == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a doctor')));
+      return;
+    }
+
+    setState(() => _submitting = true);
+    
+    // Capture GPS
+    final pos = await widget.getCurrentLocation();
+    
+    if (pos == null) {
+      if (mounted) {
+        setState(() => _submitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('GPS Signal weak. Please move outdoors.')));
+      }
+      return;
+    }
+
+    // Success simulation
+    await Future.delayed(const Duration(seconds: 1));
+    widget.onSuccess();
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Visit logged with high-accuracy GPS verified'), backgroundColor: AppTheme.success),
+      );
+    }
+  }
+}

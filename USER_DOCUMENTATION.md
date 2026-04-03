@@ -1,8 +1,8 @@
-# User Documentation and Guides - Neutralitical Health Supplements App
+# User Documentation and Guides - VedantaTrade Pharma Platform
 
-## Welcome to Neutralitical Health Supplements
+## Welcome to VedantaTrade
 
-Thank you for choosing Neutralitical, your trusted partner in health and wellness. This guide will help you get the most out of our mobile application for browsing, purchasing, and managing your health supplement needs.
+Thank you for choosing VedantaTrade, your trusted partner in pharmaceutical distribution. This guide will help you get the most out of our mobile application for browsing, purchasing, and managing your pharmaceutical needs.
 
 ## Table of Contents
 
@@ -30,7 +30,7 @@ Thank you for choosing Neutralitical, your trusted partner in health and wellnes
 ### Installation
 1. **iOS**: Download from the App Store
 2. **Android**: Download from Google Play Store
-3. Search for "Neutralitical Health Supplements"
+3. Search for "VedantaTrade Pharma"
 4. Tap "Install" and wait for download to complete
 
 ### First Launch
@@ -178,7 +178,7 @@ Each product page includes:
 
 ### Contact Support
 - In-app support chat (available 9 AM - 6 PM EST)
-- Email: support@neutralitical.com
+- Email: support@vedantatrade.com
 - Phone: 1-800-HEALTH (available 9 AM - 5 PM EST)
 
 ## Privacy and Security
@@ -198,8 +198,8 @@ Each product page includes:
 ## Terms of Service and Privacy Policy
 
 For complete terms and conditions, please visit:
-- [Terms of Service](https://neutralitical.com/terms)
-- [Privacy Policy](https://neutralitical.com/privacy)
+- [Terms of Service](https://vedantatrade.com/terms)
+- [Privacy Policy](https://vedantatrade.com/privacy)
 
 ## Version History
 
@@ -207,9 +207,11 @@ For complete terms and conditions, please visit:
 - **v1.1.0**: Added wishlist functionality and enhanced search
 - **v1.2.0**: Multi-language support and improved UI
 - **v1.3.0**: Order management system with payment integration
+- **v3.0.0**: Main Feature Release: Enterprise platform ready for Nepal.
+- **v3.1.1-alpha**: App Gallery & Roadmap Sync: Production Finalization.
 
 ---
 
-Thank you for using Neutralitical Health Supplements. We're committed to supporting your health journey. If you have any questions or feedback, please don't hesitate to contact our support team.
+Thank you for using VedantaTrade. We're committed to supporting your business journey. If you have any questions or feedback, please don't hesitate to contact our support team.
 
-*Last updated: March 2026*
+*Last updated: March 30, 2026*

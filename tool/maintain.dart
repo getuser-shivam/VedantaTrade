@@ -198,7 +198,7 @@ Directory _findWorkspaceRoot() {
 
 void _printUsage() {
   stdout.writeln('''
-Neutralitical maintenance CLI
+VedantaTrade maintenance CLI
 
 Usage:
   dart run tool/maintain.dart <command> [arguments]

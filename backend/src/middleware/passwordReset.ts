@@ -11,7 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'vedanta_secret_key';
 // Generate password reset token
 export const generateResetToken = async (email: string): Promise<string | null> => {
   try {
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { username: email.toLowerCase() }
     });
     
@@ -125,3 +125,4 @@ export const validatePasswordReset = (req: Request, res: Response, next: any) =>
   
   next();
 };
+

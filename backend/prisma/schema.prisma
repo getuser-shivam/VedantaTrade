@@ -7,52 +7,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model ChartOfAccounts {
+model ChartOfAccount {
   account_id                                                                   Int              @id(map: "PK__ChartOfA__46A222CD9C56D764") @default(autoincrement())
   account_name                                                                 String           @unique(map: "UQ__ChartOfA__6894C54A3949669C") @db.NVarChar(255)
   account_type                                                                 String           @db.NVarChar(50)
   account_sub_type                                                             String?          @db.NVarChar(100)
   description                                                                  String?          @db.NVarChar(Max)
-  Expenses                                                                     Expenses[]
-  InventoryItems_InventoryItems_cost_of_goods_sold_account_idToChartOfAccounts InventoryItems[] @relation("InventoryItems_cost_of_goods_sold_account_idToChartOfAccounts")
-  InventoryItems_InventoryItems_inventory_asset_account_idToChartOfAccounts    InventoryItems[] @relation("InventoryItems_inventory_asset_account_idToChartOfAccounts")
-  InventoryItems_InventoryItems_revenue_account_idToChartOfAccounts            InventoryItems[] @relation("InventoryItems_revenue_account_idToChartOfAccounts")
-  JournalItems                                                                 JournalItems[]
+  AccountingExpenses                                                           AccountingExpense[]
+  InventoryItem_inventory_asset                                                InventoryItem[] @relation("InventoryItem_inventory_asset")
+  InventoryItem_revenue                                                       InventoryItem[] @relation("InventoryItem_revenue")
+  InventoryItem_cogs                                                          InventoryItem[] @relation("InventoryItem_cogs")
+  JournalItems                                                                 JournalItem[]
+
+  @@map("ChartOfAccounts")
 }
 
-model Currencies {
+model Currency {
   currency_id                                              Int              @id(map: "PK__Currenci__C7F543D31BC3DFE4") @default(autoincrement())
   currency_code                                            String           @unique(map: "UQ__Currenci__6008D0BA9462511D") @db.NVarChar(10)
   currency_name                                            String           @db.NVarChar(50)
-  ExchangeRates_ExchangeRates_from_currency_idToCurrencies ExchangeRates[]  @relation("ExchangeRates_from_currency_idToCurrencies")
-  ExchangeRates_ExchangeRates_to_currency_idToCurrencies   ExchangeRates[]  @relation("ExchangeRates_to_currency_idToCurrencies")
-  Expenses                                                 Expenses[]
-  PurchaseOrders                                           PurchaseOrders[]
-  SalesOrders                                              SalesOrders[]
-  Vendors                                                  Vendors[]
+  ExchangeRates_from                                       ExchangeRate[]  @relation("ExchangeRate_from")
+  ExchangeRates_to                                         ExchangeRate[]  @relation("ExchangeRate_to")
+  AccountingExpenses                                       AccountingExpense[]
+  PurchaseOrders                                           PurchaseOrder[]
+  SalesOrders                                              SalesOrder[]
+  Vendors                                                  Vendor[]
+
+  @@map("Currencies")
 }
 
-model Customers {
+model Customer {
   customer_id    Int           @id(map: "PK__Customer__CD65CB8551C9817B") @default(autoincrement())
   customer_name  String        @db.NVarChar(255)
   contact_person String?       @db.NVarChar(255)
   email          String?       @db.NVarChar(255)
   phone          String?       @db.NVarChar(50)
   address        String?       @db.NVarChar(Max)
-  SalesOrders    SalesOrders[]
+  SalesOrders    SalesOrder[]
+
+  @@map("Customers")
 }
 
-model ExchangeRates {
+model ExchangeRate {
   exchange_rate_id                                      Int        @id(map: "PK__Exchange__0638B3CD5DFF91BD") @default(autoincrement())
   from_currency_id                                      Int
   to_currency_id                                        Int
   rate                                                  Float
   effective_date                                        String     @db.NVarChar(20)
-  Currencies_ExchangeRates_from_currency_idToCurrencies Currencies @relation("ExchangeRates_from_currency_idToCurrencies", fields: [from_currency_id], references: [currency_id], onUpdate: NoAction, map: "FK__ExchangeR__from___164452B1")
-  Currencies_ExchangeRates_to_currency_idToCurrencies   Currencies @relation("ExchangeRates_to_currency_idToCurrencies", fields: [to_currency_id], references: [currency_id], onUpdate: NoAction, map: "FK__ExchangeR__to_cu__173876EA")
+  from_currency                                         Currency   @relation("ExchangeRate_from", fields: [from_currency_id], references: [currency_id], onUpdate: NoAction, map: "FK__ExchangeR__from___164452B1")
+  to_currency                                           Currency   @relation("ExchangeRate_to", fields: [to_currency_id], references: [currency_id], onUpdate: NoAction, map: "FK__ExchangeR__to_cu__173876EA")
+
+  @@map("ExchangeRates")
 }
 
-model Expenses {
+model AccountingExpense {
   expense_id       Int             @id(map: "PK__Expenses__404B6A6BD0EABFA9") @default(autoincrement())
   expense_date     String          @db.NVarChar(20)
   description      String?         @db.NVarChar(Max)
@@ -62,12 +70,14 @@ model Expenses {
   expense_category String?         @db.NVarChar(100)
   vendor_id        Int?
   account_id       Int
-  ChartOfAccounts  ChartOfAccounts @relation(fields: [account_id], references: [account_id], onUpdate: NoAction, map: "FK__Expenses__accoun__412EB0B6")
-  Currencies       Currencies      @relation(fields: [currency_id], references: [currency_id], onUpdate: NoAction, map: "FK__Expenses__curren__3F466844")
-  Vendors          Vendors?        @relation(fields: [vendor_id], references: [vendor_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Expenses__vendor__403A8C7D")
+  ChartOfAccount   ChartOfAccount @relation(fields: [account_id], references: [account_id], onUpdate: NoAction, map: "FK__Expenses__accoun__412EB0B6")
+  Currency         Currency        @relation(fields: [currency_id], references: [currency_id], onUpdate: NoAction, map: "FK__Expenses__curren__3F466844")
+  Vendor           Vendor?         @relation(fields: [vendor_id], references: [vendor_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Expenses__vendor__403A8C7D")
+
+  @@map("Expenses")
 }
 
-model InventoryBatches {
+model InventoryBatch {
   batch_id           Int               @id(map: "PK__Inventor__DBFC04310A1F90C2") @default(autoincrement())
   item_id            Int
   batch_number       String            @db.NVarChar(100)
@@ -75,11 +85,13 @@ model InventoryBatches {
   expiry_date        String?           @db.NVarChar(20)
   quantity           Int
   unit_cost          Float?
-  InventoryItems     InventoryItems    @relation(fields: [item_id], references: [item_id], onUpdate: NoAction, map: "FK__Inventory__item___2C3393D0")
-  SalesOrderItems    SalesOrderItems[]
+  InventoryItem      InventoryItem     @relation(fields: [item_id], references: [item_id], onUpdate: NoAction, map: "FK__Inventory__item___2C3393D0")
+  SalesOrderItems    SalesOrderItem[]
+
+  @@map("InventoryBatches")
 }
 
-model InventoryItems {
+model InventoryItem {
   item_id                                                                       Int                  @id(map: "PK__Inventor__52020FDD0EF6F8F0") @default(autoincrement())
   item_name                                                                     String               @unique(map: "UQ__Inventor__ACA52A97B0811600") @db.NVarChar(255)
   description                                                                   String?              @db.NVarChar(Max)
@@ -101,52 +113,61 @@ model InventoryItems {
   requires_prescription Boolean? @default(false)
   is_active             Boolean? @default(true)
   image_urls            String?  @db.NVarChar(Max) // JSON or comma-separated
-
   category_id           Int?
   category              Category? @relation(fields: [category_id], references: [id], onUpdate: NoAction, onDelete: NoAction)
-
-  InventoryBatches                                                              InventoryBatches[]
-  ChartOfAccounts_InventoryItems_cost_of_goods_sold_account_idToChartOfAccounts ChartOfAccounts?     @relation("InventoryItems_cost_of_goods_sold_account_idToChartOfAccounts", fields: [cost_of_goods_sold_account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Inventory__cost___276EDEB3")
-  ChartOfAccounts_InventoryItems_inventory_asset_account_idToChartOfAccounts    ChartOfAccounts?     @relation("InventoryItems_inventory_asset_account_idToChartOfAccounts", fields: [inventory_asset_account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Inventory__inven__286302EC")
-  ChartOfAccounts_InventoryItems_revenue_account_idToChartOfAccounts            ChartOfAccounts?     @relation("InventoryItems_revenue_account_idToChartOfAccounts", fields: [revenue_account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Inventory__reven__29572725")
-  PurchaseOrderItems                                                            PurchaseOrderItems[]
-  SalesOrderItems                                                               SalesOrderItems[]
-
+  InventoryBatches                                                              InventoryBatch[]
+  cost_of_goods_sold_account                                                     ChartOfAccount?     @relation("InventoryItem_cogs", fields: [cost_of_goods_sold_account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Inventory__cost___276EDEB3")
+  inventory_asset_account                                                       ChartOfAccount?     @relation("InventoryItem_inventory_asset", fields: [inventory_asset_account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Inventory__inven__286302EC")
+  revenue_account                                                               ChartOfAccount?     @relation("InventoryItem_revenue", fields: [revenue_account_id], references: [account_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Inventory__reven__29572725")
+  PurchaseOrderItems                                                            PurchaseOrderItem[]
+  SalesOrderItems                                                               SalesOrderItem[]
   sampleDistributions SampleDistribution[]
   mrTargetItems       MrTargetItem[]
+  inventoryAllocations InventoryAllocation[]
+  campaignProducts CampaignProduct[]
+  salesAnalytics SalesAnalytics[]
+
+  @@map("InventoryItems")
 }
 
-model JournalEntries {
+
+model JournalEntry {
   journal_id       Int            @id(map: "PK__JournalE__9894D298791DF8E7") @default(autoincrement())
   entry_date       String         @db.NVarChar(20)
   description      String?        @db.NVarChar(Max)
   transaction_type String?        @db.NVarChar(50)
   reference_number String?        @db.NVarChar(100)
   fiscal_year      String         @db.NVarChar(20)
-  JournalItems     JournalItems[]
+  JournalItems     JournalItem[]
+
+  @@map("JournalEntries")
 }
 
-model JournalItems {
+model JournalItem {
   item_id         Int             @id(map: "PK__JournalI__52020FDD29ADD35C") @default(autoincrement())
   journal_id      Int
   account_id      Int
   debit           Float?          @default(0, map: "DF__JournalIt__debit__1BFD2C07")
   credit          Float?          @default(0, map: "DF__JournalIt__credi__1CF15040")
-  ChartOfAccounts ChartOfAccounts @relation(fields: [account_id], references: [account_id], onUpdate: NoAction, map: "FK__JournalIt__accou__1ED998B2")
-  JournalEntries  JournalEntries  @relation(fields: [journal_id], references: [journal_id], onUpdate: NoAction, map: "FK__JournalIt__journ__1DE57479")
+  ChartOfAccount  ChartOfAccount @relation(fields: [account_id], references: [account_id], onUpdate: NoAction, map: "FK__JournalIt__accou__1ED998B2")
+  JournalEntry    JournalEntry   @relation(fields: [journal_id], references: [journal_id], onUpdate: NoAction, map: "FK__JournalIt__journ__1DE57479")
+
+  @@map("JournalItems")
 }
 
-model PurchaseOrderItems {
+model PurchaseOrderItem {
   po_item_id     Int            @id(map: "PK__Purchase__E2A5830540843926") @default(autoincrement())
   po_id          Int
   item_id        Int
   quantity       Int
   unit_price     Float
-  InventoryItems InventoryItems @relation(fields: [item_id], references: [item_id], onUpdate: NoAction, map: "FK__PurchaseO__item___33D4B598")
-  PurchaseOrders PurchaseOrders @relation(fields: [po_id], references: [po_id], onUpdate: NoAction, map: "FK__PurchaseO__po_id__32E0915F")
+  InventoryItem  InventoryItem @relation(fields: [item_id], references: [item_id], onUpdate: NoAction, map: "FK__PurchaseO__item___33D4B598")
+  PurchaseOrder  PurchaseOrder @relation(fields: [po_id], references: [po_id], onUpdate: NoAction, map: "FK__PurchaseO__po_id__32E0915F")
+
+  @@map("PurchaseOrderItems")
 }
 
-model PurchaseOrders {
+model PurchaseOrder {
   po_id              Int                  @id(map: "PK__Purchase__368DA7F0BE6F716A") @default(autoincrement())
   vendor_id          Int
   order_date         String               @db.NVarChar(20)
@@ -156,48 +177,65 @@ model PurchaseOrders {
   currency_id        Int
   exchange_rate      Float?
   reference_number   String?              @db.NVarChar(100)
-  PurchaseOrderItems PurchaseOrderItems[]
-  Currencies         Currencies           @relation(fields: [currency_id], references: [currency_id], onUpdate: NoAction, map: "FK__PurchaseO__curre__300424B4")
-  Vendors            Vendors              @relation(fields: [vendor_id], references: [vendor_id], onUpdate: NoAction, map: "FK__PurchaseO__vendo__2F10007B")
+  PurchaseOrderItems PurchaseOrderItem[]
+  Currency           Currency           @relation(fields: [currency_id], references: [currency_id], onUpdate: NoAction, map: "FK__PurchaseO__curre__300424B4")
+  Vendor             Vendor              @relation(fields: [vendor_id], references: [vendor_id], onUpdate: NoAction, map: "FK__PurchaseO__vendo__2F10007B")
+
+  @@map("PurchaseOrders")
 }
 
-model SalesOrderItems {
+model SalesOrderItem {
   so_item_id       Int               @id(map: "PK__SalesOrd__14DAD585541DCC73") @default(autoincrement())
   so_id            Int
   item_id          Int
   batch_id         Int?
   quantity         Int
   unit_price       Float
-  InventoryBatches InventoryBatches? @relation(fields: [batch_id], references: [batch_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__SalesOrde__batch__3C69FB99")
-  InventoryItems   InventoryItems    @relation(fields: [item_id], references: [item_id], onUpdate: NoAction, map: "FK__SalesOrde__item___3B75D760")
-  SalesOrders      SalesOrders       @relation(fields: [so_id], references: [so_id], onUpdate: NoAction, map: "FK__SalesOrde__so_id__3A81B327")
+  InventoryBatch   InventoryBatch? @relation(fields: [batch_id], references: [batch_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__SalesOrde__batch__3C69FB99")
+  InventoryItem    InventoryItem    @relation(fields: [item_id], references: [item_id], onUpdate: NoAction, map: "FK__SalesOrde__item___3B75D760")
+  SalesOrder       SalesOrder       @relation(fields: [so_id], references: [so_id], onUpdate: NoAction, map: "FK__SalesOrde__so_id__3A81B327")
+
+  @@map("SalesOrderItems")
 }
 
-model SalesOrders {
+model SalesOrder {
   so_id                    Int               @id(map: "PK__SalesOrd__56598D5302430A34") @default(autoincrement())
-  customer_id              Int
+  customer_id              Int?
+  stockist_id              Int?
+  retailer_id              Int?
+  doctor_id                Int?
   order_date               String            @db.NVarChar(20)
   delivery_date            String?           @db.NVarChar(20)
-  status                   String?           @db.NVarChar(50)
+  status                   String?           @default("PENDING") @db.NVarChar(50)
   total_amount             Float?
-  currency_id              Int
+  currency_id              Int               @default(1)
   inventory_costing_method String?           @db.NVarChar(50)
   reference_number         String?           @db.NVarChar(100)
-  SalesOrderItems          SalesOrderItems[]
-  Currencies               Currencies        @relation(fields: [currency_id], references: [currency_id], onUpdate: NoAction, map: "FK__SalesOrde__curre__37A5467C")
-  Customers                Customers         @relation(fields: [customer_id], references: [customer_id], onUpdate: NoAction, map: "FK__SalesOrde__custo__36B12243")
+  notes                    String?           @db.NVarChar(Max)
+  
+  SalesOrderItems          SalesOrderItem[]
+  Currency                 Currency        @relation(fields: [currency_id], references: [currency_id], onUpdate: NoAction, map: "FK__SalesOrde__curre__37A5467C")
+  Customer                 Customer?        @relation(fields: [customer_id], references: [customer_id], onUpdate: NoAction, map: "FK__SalesOrde__custo__36B12243")
+  Stockist                 Stockist?        @relation(fields: [stockist_id], references: [id], onUpdate: NoAction)
+  Retailer                 Retailer?        @relation(fields: [retailer_id], references: [id], onUpdate: NoAction)
+  Doctor                   Doctor?          @relation(fields: [doctor_id], references: [id], onUpdate: NoAction)
+  routeOrders              RouteOrder[]
+
+  @@map("SalesOrders")
 }
 
-model TaxRates {
+model TaxRate {
   tax_rate_id     Int               @id(map: "PK__TaxRates__4B78B333D6F2F374") @default(autoincrement())
   tax_name        String            @db.NVarChar(100)
   rate            Float
   effective_date  String            @db.NVarChar(20)
   is_active       Boolean?          @default(true, map: "DF__TaxRates__is_act__440B1D61")
-  TaxTransactions TaxTransactions[]
+  TaxTransactions TaxTransaction[]
+
+  @@map("TaxRates")
 }
 
-model TaxTransactions {
+model TaxTransaction {
   tax_transaction_id Int      @id(map: "PK__TaxTrans__20398E401FF70B49") @default(autoincrement())
   transaction_type   String   @db.NVarChar(50)
   transaction_id     Int
@@ -205,10 +243,12 @@ model TaxTransactions {
   tax_amount         Float
   tax_type           String   @db.NVarChar(50)
   transaction_date   String   @db.NVarChar(20)
-  TaxRates           TaxRates @relation(fields: [tax_rate_id], references: [tax_rate_id], onUpdate: NoAction, map: "FK__TaxTransa__tax_r__46E78A0C")
+  TaxRate            TaxRate @relation(fields: [tax_rate_id], references: [tax_rate_id], onUpdate: NoAction, map: "FK__TaxTransa__tax_r__46E78A0C")
+
+  @@map("TaxTransactions")
 }
 
-model Users {
+model User {
   user_id       Int    @id(map: "PK__Users__B9BE370FD2631B25") @default(autoincrement())
   username      String @unique(map: "UQ__Users__F3DBC5721A4BAF8E") @db.NVarChar(255)
   password_hash String @db.NVarChar(Max)
@@ -219,6 +259,24 @@ model Users {
   phone         String? @db.NVarChar(50)
   is_active     Boolean @default(true)
   created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+
+  // Enhanced Security Fields
+  email                  String?  @db.NVarChar(255)
+  login_attempts         Int      @default(0)
+  last_login_attempt     DateTime?
+  account_locked_until   DateTime?
+  mfa_enabled            Boolean  @default(false)
+  mfa_method             String?  @db.NVarChar(50)
+  mfa_secret             String?  @db.NVarChar(Max)
+  mfa_setup_at           DateTime?
+  email_verified         Boolean  @default(false)
+  phone_verified         Boolean  @default(false)
+  password_changed_at    DateTime?
+  security_questions     String?  @db.NVarChar(Max)
+  last_login             DateTime?
+  failed_login_attempts  Int?     @default(0)
+  requires_password_change Boolean? @default(false)
 
   mrProfile    MedicalRep?
   doctorProfile Doctor?
@@ -227,6 +285,10 @@ model Users {
 
   expenses      Expense[]
   mrVisits      MrVisit[]
+  emailVerifications EmailVerification[]
+  distributionRoutes DistributionRoute[]
+
+  @@map("Users")
 }
 
 model Category {
@@ -240,7 +302,7 @@ model Category {
   
   parent      Category? @relation("CategoryParent", fields: [parent_id], references: [id], onUpdate: NoAction, onDelete: NoAction)
   children    Category[] @relation("CategoryParent")
-  products    InventoryItems[]
+  products    InventoryItem[]
 }
 
 model ScraperJob {
@@ -265,11 +327,34 @@ model ScrapedLead {
 }
 
 model Session {
-  id        String   @id @default(cuid()) @db.NVarChar(50)
-  user_id   Int
-  token     String   @unique @db.NVarChar(500)
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id                String   @id @default(cuid()) @db.NVarChar(50)
+  user_id           Int
+  token             String   @unique @db.NVarChar(500)
+  expiresAt         DateTime
+  createdAt         DateTime @default(now())
+  ipAddress         String?  @db.NVarChar(50)
+  userAgent         String?  @db.NVarChar(255)
+  isRemembered      Boolean  @default(false)
+  deviceFingerprint String?  @db.NVarChar(255)
+}
+
+model EmailVerification {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  token      String   @unique @db.NVarChar(500)
+  expires_at DateTime
+  created_at DateTime @default(now())
+  user       User    @relation(fields: [user_id], references: [user_id])
+}
+
+model SecurityLog {
+  id          Int      @id @default(autoincrement())
+  user_id     Int?
+  event_type  String   @db.NVarChar(100)
+  details     String?  @db.NVarChar(Max)
+  ip_address  String?  @db.NVarChar(50)
+  severity    String?  @db.NVarChar(20)
+  created_at  DateTime @default(now())
 }
 
 model MedicalRep {
@@ -281,7 +366,7 @@ model MedicalRep {
   joining_date  DateTime?
   lat           Float?
   lng           Float?
-  user          Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  user          User    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
 
   visits       MrVisit[]
   targets      MrTarget[]
@@ -301,10 +386,11 @@ model Doctor {
   lat             Float?
   lng             Float?
   potential_score Int     @default(0)
-  user            Users?  @relation(fields: [user_id], references: [user_id])
+  user            User?  @relation(fields: [user_id], references: [user_id])
 
   visits          MrVisit[]
   samplesReceived SampleDistribution[]
+  salesOrders     SalesOrder[]
 }
 
 model Stockist {
@@ -317,7 +403,8 @@ model Stockist {
   lat          Float?
   lng          Float?
   credit_limit Float   @default(0)
-  user         Users?  @relation(fields: [user_id], references: [user_id])
+  user         User?  @relation(fields: [user_id], references: [user_id])
+  salesOrders  SalesOrder[]
 }
 
 model Retailer {
@@ -330,7 +417,8 @@ model Retailer {
   lat          Float?
   lng          Float?
   credit_limit Float   @default(0)
-  user         Users?  @relation(fields: [user_id], references: [user_id])
+  user         User?  @relation(fields: [user_id], references: [user_id])
+  salesOrders  SalesOrder[]
 }
 
 model MrVisit {
@@ -349,7 +437,7 @@ model MrVisit {
   orders_booked Float    @default(0)
 
   mr     MedicalRep @relation(fields: [mr_id], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  user   Users      @relation(fields: [user_id], references: [user_id], onUpdate: NoAction, onDelete: NoAction)
+  user   User      @relation(fields: [user_id], references: [user_id], onUpdate: NoAction, onDelete: NoAction)
   doctor Doctor     @relation(fields: [doctor_id], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }
 
@@ -372,7 +460,7 @@ model MrTargetItem {
   inventory_item_id    Int
   quantity   Int?     @default(0)
   target     MrTarget @relation(fields: [target_id], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  inventoryItem       InventoryItems @relation(fields: [inventory_item_id], references: [item_id], onUpdate: NoAction, onDelete: NoAction)
+  inventoryItem       InventoryItem @relation(fields: [inventory_item_id], references: [item_id], onUpdate: NoAction, onDelete: NoAction)
 }
 
 model SampleDistribution {
@@ -384,10 +472,10 @@ model SampleDistribution {
   given_date DateTime @default(now())
   mr         MedicalRep @relation(fields: [mr_id], references: [id], onUpdate: NoAction, onDelete: NoAction)
   doctor     Doctor     @relation(fields: [doctor_id], references: [id], onUpdate: NoAction, onDelete: NoAction)
-  inventoryItem       InventoryItems @relation(fields: [inventory_item_id], references: [item_id], onUpdate: NoAction, onDelete: NoAction)
+  inventoryItem       InventoryItem @relation(fields: [inventory_item_id], references: [item_id], onUpdate: NoAction, onDelete: NoAction)
 }
 
-model Vendors {
+model Vendor {
   vendor_id      Int              @id(map: "PK__Vendors__0F7D2B780F151961") @default(autoincrement())
   vendor_name    String           @db.NVarChar(255)
   contact_person String?          @db.NVarChar(255)
@@ -395,9 +483,13 @@ model Vendors {
   phone          String?          @db.NVarChar(50)
   address        String?          @db.NVarChar(Max)
   currency_id    Int?
-  Expenses       Expenses[]
-  PurchaseOrders PurchaseOrders[]
-  Currencies     Currencies?      @relation(fields: [currency_id], references: [currency_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Vendors__currenc__21B6055D")
+  AccountingExpenses AccountingExpense[]
+  PurchaseOrders PurchaseOrder[]
+  Currency       Currency?      @relation(fields: [currency_id], references: [currency_id], onDelete: NoAction, onUpdate: NoAction, map: "FK__Vendors__currenc__21B6055D")
+
+  @@map("Vendors")
+}
+
 model Expense {
   id          Int      @id @default(autoincrement())
   user_id     Int
@@ -408,7 +500,9 @@ model Expense {
   status      String   @default("SUBMITTED") @db.NVarChar(20)
   approvedBy  Int?
   approvedAt  DateTime?
-  user        Users    @relation(fields: [user_id], references: [user_id])
+  user        User    @relation(fields: [user_id], references: [user_id])
+
+  @@map("Expense")
 }
 
 model TourPlan {
@@ -420,3 +514,126 @@ model TourPlan {
   status         String   @default("PLANNED") @db.NVarChar(20)
   mr             MedicalRep @relation(fields: [mr_id], references: [id])
 }
+
+model DistributionCenter {
+  id                Int      @id @default(autoincrement())
+  name              String   @db.NVarChar(255)
+  code              String   @unique @db.NVarChar(50)
+  address           String   @db.NVarChar(Max)
+  city              String   @db.NVarChar(100)
+  state             String   @db.NVarChar(100)
+  postal_code       String   @db.NVarChar(20)
+  country           String   @default("India") @db.NVarChar(100)
+  phone             String?  @db.NVarChar(50)
+  email             String?  @db.NVarChar(255)
+  manager_name      String?  @db.NVarChar(255)
+  capacity          Float    @default(0)
+  is_active         Boolean  @default(true)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  inventoryAllocations InventoryAllocation[]
+  distributionRoutes  DistributionRoute[]
+  salesAnalytics      SalesAnalytics[]
+}
+
+model InventoryAllocation {
+  id                  Int      @id @default(autoincrement())
+  product_id           Int
+  center_id            Int
+  quantity_allocated    Float
+  quantity_available    Float
+  allocated_at         DateTime @default(now())
+  last_updated         DateTime @updatedAt
+  center               DistributionCenter @relation(fields: [center_id], references: [id])
+  product              InventoryItem @relation(fields: [product_id], references: [item_id])
+}
+
+model MarketingCampaign {
+  id              Int      @id @default(autoincrement())
+  name            String   @db.NVarChar(255)
+  description     String?  @db.NVarChar(Max)
+  start_date      DateTime @default(now())
+  end_date        DateTime?
+  budget          Float    @default(0)
+  status          String   @default("ACTIVE") @db.NVarChar(20)
+  target_audience String?  @db.NVarChar(Max)
+  created_by      Int
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  campaignProducts CampaignProduct[]
+  salesAnalytics   SalesAnalytics[]
+  marketingMetrics MarketingMetric[]
+}
+
+model CampaignProduct {
+  id                Int      @id @default(autoincrement())
+  campaign_id       Int
+  product_id         Int
+  discount_percentage Float    @default(0)
+  special_price      Float?
+  start_date        DateTime @default(now())
+  end_date          DateTime?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  campaign          MarketingCampaign @relation(fields: [campaign_id], references: [id])
+  product           InventoryItem @relation(fields: [product_id], references: [item_id])
+}
+
+model SalesAnalytics {
+  id                Int      @id @default(autoincrement())
+  campaign_id        Int?
+  product_id         Int
+  center_id          Int?
+  sales_quantity      Float    @default(0)
+  revenue            Float    @default(0)
+  cost               Float    @default(0)
+  profit             Float    @default(0)
+  analytics_date      DateTime @default(now())
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  campaign          MarketingCampaign? @relation(fields: [campaign_id], references: [id])
+  product           InventoryItem? @relation(fields: [product_id], references: [item_id])
+  center            DistributionCenter? @relation(fields: [center_id], references: [id])
+}
+
+model MarketingMetric {
+  id                Int      @id @default(autoincrement())
+  campaign_id        Int
+  metric_type        String   @db.NVarChar(50)
+  metric_value       Float
+  metric_date        DateTime @default(now())
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  campaign          MarketingCampaign @relation(fields: [campaign_id], references: [id])
+}
+
+model DistributionRoute {
+  id              Int      @id @default(autoincrement())
+  name            String   @db.NVarChar(255)
+  center_id       Int
+  driver_id       Int?
+  route_type      String   @default("DAILY") @db.NVarChar(20)
+  distance        Float    @default(0)
+  estimated_time   Float    @default(0)
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  center          DistributionCenter @relation(fields: [center_id], references: [id])
+  driver          User? @relation(fields: [driver_id], references: [user_id])
+  routeOrders     RouteOrder[]
+}
+
+model RouteOrder {
+  id               Int      @id @default(autoincrement())
+  route_id         Int
+  order_id         Int
+  sequence_number  Int
+  status           String   @default("PENDING") @db.NVarChar(20)
+  estimated_time    Float    @default(0)
+  actual_time       Float?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  route            DistributionRoute @relation(fields: [route_id], references: [id])
+  order            SalesOrder @relation(fields: [order_id], references: [so_id])
+}
+

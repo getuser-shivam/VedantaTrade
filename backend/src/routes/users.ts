@@ -10,8 +10,8 @@ const prisma = new PrismaClient();
 router.get('/', authenticate, authorize('ADMIN'), async (req, res) => {
   try {
     const users = await prisma.user.findMany({
-      select: { id: true, name: true, email: true, role: true, phone: true, isActive: true, territory: true, employeeCode: true, createdAt: true, lastLogin: true },
-      orderBy: { createdAt: 'desc' },
+      select: { user_id: true, name: true, username: true, role: true, phone: true, is_active: true, created_at: true, last_login: true },
+      orderBy: { created_at: 'desc' },
     });
     return res.json({ success: true, data: users });
   } catch (error) {
@@ -23,11 +23,11 @@ router.get('/', authenticate, authorize('ADMIN'), async (req, res) => {
 router.get('/:id', authenticate, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: Number(req.params.id) },
+      where: { user_id: Number(req.params.id) },
       include: { mrProfile: true, doctorProfile: true, stockistProfile: true, retailerProfile: true },
     });
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-    const { passwordHash, ...safeUser } = user;
+    const { password_hash, ...safeUser } = user;
     return res.json({ success: true, data: safeUser });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Server error' });
@@ -37,12 +37,12 @@ router.get('/:id', authenticate, async (req, res) => {
 // PUT update user
 router.put('/:id', authenticate, authorize('ADMIN'), async (req, res) => {
   try {
-    const { name, phone, role, isActive, territory } = req.body;
+    const { name, phone, role, is_active } = req.body;
     const user = await prisma.user.update({
-      where: { id: Number(req.params.id) },
-      data: { name, phone, role, isActive, territory, updatedAt: new Date() },
+      where: { user_id: Number(req.params.id) },
+      data: { name, phone, role, is_active, updated_at: new Date() },
     });
-    const { passwordHash, ...safeUser } = user;
+    const { password_hash, ...safeUser } = user;
     return res.json({ success: true, data: safeUser });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Server error' });
@@ -53,8 +53,8 @@ router.put('/:id', authenticate, authorize('ADMIN'), async (req, res) => {
 router.put('/:id/password', authenticate, async (req, res) => {
   try {
     const { newPassword } = req.body;
-    const passwordHash = await bcrypt.hash(newPassword, 12);
-    await prisma.user.update({ where: { id: Number(req.params.id) }, data: { passwordHash } });
+    const password_hash = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({ where: { user_id: Number(req.params.id) }, data: { password_hash } });
     return res.json({ success: true, message: 'Password updated' });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Server error' });
@@ -64,7 +64,7 @@ router.put('/:id/password', authenticate, async (req, res) => {
 // DELETE user
 router.delete('/:id', authenticate, authorize('ADMIN'), async (req, res) => {
   try {
-    await prisma.user.update({ where: { id: Number(req.params.id) }, data: { isActive: false } });
+    await prisma.user.update({ where: { user_id: Number(req.params.id) }, data: { is_active: false } });
     return res.json({ success: true, message: 'User deactivated' });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Server error' });
@@ -75,12 +75,12 @@ router.delete('/:id', authenticate, authorize('ADMIN'), async (req, res) => {
 router.get('/admin/dashboard', authenticate, authorize('ADMIN'), async (req, res) => {
   try {
     const [totalUsers, totalMRs, totalDoctors, totalStockists, totalRetailers, totalOrders, pendingLeads] = await Promise.all([
-      prisma.user.count({ where: { isActive: true } }),
-      prisma.user.count({ where: { role: 'MEDICAL_REP', isActive: true } }),
+      prisma.user.count({ where: { is_active: true } }),
+      prisma.user.count({ where: { role: 'MEDICAL_REP', is_active: true } }),
       prisma.doctor.count(),
       prisma.stockist.count(),
       prisma.retailer.count(),
-      prisma.order.count(),
+      prisma.salesOrder.count(),
       prisma.scrapedLead.count({ where: { status: 'RAW' } }),
     ]);
     return res.json({ success: true, data: { totalUsers, totalMRs, totalDoctors, totalStockists, totalRetailers, totalOrders, pendingLeads } });

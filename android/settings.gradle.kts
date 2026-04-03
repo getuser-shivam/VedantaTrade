@@ -1,3 +1,5 @@
+rootProject.name = "vedanta_trade_android"
+
 pluginManagement {
     val flutterSdkPath =
         run {
