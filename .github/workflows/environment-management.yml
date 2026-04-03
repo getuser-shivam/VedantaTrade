@@ -1,0 +1,276 @@
+name: Environment Management
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment (staging/production)'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  # Staging Environment
+  deploy-staging:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.41.2'
+        channel: 'stable'
+        cache: true
+        
+    - name: Install dependencies
+      run: flutter pub get
+      
+    - name: Build for staging
+      run: |
+        flutter build web --web-renderer canvaskit --no-tree-shake-icons
+        echo "Building for staging environment..."
+        
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        
+        # Deploy to staging server
+        if [ -n "$STAGING_SERVER_HOST" ]; then
+          rsync -avz --delete build/web/ $STAGING_SERVER_USER@$STAGING_SERVER_HOST:$STAGING_SERVER_PATH
+          echo "✅ Deployed to staging server"
+        fi
+        
+        # Deploy to staging CDN
+        if [ -n "$STAGING_CDN_ENDPOINT" ]; then
+          aws s3 sync build/web/ s3://$STAGING_CDN_BUCKET --delete
+          echo "✅ Deployed to staging CDN"
+        fi
+        
+        # Update staging DNS
+        echo "Staging deployment completed"
+      env:
+        STAGING_SERVER_HOST: ${{ secrets.STAGING_SERVER_HOST }}
+        STAGING_SERVER_USER: ${{ secrets.STAGING_SERVER_USER }}
+        STAGING_SERVER_PATH: ${{ secrets.STAGING_SERVER_PATH }}
+        STAGING_CDN_ENDPOINT: ${{ secrets.STAGING_CDN_ENDPOINT }}
+        STAGING_CDN_BUCKET: ${{ secrets.STAGING_CDN_BUCKET }}
+        
+    - name: Run staging tests
+      run: |
+        echo "Running staging environment tests..."
+        
+        # Install Lighthouse CI
+        npm install -g @lhci/cli@0.12.x
+        
+        # Run Lighthouse tests on staging
+        lhci autorun --config=.lighthouserc.staging.json
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        LHCI_SERVER_BASE_URL: https://staging.vedantatrade.com
+        
+    - name: Notify staging deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        text: '🚀 VedantaTrade deployed to staging environment'
+
+  # Production Environment
+  deploy-production:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.41.2'
+        channel: 'stable'
+        cache: true
+        
+    - name: Install dependencies
+      run: flutter pub get
+      
+    - name: Build for production
+      run: |
+        flutter build web --web-renderer canvaskit --no-tree-shake-icons
+        echo "Building for production environment..."
+        
+    - name: Deploy to production
+      run: |
+        echo "Deploying to production environment..."
+        
+        # Deploy to production server
+        if [ -n "$PROD_SERVER_HOST" ]; then
+          rsync -avz --delete build/web/ $PROD_SERVER_USER@$PROD_SERVER_HOST:$PROD_SERVER_PATH
+          echo "✅ Deployed to production server"
+        fi
+        
+        # Deploy to production CDN
+        if [ -n "$PROD_CDN_ENDPOINT" ]; then
+          aws s3 sync build/web/ s3://$PROD_CDN_BUCKET --delete
+          echo "✅ Deployed to production CDN"
+        fi
+        
+        # Update production DNS
+        echo "Production deployment completed"
+      env:
+        PROD_SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
+        PROD_SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
+        PROD_SERVER_PATH: ${{ secrets.PROD_SERVER_PATH }}
+        PROD_CDN_ENDPOINT: ${{ secrets.PROD_CDN_ENDPOINT }}
+        PROD_CDN_BUCKET: ${{ secrets.PROD_CDN_BUCKET }}
+        
+    - name: Run production health checks
+      run: |
+        echo "Running production health checks..."
+        
+        # Health check endpoints
+        curl -f https://vedantatrade.com/health || echo "❌ Health check failed"
+        curl -f https://vedantatrade.com/api/health || echo "❌ API health check failed"
+        curl -f https://vedantatrade.com/assets/health || echo "❌ Assets health check failed"
+        
+        # Performance check
+        npm install -g @lhci/cli@0.12.x
+        lhci autorun --config=.lighthouserc.production.json
+      env:
+        LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+        LHCI_SERVER_BASE_URL: https://vedantatrade.com
+        
+    - name: Notify production deployment
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        text: '🚀 VedantaTrade deployed to production environment'
+
+  # Environment Cleanup
+  cleanup-environments:
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'cleanup'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Cleanup staging
+      run: |
+        echo "Cleaning up staging environment..."
+        
+        # Cleanup staging server
+        if [ -n "$STAGING_SERVER_HOST" ]; then
+          ssh $STAGING_SERVER_USER@$STAGING_SERVER_HOST "rm -rf $STAGING_SERVER_PATH/*"
+          echo "✅ Staging server cleaned up"
+        fi
+        
+        # Cleanup staging CDN
+        if [ -n "$STAGING_CDN_ENDPOINT" ]; then
+          aws s3 rm s3://$STAGING_CDN_BUCKET --recursive
+          echo "✅ Staging CDN cleaned up"
+        fi
+      env:
+        STAGING_SERVER_HOST: ${{ secrets.STAGING_SERVER_HOST }}
+        STAGING_SERVER_USER: ${{ secrets.STAGING_SERVER_USER }}
+        STAGING_SERVER_PATH: ${{ secrets.STAGING_SERVER_PATH }}
+        STAGING_CDN_ENDPOINT: ${{ secrets.STAGING_CDN_ENDPOINT }}
+        STAGING_CDN_BUCKET: ${{ secrets.STAGING_CDN_BUCKET }}
+        
+    - name: Cleanup production
+      run: |
+        echo "Cleaning up production environment..."
+        
+        # Cleanup old deployment artifacts
+        if [ -n "$PROD_SERVER_HOST" ]; then
+          ssh $PROD_SERVER_USER@$PROD_SERVER_HOST "find $PROD_SERVER_PATH -name '*.old' -delete"
+          echo "✅ Production server cleaned up"
+        fi
+        
+        # Cleanup old CDN versions
+        if [ -n "$PROD_CDN_ENDPOINT" ]; then
+          aws s3 ls s3://$PROD_CDN_BUCKET --recursive | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -n -10 | xargs -I {} aws s3 rm s3://$PROD_CDN_BUCKET/{}
+          echo "✅ Production CDN cleaned up"
+        fi
+      env:
+        PROD_SERVER_HOST: ${{ secrets.PROD_SERVER_HOST }}
+        PROD_SERVER_USER: ${{ secrets.PROD_SERVER_USER }}
+        PROD_SERVER_PATH: ${{ secrets.PROD_SERVER_PATH }}
+        PROD_CDN_ENDPOINT: ${{ secrets.PROD_CDN_ENDPOINT }}
+        PROD_CDN_BUCKET: ${{ secrets.PROD_CDN_BUCKET }}
+
+  # Environment Monitoring
+  monitor-environments:
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Monitor environments
+      run: |
+        echo "Monitoring environment status..."
+        
+        # Check staging environment
+        if [ -n "$STAGING_URL" ]; then
+          STAGING_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $STAGING_URL || echo "000")
+          if [ "$STAGING_STATUS" = "200" ]; then
+            echo "✅ Staging environment is healthy"
+          else
+            echo "❌ Staging environment is down (HTTP $STAGING_STATUS)"
+          fi
+        fi
+        
+        # Check production environment
+        if [ -n "$PROD_URL" ]; then
+          PROD_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $PROD_URL || echo "000")
+          if [ "$PROD_STATUS" = "200" ]; then
+            echo "✅ Production environment is healthy"
+          else
+            echo "❌ Production environment is down (HTTP $PROD_STATUS)"
+          fi
+        fi
+        
+        # Check API endpoints
+        if [ -n "$API_URL" ]; then
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $API_URL/health || echo "000")
+          if [ "$API_STATUS" = "200" ]; then
+            echo "✅ API is healthy"
+          else
+            echo "❌ API is down (HTTP $API_STATUS)"
+          fi
+        fi
+      env:
+        STAGING_URL: ${{ secrets.STAGING_URL }}
+        PROD_URL: ${{ secrets.PROD_URL }}
+        API_URL: ${{ secrets.API_URL }}
+        
+    - name: Create monitoring report
+      run: |
+        echo "# Environment Monitoring Report" > monitoring-report.md
+        echo "Generated on: $(date)" >> monitoring-report.md
+        echo "" >> monitoring-report.md
+        echo "## Environment Status" >> monitoring-report.md
+        echo "- Staging: $STAGING_STATUS" >> monitoring-report.md
+        echo "- Production: $PROD_STATUS" >> monitoring-report.md
+        echo "- API: $API_STATUS" >> monitoring-report.md
+        echo "" >> monitoring-report.md
+        echo "## Last Deployment" >> monitoring-report.md
+        echo "- Timestamp: $(date)" >> monitoring-report.md
+        echo "- Branch: ${{ github.ref_name }}" >> monitoring-report.md
+        echo "- Commit: ${{ github.sha }}" >> monitoring-report.md
+        
+    - name: Upload monitoring report
+      uses: actions/upload-artifact@v3
+      with:
+        name: environment-monitoring
+        path: monitoring-report.md
+        retention-days: 7
