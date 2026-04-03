@@ -6,7 +6,6 @@
 export 'data/services/mr_service.dart' if (dart.library.io) 'data/services/mr_service.dart';
 
 // Presentation
-export 'presentation/screens/mr_dashboard_screen.dart';
 export 'presentation/screens/visit_log_screen.dart';
 export 'presentation/screens/tour_plan_screen.dart';
 export 'presentation/screens/expense_screen.dart';

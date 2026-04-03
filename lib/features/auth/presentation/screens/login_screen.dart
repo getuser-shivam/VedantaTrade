@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/widgets/glassmorphic_widgets.dart';
 import '../providers/auth_provider.dart';
+import 'password_reset_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -148,6 +149,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         )).toList(),
                       ),
                       const SizedBox(height: 40),
+                      TextButton(
+                        onPressed: () => context.go('/auth/forgot-password'),
+                        child: const Text(
+                          'Forgot Password?',
+                          style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600),
+                        ),
+                      ),
                       TextButton(
                         onPressed: () => context.go('/auth/register'),
                         child: const Text(

@@ -174,8 +174,106 @@ class AuthProvider extends ChangeNotifier {
     await _storage.write(key: 'user', value: json.encode(_user));
   }
 
-  void clearError() {
+  Future<bool> resetPassword(String email) async {
+    _isLoading = true;
     _error = null;
     notifyListeners();
+
+    try {
+      final response = await _authService.resetPassword(email);
+      if (response['success'] == true) {
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _error = response['message'] ?? 'Password reset failed';
+      }
+    } catch (e) {
+      _error = 'Password reset failed. Please try again.';
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> refreshToken() async {
+    if (_refreshToken == null) return false;
+
+    try {
+      final response = await _authService.refreshToken(_refreshToken!);
+      if (response['success'] == true) {
+        await _handleAuthSuccess(response);
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Token refresh failed: $e');
+    }
+    
+    // If refresh fails, logout user
+    await logout(force: true);
+    return false;
+  }
+
+  Future<bool> verifyCurrentToken() async {
+    if (_token == null) return false;
+
+    try {
+      final response = await _authService.verifyToken(_token!);
+      return response['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> enableBiometric() async {
+    try {
+      final isAvailable = await _localAuth.canCheckBiometrics;
+      final isSupported = await _localAuth.isDeviceSupported();
+      
+      if (!isAvailable || !isSupported) {
+        _error = 'Biometric authentication not supported on this device';
+        notifyListeners();
+        return false;
+      }
+
+      final didAuthenticate = await _localAuth.authenticate(
+        localizedReason: 'Enable biometric login for VedantaTrade',
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          useErrorDialogs: true,
+        ),
+      );
+
+      if (didAuthenticate) {
+        _biometricEnabled = true;
+        await _storage.write(key: 'biometric_enabled', value: 'true');
+        notifyListeners();
+        return true;
+      }
+    } catch (e) {
+      _error = 'Failed to enable biometric authentication';
+    }
+
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> authenticateWithBiometric() async {
+    if (!_biometricEnabled) return false;
+
+    try {
+      final didAuthenticate = await _localAuth.authenticate(
+        localizedReason: 'Login to VedantaTrade',
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          useErrorDialogs: true,
+        ),
+      );
+
+      return didAuthenticate;
+    } catch (e) {
+      return false;
+    }
   }
 }

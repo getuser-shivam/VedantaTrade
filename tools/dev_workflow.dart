@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 
 /// Comprehensive Development Workflow Script
 /// Analyzes, fixes problems, builds app, and maintains version control
@@ -24,8 +25,8 @@ class DevWorkflow {
   };
 
   Future<void> runWorkflow(List<String> args) async {
-    print('🚀 VedantaTrade Development Workflow');
-    print('=====================================\n');
+    debugPrint('🚀 VedantaTrade Development Workflow');
+    debugPrint('=====================================\n');
 
     try {
       // Parse command line arguments
@@ -69,78 +70,78 @@ class DevWorkflow {
           showHelp();
       }
     } catch (e) {
-      print('❌ Error: $e');
+      debugPrint('❌ Error: $e');
       exit(1);
     }
   }
 
   /// Run complete analysis workflow
   Future<void> runAnalysis() async {
-    print('🔍 Running Analysis...');
+    debugPrint('🔍 Running Analysis...');
     
     // Change to project directory
     Directory.current = projectRoot;
     
     // Run Flutter analyze
-    print('  📱 Flutter Analysis...');
+    debugPrint('  📱 Flutter Analysis...');
     final analyzeResult = await _runCommand(flutterPath, ['analyze']);
     if (analyzeResult.exitCode != 0) {
-      print('  ❌ Flutter analysis failed');
+      debugPrint('  ❌ Flutter analysis failed');
       await _analyzeFlutterIssues(analyzeResult.stdout);
     } else {
-      print('  ✅ Flutter analysis passed');
+      debugPrint('  ✅ Flutter analysis passed');
     }
     
     // Run Dart format check
-    print('  🎨 Code Format Check...');
+    debugPrint('  🎨 Code Format Check...');
     final formatResult = await _runCommand(flutterPath, ['format', '--set-exit-if-changed', '.']);
     if (formatResult.exitCode != 0) {
-      print('  ❌ Code formatting issues found');
+      debugPrint('  ❌ Code formatting issues found');
       await _runCommand(flutterPath, ['format', '.']);
-      print('  ✅ Code formatted automatically');
+      debugPrint('  ✅ Code formatted automatically');
     } else {
-      print('  ✅ Code formatting is correct');
+      debugPrint('  ✅ Code formatting is correct');
     }
     
     // Check dependencies
-    print('  📦 Dependency Analysis...');
+    debugPrint('  📦 Dependency Analysis...');
     await _analyzeDependencies();
     
     // Security scan
-    print('  🔒 Security Analysis...');
+    debugPrint('  🔒 Security Analysis...');
     await _runSecurityScan();
     
-    print('✅ Analysis complete\n');
+    debugPrint('✅ Analysis complete\n');
   }
 
   /// Run automatic fixes
   Future<void> runFixes() async {
-    print('🔧 Running Automatic Fixes...');
+    debugPrint('🔧 Running Automatic Fixes...');
     
     Directory.current = projectRoot;
     
     // Fix Flutter dependencies
-    print('  📦 Fixing Dependencies...');
+    debugPrint('  📦 Fixing Dependencies...');
     await _runCommand(flutterPath, ['pub', 'get']);
     
     // Fix code formatting
-    print('  🎨 Fixing Code Format...');
+    debugPrint('  🎨 Fixing Code Format...');
     await _runCommand(flutterPath, ['format', '.']);
     
     // Fix common issues
-    print('  🛠️ Fixing Common Issues...');
+    debugPrint('  🛠️ Fixing Common Issues...');
     await _fixCommonIssues();
     
     // Clean build cache
-    print('  🧹 Cleaning Build Cache...');
+    debugPrint('  🧹 Cleaning Build Cache...');
     await _runCommand(flutterPath, ['clean']);
     
-    print('✅ Fixes complete\n');
+    debugPrint('✅ Fixes complete\n');
   }
 
   /// Build the application
   Future<void> runBuild() async {
-    print('🏗️ Building Application...');
+    debugPrint('🏗️ Building Application...');
     
     Directory.current = projectRoot;
     
@@ -148,95 +149,95 @@ class DevWorkflow {
     final platforms = ['web', 'android', 'ios'];
     
     for (final platform in platforms) {
-      print('  📱 Building for $platform...');
+      debugPrint('  📱 Building for $platform...');
       final result = await _runCommand(flutterPath, ['build', platform, '--release']);
       
       if (result.exitCode == 0) {
-        print('  ✅ $platform build successful');
+        debugPrint('  ✅ $platform build successful');
       } else {
-        print('  ❌ $platform build failed');
-        print('  Error: ${result.stderr}');
+        debugPrint('  ❌ $platform build failed');
+        debugPrint('  Error: ${result.stderr}');
       }
     }
     
     // Generate build report
     await _generateBuildReport();
     
-    print('✅ Build complete\n');
+    debugPrint('✅ Build complete\n');
   }
 
   /// Run all tests
   Future<void> runTests() async {
-    print('🧪 Running Tests...');
+    debugPrint('🧪 Running Tests...');
     
     Directory.current = projectRoot;
     
     // Unit tests
-    print('  📋 Unit Tests...');
+    debugPrint('  📋 Unit Tests...');
     final unitResult = await _runCommand(flutterPath, ['test']);
     if (unitResult.exitCode == 0) {
-      print('  ✅ Unit tests passed');
+      debugPrint('  ✅ Unit tests passed');
     } else {
-      print('  ❌ Unit tests failed');
+      debugPrint('  ❌ Unit tests failed');
     }
     
     // Integration tests
-    print('  🔗 Integration Tests...');
+    debugPrint('  🔗 Integration Tests...');
     final integrationResult = await _runCommand(flutterPath, ['test', 'integration_test/']);
     if (integrationResult.exitCode == 0) {
-      print('  ✅ Integration tests passed');
+      debugPrint('  ✅ Integration tests passed');
     } else {
-      print('  ❌ Integration tests failed');
+      debugPrint('  ❌ Integration tests failed');
     }
     
     // Generate coverage report
-    print('  📊 Coverage Report...');
+    debugPrint('  📊 Coverage Report...');
     await _runCommand(flutterPath, ['test', '--coverage']);
     
-    print('✅ Testing complete\n');
+    debugPrint('✅ Testing complete\n');
   }
 
   /// Version control operations
   Future<void> versionControl() async {
-    print('📋 Version Control Operations...');
+    debugPrint('📋 Version Control Operations...');
     
     Directory.current = projectRoot;
     
     // Check git status
-    print('  📊 Checking Git Status...');
+    debugPrint('  📊 Checking Git Status...');
     final statusResult = await _runCommand(gitPath, ['status', '--porcelain']);
     
     if (statusResult.stdout.trim().isNotEmpty) {
-      print('  📝 Changes detected:');
-      print(statusResult.stdout);
+      debugPrint('  📝 Changes detected:');
+      debugPrint(statusResult.stdout);
       
       // Add all changes
-      print('  ➕ Adding changes...');
+      debugPrint('  ➕ Adding changes...');
       await _runCommand(gitPath, ['add', '.']);
       
       // Commit with automatic message
       final commitMessage = await _generateCommitMessage();
-      print('  💾 Committing changes...');
+      debugPrint('  💾 Committing changes...');
       await _runCommand(gitPath, ['commit', '-m', commitMessage]);
       
       // Push to remote
-      print('  📤 Pushing to remote...');
+      debugPrint('  📤 Pushing to remote...');
       await _runCommand(gitPath, ['push']);
       
-      print('  ✅ Changes committed and pushed');
+      debugPrint('  ✅ Changes committed and pushed');
     } else {
-      print('  ✅ No changes to commit');
+      debugPrint('  ✅ No changes to commit');
     }
     
     // Update version if needed
     await _updateVersion();
     
-    print('✅ Version control complete\n');
+    debugPrint('✅ Version control complete\n');
   }
 
   /// Update documentation
   Future<void> updateDocumentation() async {
-    print('📚 Updating Documentation...');
+    debugPrint('📚 Updating Documentation...');
     
     Directory.current = projectRoot;
     
@@ -252,40 +253,40 @@ class DevWorkflow {
     // Generate API docs
     await _generateApiDocs();
     
-    print('✅ Documentation updated\n');
+    debugPrint('✅ Documentation updated\n');
   }
 
   /// Update app gallery
   Future<void> updateGallery() async {
-    print('🖼️ Updating App Gallery...');
+    debugPrint('🖼️ Updating App Gallery...');
     
     Directory.current = projectRoot;
     
     // Check if gallery exists
     final galleryDir = Directory(config['galleryPath']!);
     if (!await galleryDir.exists()) {
-      print('  ❌ Gallery directory not found');
+      debugPrint('  ❌ Gallery directory not found');
       return;
     }
     
     // Generate new screenshots (simulated)
-    print('  📸 Generating screenshots...');
+    debugPrint('  📸 Generating screenshots...');
     await _generateScreenshots();
     
     // Update gallery data
-    print('  🔄 Updating gallery data...');
+    debugPrint('  🔄 Updating gallery data...');
     await _updateGalleryData();
     
     // Validate gallery
-    print('  ✅ Validating gallery...');
+    debugPrint('  ✅ Validating gallery...');
     await _validateGallery();
     
-    print('✅ App gallery updated\n');
+    debugPrint('✅ App gallery updated\n');
   }
 
   /// Run complete workflow
   Future<void> runFullWorkflow() async {
-    print('🚀 Running Complete Development Workflow...\n');
+    debugPrint('🚀 Running Complete Development Workflow...\n');
     
     await runAnalysis();
     await runFixes();
@@ -295,77 +296,77 @@ class DevWorkflow {
     await updateGallery();
     await versionControl();
     
-    print('🎉 Complete workflow finished successfully!\n');
+    debugPrint('🎉 Complete workflow finished successfully!\n');
   }
 
   /// Initialize project
   Future<void> initializeProject() async {
-    print('🔧 Initializing Project...');
+    debugPrint('🔧 Initializing Project...');
     
     Directory.current = projectRoot;
     
     // Get dependencies
-    print('  📦 Installing dependencies...');
+    debugPrint('  📦 Installing dependencies...');
     await _runCommand(flutterPath, ['pub', 'get']);
     
     // Initialize git if not already done
-    print('  📋 Initializing Git...');
+    debugPrint('  📋 Initializing Git...');
     final gitDir = Directory('.git');
     if (!await gitDir.exists()) {
       await _runCommand(gitPath, ['init']);
       await _runCommand(gitPath, ['add', '.']);
       await _runCommand(gitPath, ['commit', '-m', 'Initial commit']);
-      print('  ✅ Git initialized');
+      debugPrint('  ✅ Git initialized');
     } else {
-      print('  ✅ Git already initialized');
+      debugPrint('  ✅ Git already initialized');
     }
     
     // Create initial documentation
-    print('  📚 Creating initial documentation...');
+    debugPrint('  📚 Creating initial documentation...');
     await _createInitialDocs();
     
-    print('✅ Project initialized\n');
+    debugPrint('✅ Project initialized\n');
   }
 
   /// Show project status
   Future<void> showStatus() async {
-    print('📊 Project Status');
-    print('================\n');
+    debugPrint('📊 Project Status');
+    debugPrint('================\n');
     
     Directory.current = projectRoot;
     
     // Git status
-    print('📋 Git Status:');
+    debugPrint('📋 Git Status:');
     final gitStatus = await _runCommand(gitPath, ['status', '--short']);
-    print(gitStatus.stdout);
+    debugPrint(gitStatus.stdout);
     
     // Flutter doctor
-    print('\n🏥 Flutter Doctor:');
+    debugPrint('\n🏥 Flutter Doctor:');
     final doctorResult = await _runCommand(flutterPath, ['doctor', '-v']);
-    print(doctorResult.stdout);
+    debugPrint(doctorResult.stdout);
     
     // Dependencies status
-    print('\n📦 Dependencies:');
+    debugPrint('\n📦 Dependencies:');
     final pubResult = await _runCommand(flutterPath, ['pub', 'deps']);
-    print(pubResult.stdout);
+    debugPrint(pubResult.stdout);
     
     // Build status
-    print('\n🏗️ Build Status:');
+    debugPrint('\n🏗️ Build Status:');
     final buildDir = Directory('build');
     if (await buildDir.exists()) {
-      print('✅ Build directory exists');
+      debugPrint('✅ Build directory exists');
       final files = await buildDir.list().toList();
-      print('📁 Build artifacts: ${files.length} files');
+      debugPrint('📁 Build artifacts: ${files.length} files');
     } else {
-      print('❌ No build found');
+      debugPrint('❌ No build found');
     }
     
-    print('\n');
+    debugPrint('\n');
   }
 
   /// Show help information
   void showHelp() {
-    print('''
+    debugPrint('''
 🚀 VedantaTrade Development Workflow
 
 Usage: dart tools/dev_workflow.dart [command]
@@ -418,12 +419,12 @@ Configuration:
     }
     
     if (issues.isNotEmpty) {
-      print('  📋 Issues found:');
+      debugPrint('  📋 Issues found:');
       for (final issue in issues.take(10)) {
-        print('    • $issue');
+        debugPrint('    • $issue');
       }
       if (issues.length > 10) {
-        print('    ... and ${issues.length - 10} more issues');
+        debugPrint('    ... and ${issues.length - 10} more issues');
       }
     }
   }
@@ -433,9 +434,9 @@ Configuration:
     final output = pubResult.stdout;
     
     if (output.contains('dev_dependencies:') || output.contains('dependencies:')) {
-      print('  ✅ Dependencies analyzed');
+      debugPrint('  ✅ Dependencies analyzed');
     } else {
-      print('  ⚠️ Dependency analysis incomplete');
+      debugPrint('  ⚠️ Dependency analysis incomplete');
     }
   }
 
@@ -446,15 +447,15 @@ Configuration:
       final content = await pubspec.readAsString();
       
       if (content.contains('http:')) {
-        print('  ⚠️ HTTP dependencies detected - consider HTTPS');
+        debugPrint('  ⚠️ HTTP dependencies detected - consider HTTPS');
       }
       
       if (content.contains('flutter:')) {
-        print('  ✅ Flutter SDK dependencies found');
+        debugPrint('  ✅ Flutter SDK dependencies found');
       }
     }
     
-    print('  ✅ Security scan completed');
+    debugPrint('  ✅ Security scan completed');
   }
 
   Future<void> _fixCommonIssues() async {
@@ -483,7 +484,7 @@ Configuration:
     await reportFile.create(recursive: true);
     await reportFile.writeAsString(JsonEncoder.withIndent('  ').convert(report));
     
-    print('  📊 Build report generated');
+    debugPrint('  📊 Build report generated');
   }
 
   Future<String> _getFlutterVersion() async {
@@ -512,7 +513,7 @@ Configuration:
     if (await pubspec.exists()) {
       final content = await pubspec.readAsString();
       // Version bump logic would go here
-      print('  📝 Version check completed');
+      debugPrint('  📝 Version check completed');
     }
   }
 
@@ -523,7 +524,7 @@ Configuration:
       final now = DateTime.now();
       final daysSince = now.difference(modified).inDays;
       
-      print('  📝 TODO.md last updated: $daysSince days ago');
+      debugPrint('  📝 TODO.md last updated: $daysSince days ago');
     }
   }
 
@@ -531,7 +532,7 @@ Configuration:
     final readmeFile = File(config['readmePath']!);
     if (await readmeFile.exists()) {
       final size = await readmeFile.length();
-      print('  📖 README.md size: ${size ~/ 1024}KB');
+      debugPrint('  📖 README.md size: ${size ~/ 1024}KB');
     }
   }
 
@@ -540,7 +541,7 @@ Configuration:
     if (await changelogFile.exists()) {
       final content = await changelogFile.readAsString();
       final versions = content.split('## [').length - 1;
-      print('  📋 CHANGELOG.md versions: $versions');
+      debugPrint('  📋 CHANGELOG.md versions: $versions');
     }
   }
 
@@ -573,7 +574,7 @@ Generated automatically on ${DateTime.now().toIso8601String()}
 *This documentation is auto-generated. Run \`dart tools/dev_workflow.dart docs\` to update.*
 ''');
     
-    print('  📚 API documentation generated');
+    debugPrint('  📚 API documentation generated');
   }
 
   Future<void> _generateScreenshots() async {
@@ -581,19 +582,19 @@ Generated automatically on ${DateTime.now().toIso8601String()}
     final screenshotDir = Directory('assets/screenshots');
     await screenshotDir.create(recursive: true);
     
-    print('  📸 Screenshots would be generated here');
+    debugPrint('  📸 Screenshots would be generated here');
   }
 
   Future<void> _updateGalleryData() async {
     // Update gallery provider with new version data
-    print('  🔄 Gallery data updated');
+    debugPrint('  🔄 Gallery data updated');
   }
 
   Future<void> _validateGallery() async {
     final galleryDir = Directory(config['galleryPath']!);
     if (await galleryDir.exists()) {
       final files = await galleryDir.list(recursive: true).toList();
-      print('  ✅ Gallery files: ${files.length}');
+      debugPrint('  ✅ Gallery files: ${files.length}');
     }
   }
 
@@ -609,13 +610,13 @@ Generated automatically on ${DateTime.now().toIso8601String()}
       final docFile = File(file);
       if (!await docFile.exists()) {
         await docFile.create();
-        print('  📝 Created ${docFile.path}');
+        debugPrint('  📝 Created ${docFile.path}');
       }
     }
   }
 
   Future<void> runDeployment() async {
-    print('🚀 Deploying Application...');
+    debugPrint('🚀 Deploying Application...');
     
     Directory.current = projectRoot;
     
@@ -623,13 +624,13 @@ Generated automatically on ${DateTime.now().toIso8601String()}
     await runBuild();
     
     // Deploy to different platforms
-    print('  🌐 Deploying to web...');
+    debugPrint('  🌐 Deploying to web...');
     // Web deployment logic here
     
-    print('  📱 Deploying to app stores...');
+    debugPrint('  📱 Deploying to app stores...');
     // Mobile deployment logic here
     
-    print('✅ Deployment complete\n');
+    debugPrint('✅ Deployment complete\n');
   }
 }
 

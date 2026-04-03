@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 /// Master Development Workflow for VedantaTrade
 /// Integrates analysis, building, testing, and GitHub automation
@@ -24,8 +25,8 @@ class MasterWorkflow {
 
   /// Run master workflow
   static Future<void> runMasterWorkflow(List<String> args) async {
-    print('🚀 VedantaTrade Master Development Workflow');
-    print('==========================================\n');
+    debugPrint('🚀 VedantaTrade Master Development Workflow');
+    debugPrint('==========================================\n');
 
     try {
       final command = args.isNotEmpty ? args.first : 'help';
@@ -71,15 +72,15 @@ class MasterWorkflow {
           showHelp();
       }
     } catch (e) {
-      print('❌ Error: $e');
+      debugPrint('❌ Error: $e');
       exit(1);
     }
   }
 
   /// Development workflow
   static Future<void> runDevelopmentWorkflow() async {
-    print('🔧 Development Workflow');
-    print('====================\n');
+    debugPrint('🔧 Development Workflow');
+    debugPrint('====================\n');
     
     // 1. Environment check
     await checkEnvironment();
@@ -93,13 +94,13 @@ class MasterWorkflow {
     // 4. Start development server
     await startDevServer();
     
-    print('✅ Development workflow complete\n');
+    debugPrint('✅ Development workflow complete\n');
   }
 
   /// Build workflow
   static Future<void> runBuildWorkflow() async {
-    print('🏗️ Build Workflow');
-    print('==================\n');
+    debugPrint('🏗️ Build Workflow');
+    debugPrint('==================\n');
     
     // 1. Pre-build checks
     await preBuildChecks();
@@ -116,13 +117,13 @@ class MasterWorkflow {
     // 5. Generate reports
     await generateBuildReports();
     
-    print('✅ Build workflow complete\n');
+    debugPrint('✅ Build workflow complete\n');
   }
 
   /// Test workflow
   static Future<void> runTestWorkflow() async {
-    print('🧪 Test Workflow');
-    print('==================\n');
+    debugPrint('🧪 Test Workflow');
+    debugPrint('==================\n');
     
     // 1. Unit tests
     await runUnitTests();
@@ -139,13 +140,13 @@ class MasterWorkflow {
     // 5. Generate test reports
     await generateTestReports();
     
-    print('✅ Test workflow complete\n');
+    debugPrint('✅ Test workflow complete\n');
   }
 
   /// Deploy workflow
   static Future<void> runDeployWorkflow() async {
-    print('🚀 Deploy Workflow');
-    print('==================\n');
+    debugPrint('🚀 Deploy Workflow');
+    debugPrint('==================\n');
     
     // 1. Pre-deployment checks
     await preDeploymentChecks();
@@ -168,17 +169,17 @@ class MasterWorkflow {
     // 7. Post-deployment verification
     await verifyDeployment();
     
-    print('✅ Deploy workflow complete\n');
+    debugPrint('✅ Deploy workflow complete\n');
   }
 
   /// Release workflow
   static Future<void> runReleaseWorkflow(String? version) async {
-    print('🎉 Release Workflow');
-    print('==================\n');
+    debugPrint('🎉 Release Workflow');
+    debugPrint('==================\n');
     
     // 1. Version management
     final releaseVersion = version ?? await generateVersion();
-    print('📝 Release version: $releaseVersion');
+    debugPrint('📝 Release version: $releaseVersion');
     
     // 2. Pre-release checks
     await preReleaseChecks();
@@ -201,13 +202,13 @@ class MasterWorkflow {
     // 8. Post-release tasks
     await postReleaseTasks();
     
-    print('✅ Release workflow complete\n');
+    debugPrint('✅ Release workflow complete\n');
   }
 
   /// Analysis workflow
   static Future<void> runAnalysisWorkflow() async {
-    print('🔍 Analysis Workflow');
-    print('==================\n');
+    debugPrint('🔍 Analysis Workflow');
+    debugPrint('==================\n');
     
     // 1. Code fix
     await runFixWorkflow();
@@ -227,31 +228,31 @@ class MasterWorkflow {
     // 6. Generate analysis reports
     await generateAnalysisReports();
     
-    print('✅ Analysis workflow complete\n');
+    debugPrint('✅ Analysis workflow complete\n');
   }
 
   /// Fix workflow using dart fix
   static Future<void> runFixWorkflow() async {
-    print('🔧 Running Auto-fix (dart fix)...');
+    debugPrint('🔧 Running Auto-fix (dart fix)...');
     Directory.current = projectRoot;
     
     final result = await Process.run('dart', ['fix', '--apply']);
     if (result.exitCode == 0) {
-      print('  ✅ Fixed code problems automatically');
+      debugPrint('  ✅ Fixed code problems automatically');
     } else {
-      print('  ⚠️ dart fix completed with warnings');
-      print('  ${result.stdout}');
+      debugPrint('  ⚠️ dart fix completed with warnings');
+      debugPrint('  ${result.stdout}');
     }
-    print('');
+    debugPrint('');
   }
 
   /// Documentation workflow
   static Future<void> runDocumentationWorkflow() async {
-    print('📚 Documentation Workflow');
-    print('=======================\n');
+    debugPrint('📚 Documentation Workflow');
+    debugPrint('=======================\n');
     
     final version = await _getCurrentVersion();
-    print('🏷️ Targets: v$version');
+    debugPrint('🏷️ Targets: v$version');
 
     // 1. Update README (Modernization achievements)
     await updateReadme();
@@ -268,13 +269,13 @@ class MasterWorkflow {
     // 5. Commit documentation changes
     await commitDocumentation();
     
-    print('✅ Documentation workflow complete\n');
+    debugPrint('✅ Documentation workflow complete\n');
   }
 
   /// Complete workflow
   static Future<void> runCompleteWorkflow() async {
-    print('🚀 Complete Development Workflow');
-    print('===============================\n');
+    debugPrint('🚀 Complete Development Workflow');
+    debugPrint('===============================\n');
     
     final startTime = DateTime.now();
     
@@ -301,11 +302,11 @@ class MasterWorkflow {
       await pushChanges();
       
       final endTime = DateTime.now();
-      print('🎉 Complete workflow finished in ${endTime.difference(startTime).inMinutes} minutes');
-      print('✅ All production tasks completed successfully\n');
+      debugPrint('🎉 Complete workflow finished in ${endTime.difference(startTime).inMinutes} minutes');
+      debugPrint('✅ All production tasks completed successfully\n');
       
     } catch (e) {
-      print('❌ Complete workflow failed: $e');
+      debugPrint('❌ Complete workflow failed: $e');
       exit(1);
     }
   }
@@ -319,14 +320,14 @@ class MasterWorkflow {
   }
 
   static Future<void> updateReadme() async {
-    print('  📖 Syncing README.md headers...');
+    debugPrint('  📖 Syncing README.md headers...');
     final version = await _getCurrentVersion();
     final readme = File('$projectRoot/README.md');
     var content = await readme.readAsString();
     
     // Update version badge if it exists or add modern milestone
     if (content.contains('Achievements')) {
-      print('    ✅ Milestones already synced');
+      debugPrint('    ✅ Milestones already synced');
     } else {
       content = content.replaceFirst('## 🌟 Key Features', '## 🌟 Key Features (Current: v$version)');
       await readme.writeAsString(content);
@@ -334,221 +335,222 @@ class MasterWorkflow {
   }
 
   static Future<void> updateChangelog() async {
-    print('  📋 Verifying CHANGELOG.md state...');
+    debugPrint('  📋 Verifying CHANGELOG.md state...');
     final changelog = File('$projectRoot/CHANGELOG.md');
     final content = await changelog.readAsString();
     if (content.contains(await _getCurrentVersion())) {
-      print('    ✅ Changelog up to date');
+      debugPrint('    ✅ Changelog up to date');
     } else {
-      print('    ⚠️ Please update CHANGELOG.md for the current release');
+      debugPrint('    ⚠️ Please update CHANGELOG.md for the current release');
     }
   }
 
   static Future<void> updateTodo() async {
-    print('  📝 Syncing TODO.md status...');
+    debugPrint('  📝 Syncing TODO.md status...');
     final todo = File('$projectRoot/TODO.md');
     var content = await todo.readAsString();
     if (content.contains('PHASE 7: APP GALLERY (In Progress)')) {
-      print('    ✅ Task status synced');
+      debugPrint('    ✅ Task status synced');
     }
   }
 
   static Future<void> updateAppGallery() async {
-    print('🖼️ Syncing versions.json with CHANGELOG...');
+    debugPrint('🖼️ Syncing versions.json with CHANGELOG...');
     final versionsJson = File('$projectRoot/assets/data/versions.json');
     final changelog = File('$projectRoot/CHANGELOG.md');
     
     if (await versionsJson.exists() && await changelog.exists()) {
-      print('    ✅ Versions data metadata verified');
+      debugPrint('    ✅ Versions data metadata verified');
       // Logic to parse last 2 milestones would go here for deep sync
     }
   }
 
   static Future<void> commitDocumentation() async {
-    print('  💾 Committing Documentation sync...');
+    debugPrint('  💾 Committing Documentation sync...');
     await Process.run('git', ['add', 'README.md', 'TODO.md', 'CHANGELOG.md', 'assets/data/versions.json']);
     await Process.run('git', ['commit', '-m', 'docs: automated documentation sync']);
   }
 
   static Future<void> showProjectStatus() async {
-    print('📊 VedantaTrade Project Status');
-    print('============================\n');
+    debugPrint('📊 VedantaTrade Project Status');
+    debugPrint('============================\n');
     
     final version = await _getCurrentVersion();
-    print('🏷️ Current Version: $version');
+    debugPrint('🏷️ Current Version: $version');
     
     await checkEnvironment();
     
     // Git status
-    print('📋 Git Status:');
+    debugPrint('📋 Git Status:');
     final result = await Process.run('git', ['status', '--porcelain']);
     if (result.stdout.trim().isEmpty) {
-      print('  ✅ Working directory clean');
+      debugPrint('  ✅ Working directory clean');
     } else {
       final lines = result.stdout.split('\n').where((l) => l.isNotEmpty).toList();
-      print('  📝 Pending changes: ${lines.length}');
+      debugPrint('  📝 Pending changes: ${lines.length}');
     }
-    print('');
+    debugPrint('');
   }
 
   /// Check development environment
   static Future<void> checkEnvironment() async {
-    print('🔍 Checking environment...');
+    debugPrint('🔍 Checking environment...');
     
     // Check Flutter
     final flutterResult = await Process.run('flutter', ['--version']);
     if (flutterResult.exitCode == 0) {
       final version = flutterResult.stdout.toString().split('\n').first;
-      print('  ✅ $version');
+      debugPrint('  ✅ $version');
     } else {
-      print('  ❌ Flutter not found');
+      debugPrint('  ❌ Flutter not found');
     }
     
     // Check Node.js
     final nodeResult = await Process.run('node', ['--version']);
     if (nodeResult.exitCode == 0) {
-      print('  ✅ Node.js ${nodeResult.stdout.trim()}');
+      debugPrint('  ✅ Node.js ${nodeResult.stdout.trim()}');
     } else {
-      print('  ⚠️  Node.js not found (needed for backend)');
+      debugPrint('  ⚠️  Node.js not found (needed for backend)');
     }
     
-    print('');
+    debugPrint('');
   }
 
   /// Install dependencies
   static Future<void> installDependencies() async {
-    print('📦 Installing dependencies...');
+    debugPrint('📦 Installing dependencies...');
     
     // Frontend
-    print('  Installing Flutter packages...');
+    debugPrint('  Installing Flutter packages...');
     await Process.run('flutter', ['pub', 'get'], workingDirectory: projectRoot);
     
     // Backend
     final backendDir = Directory('$projectRoot/backend');
     if (backendDir.existsSync()) {
-      print('  Installing npm packages...');
+      debugPrint('  Installing npm packages...');
       await Process.run('npm', ['install'], workingDirectory: backendDir.path);
     }
     
-    print('  ✅ Dependencies installed\n');
+    debugPrint('  ✅ Dependencies installed\n');
   }
 
   /// Run code analysis
   static Future<void> runCodeAnalysis() async {
-    print('🔬 Running code analysis...');
+    debugPrint('🔬 Running code analysis...');
     Directory.current = projectRoot;
     
     final result = await Process.run('flutter', ['analyze']);
     if (result.exitCode == 0) {
-      print('  ✅ Flutter analyze passed\n');
+      debugPrint('  ✅ Flutter analyze passed\n');
     } else {
-      print('  ⚠️  Flutter analyze found issues:');
-      print(result.stdout);
+      debugPrint('  ⚠️  Flutter analyze found issues:');
+      debugPrint(result.stdout);
     }
   }
 
   /// Start dev server
   static Future<void> startDevServer() async {
-    print('🚀 Starting development server...');
-    print('  Run "flutter run" in a separate terminal to start the app\n');
+    debugPrint('🚀 Starting development server...');
+    debugPrint('  Run "flutter run" in a separate terminal to start the app\n');
   }
 
   /// Pre-build checks
   static Future<void> preBuildChecks() async {
-    print('🔍 Pre-build checks...');
+    debugPrint('🔍 Pre-build checks...');
     await checkEnvironment();
     await installDependencies();
   }
 
   /// Clean previous builds
   static Future<void> cleanBuilds() async {
-    print('🧹 Cleaning previous builds...');
+    debugPrint('🧹 Cleaning previous builds...');
     await Process.run('flutter', ['clean'], workingDirectory: projectRoot);
-    print('  ✅ Cleaned\n');
+    debugPrint('  ✅ Cleaned\n');
   }
 
   /// Run builds
   static Future<void> runBuilds() async {
-    print('🏗️  Building Android APK...');
+    debugPrint('🏗️  Building Android APK...');
     final apkResult = await Process.run(
       'flutter', 
       ['build', 'apk', '--release'],
       workingDirectory: projectRoot,
     );
     if (apkResult.exitCode == 0) {
-      print('  ✅ APK built: build/app/outputs/flutter-apk/app-release.apk');
+      debugPrint('  ✅ APK built: build/app/outputs/flutter-apk/app-release.apk');
     } else {
-      print('  ❌ APK build failed');
+      debugPrint('  ❌ APK build failed');
     }
     
-    print('\n🏗️  Building Android App Bundle...');
+    debugPrint('\n🏗️  Building Android App Bundle...');
     final aabResult = await Process.run(
       'flutter',
       ['build', 'appbundle', '--release'],
       workingDirectory: projectRoot,
     );
     if (aabResult.exitCode == 0) {
-      print('  ✅ AAB built: build/app/outputs/bundle/release/app-release.aab');
+      debugPrint('  ✅ AAB built: build/app/outputs/bundle/release/app-release.aab');
     } else {
-      print('  ❌ AAB build failed');
+      debugPrint('  ❌ AAB build failed');
     }
-    print('');
+    debugPrint('');
   }
 
   /// Optimize builds
   static Future<void> optimizeBuilds() async {
-    print('⚡ Optimizing builds...');
-    print('  ✅ Optimization complete\n');
+    debugPrint('⚡ Optimizing builds...');
+    debugPrint('  ✅ Optimization complete\n');
   }
 
   /// Generate build reports
   static Future<void> generateBuildReports() async {
-    print('📊 Generating build reports...');
-    print('  ✅ Reports generated\n');
+    debugPrint('📊 Generating build reports...');
+    debugPrint('  ✅ Reports generated\n');
+    debugPrint('  ✅ Reports generated\n');
   }
 
   /// Run unit tests
   static Future<void> runUnitTests() async {
-    print('🧪 Running unit tests...');
+    debugPrint('🧪 Running unit tests...');
     final result = await Process.run(
       'flutter',
       ['test', '--coverage'],
       workingDirectory: projectRoot,
     );
     if (result.exitCode == 0) {
-      print('  ✅ Unit tests passed\n');
+      debugPrint('  ✅ Unit tests passed\n');
     } else {
-      print('  ⚠️  Some tests failed\n');
+      debugPrint('  ⚠️  Some tests failed\n');
     }
   }
 
   /// Run integration tests
   static Future<void> runIntegrationTests() async {
-    print('🔗 Running integration tests...');
-    print('  ⏭️  Skipped (no integration tests configured)\n');
+    debugPrint('🔗 Running integration tests...');
+    debugPrint('  ⏭️  Skipped (no integration tests configured)\n');
   }
 
   /// Run widget tests
   static Future<void> runWidgetTests() async {
-    print('🎨 Running widget tests...');
-    print('  ✅ Widget tests completed\n');
+    debugPrint('🎨 Running widget tests...');
+    debugPrint('  ✅ Widget tests completed\n');
   }
 
   /// Analyze coverage
   static Future<void> analyzeCoverage() async {
-    print('📈 Analyzing test coverage...');
-    print('  📊 Coverage report: coverage/lcov.info\n');
+    debugPrint('📈 Analyzing test coverage...');
+    debugPrint('  📊 Coverage report: coverage/lcov.info\n');
   }
 
   /// Generate test reports
   static Future<void> generateTestReports() async {
-    print('📄 Generating test reports...');
-    print('  ✅ Reports generated\n');
+    debugPrint('📄 Generating test reports...');
+    debugPrint('  ✅ Reports generated\n');
   }
 
   /// Run full test suite
   static Future<void> runFullTestSuite() async {
-    print('🧪 Running full test suite...\n');
+    debugPrint('🧪 Running full test suite...\n');
     await runUnitTests();
     await runWidgetTests();
     await runIntegrationTests();
@@ -557,7 +559,7 @@ class MasterWorkflow {
 
   /// Pre-deployment checks
   static Future<void> preDeploymentChecks() async {
-    print('🔍 Pre-deployment checks...');
+    debugPrint('🔍 Pre-deployment checks...');
     await checkEnvironment();
     await runCodeAnalysis();
     await runFullTestSuite();
@@ -565,89 +567,89 @@ class MasterWorkflow {
 
   /// Deploy to staging
   static Future<void> deployToStaging() async {
-    print('🚀 Deploying to staging...');
-    print('  ⏭️  Configure staging deployment in workflow\n');
+    debugPrint('🚀 Deploying to staging...');
+    debugPrint('  ⏭️  Configure staging deployment in workflow\n');
   }
 
   /// Deploy to production
   static Future<void> deployToProduction() async {
-    print('🚀 Deploying to production...');
-    print('  ⚠️  Manual approval required for production\n');
+    debugPrint('🚀 Deploying to production...');
+    debugPrint('  ⚠️  Manual approval required for production\n');
   }
 
   /// Run smoke tests
   static Future<void> runSmokeTests() async {
-    print('💨 Running smoke tests...');
-    print('  ✅ Smoke tests passed\n');
+    debugPrint('💨 Running smoke tests...');
+    debugPrint('  ✅ Smoke tests passed\n');
   }
 
   /// Verify deployment
   static Future<void> verifyDeployment() async {
-    print('✅ Verifying deployment...');
-    print('  ✅ Deployment verified\n');
+    debugPrint('✅ Verifying deployment...');
+    debugPrint('  ✅ Deployment verified\n');
   }
 
   /// Pre-release checks
   static Future<void> preReleaseChecks() async {
-    print('🔍 Pre-release checks...');
+    debugPrint('🔍 Pre-release checks...');
     await checkEnvironment();
     await runFullTestSuite();
   }
 
   /// Build release artifacts
   static Future<void> buildReleaseArtifacts() async {
-    print('📦 Building release artifacts...');
+    debugPrint('📦 Building release artifacts...');
     await cleanBuilds();
     await runBuilds();
-    print('  ✅ Release artifacts built\n');
+    debugPrint('  ✅ Release artifacts built\n');
   }
 
   /// Create Git release
   static Future<void> createGitRelease(String version) async {
-    print('🏷️  Creating Git release...');
-    print('  Run: git tag -a $version -m "Release $version"');
-    print('       git push origin $version\n');
+    debugPrint('🏷️  Creating Git release...');
+    debugPrint('  Run: git tag -a $version -m "Release $version"');
+    debugPrint('       git push origin $version\n');
   }
 
   /// Deploy release
   static Future<void> deployRelease(String version) async {
-    print('🚀 Deploying release $version...');
+    debugPrint('🚀 Deploying release $version...');
     await deployToProduction();
   }
 
   /// Post-release tasks
   static Future<void> postReleaseTasks() async {
-    print('📝 Post-release tasks...');
-    print('  ✅ Release complete\n');
+    debugPrint('📝 Post-release tasks...');
+    debugPrint('  ✅ Release complete\n');
   }
 
   /// Security analysis
   static Future<void> runSecurityAnalysis() async {
-    print('🔒 Security analysis...');
-    print('  ✅ No security issues found\n');
+    debugPrint('🔒 Security analysis...');
+    debugPrint('  ✅ No security issues found\n');
   }
 
   /// Performance analysis
   static Future<void> runPerformanceAnalysis() async {
-    print('⚡ Performance analysis...');
-    print('  ✅ Performance metrics within range\n');
+    debugPrint('⚡ Performance analysis...');
+    debugPrint('  ✅ Performance metrics within range\n');
   }
 
   /// Dependency analysis
   static Future<void> runDependencyAnalysis() async {
-    print('📦 Dependency analysis...');
+    debugPrint('📦 Dependency analysis...');
     final result = await Process.run('flutter', ['pub', 'outdated'], workingDirectory: projectRoot);
     if (result.exitCode == 0) {
-      print('  📋 Check outdated packages:');
-      print(result.stdout);
+      debugPrint('  📋 Check outdated packages:');
+      debugPrint(result.stdout);
     }
-    print('');
+    debugPrint('');
   }
 
   /// Generate analysis reports
   static Future<void> generateAnalysisReports() async {
-    print('📊 Generating analysis reports...');
-    print('  ✅ Reports generated\n');
+    debugPrint('📊 Generating analysis reports...');
+    debugPrint('  ✅ Reports generated\n');
   }
 
   /// Generate version
@@ -658,18 +660,18 @@ class MasterWorkflow {
 
   /// Push changes to GitHub
   static Future<void> pushChanges() async {
-    print('📤 Pushing changes...');
+    debugPrint('📤 Pushing changes...');
     final result = await Process.run('git', ['push'], workingDirectory: projectRoot);
     if (result.exitCode == 0) {
-      print('  ✅ Pushed to GitHub\n');
+      debugPrint('  ✅ Pushed to GitHub\n');
     } else {
-      print('  ❌ Push failed: ${result.stderr}\n');
+      debugPrint('  ❌ Push failed: ${result.stderr}\n');
     }
   }
 
   /// Show help
   static void showHelp() {
-    print('''
+    debugPrint('''
 🚀 VedantaTrade Master Workflow CLI
 ═══════════════════════════════════════
 
@@ -698,22 +700,22 @@ VERSION: v3.2.0-alpha
   }
 
   static Future<void> cleanProject() async {
-    print('🧹 Cleaning project...');
+    debugPrint('🔍 Analyzing project...');
     await Process.run('flutter', ['clean'], workingDirectory: projectRoot);
-    print('  ✅ Project cleaned\n');
+    debugPrint('  ✅ Project cleaned\n');
   }
 
   static Future<void> setupProject() async {
-    print('⚙️  Setting up project...');
+    debugPrint('⚙️  Setting up project...');
     await checkEnvironment();
     await installDependencies();
-    print('  ✅ Project setup complete\n');
+    debugPrint('  ✅ Project setup complete\n');
   }
 
   static Future<void> runGalleryWorkflow() async {
-    print('🖼️  Gallery workflow...');
+    debugPrint('🖼️  Gallery workflow...');
     await updateAppGallery();
-    print('  ✅ Gallery updated\n');
+    debugPrint('  ✅ Gallery updated\n');
   }
 }
 

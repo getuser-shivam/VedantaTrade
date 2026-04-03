@@ -59,7 +59,73 @@ class AuthService {
     }
   }
 
-  Future<Map<String, dynamic>> register(String name, String email, String password, String phone) async {
+  Future<Map<String, dynamic>> resetPassword(String email) async {
+    try {
+      final response = await _dio.post(
+        '/auth/reset-password',
+        data: {
+          'email': email.trim(),
+          'app_name': 'VedantaTrade',
+        },
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Password reset failed. Please try again.',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
+    try {
+      final response = await _dio.post(
+        '/auth/refresh',
+        data: {'refresh_token': refreshToken},
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Token refresh failed',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyToken(String token) async {
+    try {
+      final response = await _dio.get(
+        '/auth/verify',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Token verification failed',
+      };
+    }
+  }
     try {
       final response = await _dio.post(
         '/auth/register',

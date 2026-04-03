@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 
 /// GitHub Automation for VedantaTrade
 /// Handles version control, releases, and repository management
@@ -20,8 +21,8 @@ class GitHubAutomation {
 
   /// Run GitHub automation workflow
   Future<void> runAutomation(List<String> args) async {
-    print('🐙 GitHub Automation for VedantaTrade');
-    print('=====================================\n');
+    debugPrint('🐙 GitHub Automation for VedantaTrade');
+    debugPrint('=====================================\n');
 
     try {
       final command = args.isNotEmpty ? args.first : 'help';
@@ -79,118 +80,118 @@ class GitHubAutomation {
           showHelp();
       }
     } catch (e) {
-      print('❌ Error: $e');
+      debugPrint('❌ Error: $e');
       exit(1);
     }
   }
 
   /// Initialize Git repository
   Future<void> initializeRepository() async {
-    print('🔧 Initializing Git Repository...');
+    debugPrint('🔧 Initializing Git Repository...');
     
     Directory.current = projectRoot;
     
     // Check if already initialized
     final gitDir = Directory('.git');
     if (await gitDir.exists()) {
-      print('  ✅ Git repository already initialized');
+      debugPrint('  ✅ Git repository already initialized');
       return;
     }
     
     // Initialize repository
-    print('  📋 Initializing Git...');
+    debugPrint('  📋 Initializing Git...');
     await _runGitCommand(['init']);
     
     // Create .gitignore
     await _createGitignore();
     
     // Create initial commit
-    print('  📝 Creating initial commit...');
+    debugPrint('  📝 Creating initial commit...');
     await _runGitCommand(['add', '.']);
     await _runGitCommand(['commit', '-m', 'Initial commit: VedantaTrade project setup']);
     
     // Setup main branch
     await _runGitCommand(['branch', '-M', githubConfig['mainBranch']!]);
     
-    print('✅ Repository initialized\n');
+    debugPrint('✅ Repository initialized\n');
   }
 
   /// Show repository status
   Future<void> showRepositoryStatus() async {
-    print('📊 Repository Status');
-    print('==================\n');
+    debugPrint('📊 Repository Status');
+    debugPrint('==================\n');
     
     Directory.current = projectRoot;
     
     // Current branch
-    print('🌿 Current Branch:');
+    debugPrint('🌿 Current Branch:');
     final branchResult = await _runGitCommand(['branch', '--show-current']);
-    print('  ${branchResult.stdout.trim()}');
+    debugPrint('  ${branchResult.stdout.trim()}');
     
     // Git status
-    print('\n📋 Git Status:');
+    debugPrint('\n📋 Git Status:');
     final statusResult = await _runGitCommand(['status', '--porcelain']);
     if (statusResult.stdout.trim().isEmpty) {
-      print('  ✅ Working directory clean');
+      debugPrint('  ✅ Working directory clean');
     } else {
       final lines = statusResult.stdout.split('\n').where((l) => l.isNotEmpty).toList();
-      print('  📝 Changes detected:');
+      debugPrint('  📝 Changes detected:');
       for (final line in lines) {
-        print('    $line');
+        debugPrint('    $line');
       }
-      print('  📁 Total changes: ${lines.length}');
+      debugPrint('  📁 Total changes: ${lines.length}');
     }
     
     // Remote status
-    print('\n🌐 Remote Status:');
+    debugPrint('\n🌐 Remote Status:');
     final remoteResult = await _runGitCommand(['remote', '-v']);
-    print(remoteResult.stdout);
+    debugPrint(remoteResult.stdout);
     
     // Last commit
-    print('\n💾 Last Commit:');
+    debugPrint('\n💾 Last Commit:');
     final logResult = await _runGitCommand(['log', '-1', '--oneline']);
-    print('  ${logResult.stdout.trim()}');
+    debugPrint('  ${logResult.stdout.trim()}');
     
-    print('\n');
+    debugPrint('\n');
   }
 
   /// Commit changes with automatic message generation
   Future<void> commitChanges(String? message) async {
-    print('💾 Committing Changes...');
+    debugPrint('💾 Committing Changes...');
     
     Directory.current = projectRoot;
     
     // Check for changes
     final statusResult = await _runGitCommand(['status', '--porcelain']);
     if (statusResult.stdout.trim().isEmpty) {
-      print('  ℹ️ No changes to commit');
+      debugPrint('  ℹ️ No changes to commit');
       return;
     }
     
     // Add all changes
-    print('  ➕ Adding changes...');
+    debugPrint('  ➕ Adding changes...');
     await _runGitCommand(['add', '.']);
     
     // Generate commit message if not provided
     final commitMessage = message ?? await _generateCommitMessage();
     
     // Commit changes
-    print('  💾 Committing with message: "$commitMessage"');
+    debugPrint('  💾 Committing with message: "$commitMessage"');
     final commitResult = await _runGitCommand(['commit', '-m', commitMessage]);
     
     if (commitResult.exitCode == 0) {
-      print('  ✅ Changes committed successfully');
+      debugPrint('  ✅ Changes committed successfully');
     } else {
-      print('  ❌ Commit failed');
-      print('  Error: ${commitResult.stderr}');
+      debugPrint('  ❌ Commit failed');
+      debugPrint('  Error: ${commitResult.stderr}');
     }
     
-    print('');
+    debugPrint('');
   }
 
   /// Push changes to remote
   Future<void> pushChanges() async {
-    print('📤 Pushing Changes...');
+    debugPrint('📤 Pushing Changes...');
     
     Directory.current = projectRoot;
     
@@ -199,22 +200,22 @@ class GitHubAutomation {
     final currentBranch = branchResult.stdout.trim();
     
     // Push to remote
-    print('  📤 Pushing $currentBranch to remote...');
+    debugPrint('  📤 Pushing $currentBranch to remote...');
     final pushResult = await _runGitCommand(['push', 'origin', currentBranch]);
     
     if (pushResult.exitCode == 0) {
-      print('  ✅ Changes pushed successfully');
+      debugPrint('  ✅ Changes pushed successfully');
     } else {
-      print('  ❌ Push failed');
-      print('  Error: ${pushResult.stderr}');
+      debugPrint('  ❌ Push failed');
+      debugPrint('  Error: ${pushResult.stderr}');
     }
     
-    print('');
+    debugPrint('');
   }
 
   /// Pull changes from remote
   Future<void> pullChanges() async {
-    print('📥 Pulling Changes...');
+    debugPrint('📥 Pulling Changes...');
     
     Directory.current = projectRoot;
     
@@ -223,17 +224,17 @@ class GitHubAutomation {
     final currentBranch = branchResult.stdout.trim();
     
     // Pull from remote
-    print('  📥 Pulling $currentBranch from remote...');
+    debugPrint('  📥 Pulling $currentBranch from remote...');
     final pullResult = await _runGitCommand(['pull', 'origin', currentBranch]);
     
     if (pullResult.exitCode == 0) {
-      print('  ✅ Changes pulled successfully');
+      debugPrint('  ✅ Changes pulled successfully');
     } else {
-      print('  ❌ Pull failed');
-      print('  Error: ${pullResult.stderr}');
+      debugPrint('  ❌ Pull failed');
+      debugPrint('  Error: ${pullResult.stderr}');
     }
     
-    print('');
+    debugPrint('');
   }
 
   /// Manage branches
@@ -247,37 +248,37 @@ class GitHubAutomation {
 
   /// Show all branches
   Future<void> showBranches() async {
-    print('🌿 Branches');
-    print('==========\n');
+    debugPrint('🌿 Branches');
+    debugPrint('==========\n');
     
     Directory.current = projectRoot;
     
     final result = await _runGitCommand(['branch', '-a']);
-    print(result.stdout);
-    print('');
+    debugPrint(result.stdout);
+    debugPrint('');
   }
 
   /// Create new branch
   Future<void> createBranch(String branchName) async {
-    print('🌿 Creating Branch: $branchName');
+    debugPrint('🌿 Creating Branch: $branchName');
     
     Directory.current = projectRoot;
     
     final result = await _runGitCommand(['checkout', '-b', branchName]);
     
     if (result.exitCode == 0) {
-      print('  ✅ Branch $branchName created and checked out');
+      debugPrint('  ✅ Branch $branchName created and checked out');
     } else {
-      print('  ❌ Failed to create branch $branchName');
-      print('  Error: ${result.stderr}');
+      debugPrint('  ❌ Failed to create branch $branchName');
+      debugPrint('  Error: ${result.stderr}');
     }
     
-    print('');
+    debugPrint('');
   }
 
   /// Create release
   Future<void> createRelease(String? version) async {
-    print('🚀 Creating Release...');
+    debugPrint('🚀 Creating Release...');
     
     Directory.current = projectRoot;
     
@@ -285,7 +286,7 @@ class GitHubAutomation {
     final releaseVersion = version ?? await _getCurrentVersion();
     
     // Create tag
-    print('  🏷️ Creating tag ${githubConfig['releasePrefix']}$releaseVersion...');
+    debugPrint('  🏷️ Creating tag ${githubConfig['releasePrefix']}$releaseVersion...');
     final tagResult = await _runGitCommand([
       'tag',
       '-a',
@@ -295,51 +296,51 @@ class GitHubAutomation {
     ]);
     
     if (tagResult.exitCode != 0) {
-      print('  ❌ Failed to create tag');
+      debugPrint('  ❌ Failed to create tag');
       return;
     }
     
     // Push tag
-    print('  📤 Pushing tag to remote...');
+    debugPrint('  📤 Pushing tag to remote...');
     await _runGitCommand(['push', 'origin', '${githubConfig['releasePrefix']}$releaseVersion']);
     
     // Update changelog
     await _updateChangelogForRelease(releaseVersion);
     
-    print('  ✅ Release $releaseVersion created successfully\n');
+    debugPrint('  ✅ Release $releaseVersion created successfully\n');
   }
 
   /// Create tag
   Future<void> createTag(String? tagName) async {
     if (tagName == null) {
-      print('❌ Please provide a tag name');
+      debugPrint('❌ Please provide a tag name');
       return;
     }
     
-    print('🏷️ Creating Tag: $tagName');
+    debugPrint('🏷️ Creating Tag: $tagName');
     
     Directory.current = projectRoot;
     
     final result = await _runGitCommand(['tag', '-a', tagName, '-m', 'Tag $tagName']);
     
     if (result.exitCode == 0) {
-      print('  ✅ Tag $tagName created successfully');
+      debugPrint('  ✅ Tag $tagName created successfully');
     } else {
-      print('  ❌ Failed to create tag $tagName');
-      print('  Error: ${result.stderr}');
+      debugPrint('  ❌ Failed to create tag $tagName');
+      debugPrint('  Error: ${result.stderr}');
     }
     
-    print('');
+    debugPrint('');
   }
 
   /// Merge branches
   Future<void> mergeBranches(String? sourceBranch) async {
     if (sourceBranch == null) {
-      print('❌ Please provide source branch name');
+      debugPrint('❌ Please provide source branch name');
       return;
     }
     
-    print('🔀 Merging $sourceBranch into ${githubConfig['mainBranch']}...');
+    debugPrint('🔀 Merging $sourceBranch into ${githubConfig['mainBranch']}...');
     
     Directory.current = projectRoot;
     
@@ -350,24 +351,24 @@ class GitHubAutomation {
     final result = await _runGitCommand(['merge', sourceBranch]);
     
     if (result.exitCode == 0) {
-      print('  ✅ $sourceBranch merged successfully');
+      debugPrint('  ✅ $sourceBranch merged successfully');
     } else {
-      print('  ❌ Merge failed');
-      print('  Error: ${result.stderr}');
+      debugPrint('  ❌ Merge failed');
+      debugPrint('  Error: ${result.stderr}');
     }
     
-    print('');
+    debugPrint('');
   }
 
   /// Update changelog
   Future<void> updateChangelog() async {
-    print('📋 Updating CHANGELOG.md...');
+    debugPrint('📋 Updating CHANGELOG.md...');
     
     Directory.current = projectRoot;
     
     final changelogFile = File(githubConfig['changelogFile']!);
     if (!await changelogFile.exists()) {
-      print('  ❌ CHANGELOG.md not found');
+      debugPrint('  ❌ CHANGELOG.md not found');
       return;
     }
     
@@ -385,18 +386,18 @@ class GitHubAutomation {
     await _runGitCommand(['add', githubConfig['changelogFile']!]);
     await _runGitCommand(['commit', '-m', 'docs: update CHANGELOG.md']);
     
-    print('  ✅ CHANGELOG.md updated\n');
+    debugPrint('  ✅ CHANGELOG.md updated\n');
   }
 
   /// Update README
   Future<void> updateReadme() async {
-    print('📖 Updating README.md...');
+    debugPrint('📖 Updating README.md...');
     
     Directory.current = projectRoot;
     
     final readmeFile = File(githubConfig['readmeFile']!);
     if (!await readmeFile.exists()) {
-      print('  ❌ README.md not found');
+      debugPrint('  ❌ README.md not found');
       return;
     }
     
@@ -410,18 +411,18 @@ class GitHubAutomation {
     await _runGitCommand(['add', githubConfig['readmeFile']!]);
     await _runGitCommand(['commit', '-m', 'docs: update README.md']);
     
-    print('  ✅ README.md updated\n');
+    debugPrint('  ✅ README.md updated\n');
   }
 
   /// Update TODO
   Future<void> updateTodo() async {
-    print('📝 Updating TODO.md...');
+    debugPrint('📝 Updating TODO.md...');
     
     Directory.current = projectRoot;
     
     final todoFile = File(githubConfig['todoFile']!);
     if (!await todoFile.exists()) {
-      print('  ❌ TODO.md not found');
+      debugPrint('  ❌ TODO.md not found');
       return;
     }
     
@@ -435,19 +436,19 @@ class GitHubAutomation {
     await _runGitCommand(['add', githubConfig['todoFile']!]);
     await _runGitCommand(['commit', '-m', 'docs: update TODO.md']);
     
-    print('  ✅ TODO.md updated\n');
+    debugPrint('  ✅ TODO.md updated\n');
   }
 
   /// Update app gallery
   Future<void> updateAppGallery() async {
-    print('🖼️ Updating App Gallery...');
+    debugPrint('🖼️ Updating App Gallery...');
     
     Directory.current = projectRoot;
     
     // Check if gallery exists
     final galleryDir = Directory('lib/features/gallery');
     if (!await galleryDir.exists()) {
-      print('  ❌ Gallery directory not found');
+      debugPrint('  ❌ Gallery directory not found');
       return;
     }
     
@@ -462,12 +463,12 @@ class GitHubAutomation {
     await _runGitCommand(['add', 'assets/screenshots/']);
     await _runGitCommand(['commit', '-m', 'feat: update app gallery with new screenshots']);
     
-    print('  ✅ App gallery updated\n');
+    debugPrint('  ✅ App gallery updated\n');
   }
 
   /// Synchronize repository
   Future<void> synchronizeRepository() async {
-    print('🔄 Synchronizing Repository...');
+    debugPrint('🔄 Synchronizing Repository...');
     
     // Pull latest changes
     await pullChanges();
@@ -481,39 +482,39 @@ class GitHubAutomation {
     // Push all changes
     await pushChanges();
     
-    print('✅ Repository synchronized\n');
+    debugPrint('✅ Repository synchronized\n');
   }
 
   /// Cleanup repository
   Future<void> cleanupRepository() async {
-    print('🧹 Cleaning Repository...');
+    debugPrint('🧹 Cleaning Repository...');
     
     Directory.current = projectRoot;
     
     // Clean untracked files
-    print('  🗑️ Cleaning untracked files...');
+    debugPrint('  🗑️ Cleaning untracked files...');
     final cleanResult = await _runGitCommand(['clean', '-fd']);
     if (cleanResult.exitCode == 0) {
-      print('  ✅ Untracked files cleaned');
+      debugPrint('  ✅ Untracked files cleaned');
     }
     
     // Reset any staged changes
-    print('  🔄 Resetting staged changes...');
+    debugPrint('  🔄 Resetting staged changes...');
     final resetResult = await _runGitCommand(['reset', '--hard', 'HEAD']);
     if (resetResult.exitCode == 0) {
-      print('  ✅ Staged changes reset');
+      debugPrint('  ✅ Staged changes reset');
     }
     
     // Clean Flutter build cache
-    print('  🧹 Cleaning Flutter cache...');
+    debugPrint('  🧹 Cleaning Flutter cache...');
     await _runCommand('flutter', ['clean']);
     
-    print('✅ Repository cleaned\n');
+    debugPrint('✅ Repository cleaned\n');
   }
 
   /// Run full Git workflow
   Future<void> runFullGitWorkflow() async {
-    print('🚀 Running Full Git Workflow...\n');
+    debugPrint('🚀 Running Full Git Workflow...\n');
     
     await showRepositoryStatus();
     await commitChanges();
@@ -523,7 +524,7 @@ class GitHubAutomation {
     await updateTodo();
     await updateAppGallery();
     
-    print('🎉 Full Git workflow completed!\n');
+    debugPrint('🎉 Full Git workflow completed!\n');
   }
 
   // Helper methods
@@ -547,7 +548,7 @@ class GitHubAutomation {
   }
 
   Future<void> _createGitignore() async {
-    print('  📝 Creating .gitignore...');
+    debugPrint('  📝 Creating .gitignore...');
     
     final gitignoreContent = '''
 # Flutter
@@ -589,7 +590,7 @@ dist/
     final gitignoreFile = File('.gitignore');
     await gitignoreFile.writeAsString(gitignoreContent);
     
-    print('  ✅ .gitignore created');
+    debugPrint('  ✅ .gitignore created');
   }
 
   Future<String> _generateCommitMessage() async {
@@ -702,7 +703,7 @@ Report issues through [GitHub Issues](https://github.com/your-org/VedantaTrade/i
   Future<String> _generateTodoContent() async {
     return '''# VedantaTrade TODO
 
-## 🚀 Current Sprint Goals
+## 🚀 Current SdebugPrint Goals
 
 ### High Priority
 - [ ] Complete UI/UX enhancements
@@ -795,16 +796,16 @@ Report issues through [GitHub Issues](https://github.com/your-org/VedantaTrade/i
     final screenshotDir = Directory('assets/screenshots');
     await screenshotDir.create(recursive: true);
     
-    print('  📸 Gallery screenshots would be generated here');
+    debugPrint('  📸 Gallery screenshots would be generated here');
   }
 
   Future<void> _updateGalleryData() async {
-    print('  🔄 Gallery data updated');
+    debugPrint('  🔄 Gallery data updated');
   }
 
   /// Show help information
   void showHelp() {
-    print('''
+    debugPrint('''
 🐙 GitHub Automation for VedantaTrade
 
 Usage: dart tools/github_automation.dart [command] [options]

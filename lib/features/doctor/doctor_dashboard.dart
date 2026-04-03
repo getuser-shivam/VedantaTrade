@@ -32,7 +32,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
   static const _navItems = [
     NavItem(label: 'Dashboard', icon: Icons.dashboard_rounded, route: '/doctor'),
     NavItem(label: 'Orders', icon: Icons.shopping_bag_rounded, route: '/orders'),
-    NavItem(label: 'Products', icon: Icons.inventory_2_rounded, route: '/products'),
+    NavItem(label: 'Products', icon: Icons.inventory_2_rounded, route: '/catalog'),
     NavItem(label: 'Profile', icon: Icons.person_rounded, route: '/profile'),
   ];
 

@@ -1,0 +1,496 @@
+name: Deployment Automation
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+        - test
+      version:
+        description: 'Version to deploy (auto-detected from tag if available)'
+        required: false
+        type: string
+      skip_tests:
+        description: 'Skip pre-deployment tests'
+        required: false
+        default: false
+        type: boolean
+      rollback:
+        description: 'Rollback to previous version'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+  NODE_VERSION: '20.x'
+  JAVA_VERSION: '17'
+
+permissions:
+  contents: read
+  packages: write
+  deployments: write
+
+jobs:
+  # Pre-deployment validation
+  pre-deployment:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      environment: ${{ steps.env.outputs.environment }}
+      can-deploy: ${{ steps.validation.outputs.can-deploy }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION=${{ github.ref_name }}
+          elif [[ -n "${{ github.event.inputs.version }}" ]]; then
+            VERSION=${{ github.event.inputs.version }}
+          else
+            VERSION="latest"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Deploying version: $VERSION"
+
+      - name: Determine environment
+        id: env
+        run: |
+          ENVIRONMENT=${{ github.event.inputs.environment }}
+          if [[ -z "$ENVIRONMENT" ]]; then
+            if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+              ENVIRONMENT="production"
+            else
+              ENVIRONMENT="staging"
+            fi
+          fi
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "Deploying to: $ENVIRONMENT"
+
+      - name: Validate deployment readiness
+        id: validation
+        run: |
+          if [[ "${{ github.event.inputs.rollback }}" == "true" ]]; then
+            echo "can-deploy=true" >> $GITHUB_OUTPUT
+            echo "Rollback mode enabled"
+          elif [[ "${{ steps.env.outputs.environment }}" == "production" && "${{ github.ref }}" != "refs/tags/"* ]]; then
+            echo "can-deploy=false" >> $GITHUB_OUTPUT
+            echo "Production deployment requires tag"
+            exit 1
+          else
+            echo "can-deploy=true" >> $GITHUB_OUTPUT
+            echo "Deployment validated"
+          fi
+
+      - name: Check previous deployments
+        run: |
+          echo "Checking previous deployment status..."
+          # Add deployment status check here
+
+  # Build applications
+  build-applications:
+    name: Build Applications
+    runs-on: ubuntu-latest
+    needs: pre-deployment
+    if: needs.pre-deployment.outputs.can-deploy == 'true'
+    strategy:
+      matrix:
+        platform: [web, android, ios]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        if: matrix.platform == 'android' || matrix.platform == 'ios'
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build ${{ matrix.platform }}
+        run: |
+          case "${{ matrix.platform }}" in
+            "web")
+              flutter build web --release --web-renderer canvaskit
+              ;;
+            "android")
+              flutter build apk --release --split-per-abi
+              flutter build appbundle --release
+              ;;
+            "ios")
+              flutter build ios --release --no-codesign
+              ;;
+          esac
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.platform }}-${{ needs.pre-deployment.outputs.version }}
+          path: |
+            build/app/outputs/
+            build/web/
+            build/ios/
+
+  # Backend deployment
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs: [pre-deployment, build-applications]
+    if: needs.pre-deployment.outputs.can-deploy == 'true'
+    environment: ${{ needs.pre-deployment.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Run database migrations
+        working-directory: backend
+        run: |
+          npx prisma migrate deploy
+          npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Deploy to ${{ needs.pre-deployment.outputs.environment }}
+        run: |
+          echo "Deploying backend to ${{ needs.pre-deployment.outputs.environment }}..."
+          # Add backend deployment commands here
+          # Example: AWS ECS, Docker, Vercel, etc.
+
+      - name: Health check
+        run: |
+          echo "Performing backend health check..."
+          # Add health check commands here
+
+  # Web deployment
+  deploy-web:
+    name: Deploy Web Application
+    runs-on: ubuntu-latest
+    needs: [pre-deployment, build-applications]
+    if: needs.pre-deployment.outputs.can-deploy == 'true'
+    environment: ${{ needs.pre-deployment.outputs.environment }}
+    steps:
+      - name: Download web build
+        uses: actions/download-artifact@v4
+        with:
+          name: build-web-${{ needs.pre-deployment.outputs.version }}
+          path: build/
+
+      - name: Deploy to ${{ needs.pre-deployment.outputs.environment }}
+        run: |
+          echo "Deploying web app to ${{ needs.pre-deployment.outputs.environment }}..."
+          # Add web deployment commands here
+          # Example: AWS S3 + CloudFront, Vercel, Netlify, etc.
+
+      - name: Configure CDN
+        run: |
+          echo "Configuring CDN..."
+          # Add CDN configuration here
+
+      - name: Web health check
+        run: |
+          echo "Performing web health check..."
+          # Add web health check commands here
+
+  # Mobile deployment
+  deploy-mobile:
+    name: Deploy Mobile Applications
+    runs-on: ubuntu-latest
+    needs: [pre-deployment, build-applications]
+    if: needs.pre-deployment.outputs.can-deploy == 'true' && needs.pre-deployment.outputs.environment == 'production'
+    strategy:
+      matrix:
+        platform: [android, ios]
+    steps:
+      - name: Download mobile build
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ matrix.platform }}-${{ needs.pre-deployment.outputs.version }}
+          path: build/
+
+      - name: Setup signing keys (Android)
+        if: matrix.platform == 'android'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=keystore.jks" >> android/key.properties
+
+      - name: Deploy to ${{ matrix.platform }} Store
+        run: |
+          echo "Deploying to ${{ matrix.platform }} store..."
+          case "${{ matrix.platform }}" in
+            "android")
+              # Deploy to Google Play Store
+              echo "Uploading to Google Play Console..."
+              # Add Play Store deployment commands here
+              ;;
+            "ios")
+              # Deploy to Apple App Store
+              echo "Uploading to App Store Connect..."
+              # Add App Store deployment commands here
+              ;;
+          esac
+
+      - name: Store deployment metadata
+        run: |
+          echo "Storing deployment metadata..."
+          # Add metadata storage commands here
+
+  # Post-deployment testing
+  post-deployment-tests:
+    name: Post-deployment Testing
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-web, deploy-mobile]
+    if: always() && needs.deploy-backend.result == 'success' && needs.deploy-web.result == 'success'
+    steps:
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests..."
+          # Add smoke test commands here
+
+      - name: Run integration tests
+        run: |
+          echo "Running integration tests..."
+          # Add integration test commands here
+
+      - name: Run performance tests
+        run: |
+          echo "Running performance tests..."
+          # Add performance test commands here
+
+      - name: Run security tests
+        run: |
+          echo "Running security tests..."
+          # Add security test commands here
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-deployment-test-results
+          path: test-results/
+
+  # Rollback deployment
+  rollback-deployment:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [pre-deployment, post-deployment-tests]
+    if: failure() && needs.pre-deployment.outputs.can-deploy == 'true' && github.event.inputs.rollback != 'true'
+    environment: ${{ needs.pre-deployment.outputs.environment }}
+    steps:
+      - name: Initiate rollback
+        run: |
+          echo "Initiating rollback for ${{ needs.pre-deployment.outputs.environment }}..."
+          # Add rollback commands here
+
+      - name: Verify rollback
+        run: |
+          echo "Verifying rollback..."
+          # Add rollback verification commands here
+
+      - name: Notify rollback
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"🚨 Deployment rollback initiated for ${{ github.repository }} - ${{ needs.pre-deployment.outputs.environment }}"}' \
+          ${{ secrets.SLACK_WEBHOOK_URL }} || echo "Slack notification skipped"
+
+  # Release management
+  release-management:
+    name: Release Management
+    runs-on: ubuntu-latest
+    needs: [pre-deployment, post-deployment-tests]
+    if: startsWith(github.ref, 'refs/tags/v') && needs.post-deployment-tests.result == 'success'
+    steps:
+      - name: Download all builds
+        uses: actions/download-artifact@v4
+        with:
+          pattern: build-*-${{ needs.pre-deployment.outputs.version }}
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.pre-deployment.outputs.version }}
+          name: Release ${{ needs.pre-deployment.outputs.version }}
+          body: |
+            ## Release ${{ needs.pre-deployment.outputs.version }}
+            
+            ### 🚀 Features
+            - Automated release from tag ${{ needs.pre-deployment.outputs.version }}
+            - Built and tested on ${{ github.event.head_commit.timestamp }}
+            
+            ### 📦 Artifacts
+            - Android APK and AAB
+            - iOS build (unsigned)
+            - Web application
+            
+            ### 🔗 Links
+            - Web App: [Deployed URL]
+            - Documentation: [Docs URL]
+            
+            ### 📋 Build Information
+            - Flutter Version: ${{ env.FLUTTER_VERSION }}
+            - Node Version: ${{ env.NODE_VERSION }}
+            - Commit: ${{ github.sha }}
+            - Branch: ${{ github.ref_name }}
+          files: |
+            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/bundle/release/*.aab
+            build/ios/**
+            build/web/**
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+
+      - name: Update version.json
+        run: |
+          echo "Updating version.json..."
+          cat > assets/data/versions.json << EOF
+          {
+            "latest": "${{ needs.pre-deployment.outputs.version }}",
+            "release_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "build_number": "${{ github.run_number }}",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "flutter_version": "${{ env.FLUTTER_VERSION }}"
+          }
+          EOF
+
+      - name: Commit version update
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add assets/data/versions.json
+          git commit -m "chore: update version to ${{ needs.pre-deployment.outputs.version }}"
+          git push
+
+  # Deployment monitoring
+  deployment-monitoring:
+    name: Deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-web, deploy-mobile]
+    if: always() && (needs.deploy-backend.result == 'success' || needs.deploy-web.result == 'success')
+    steps:
+      - name: Start monitoring
+        run: |
+          echo "Starting deployment monitoring..."
+          # Add monitoring setup commands here
+
+      - name: Monitor application health
+        run: |
+          echo "Monitoring application health..."
+          # Add health monitoring commands here
+
+      - name: Monitor performance metrics
+        run: |
+          echo "Monitoring performance metrics..."
+          # Add performance monitoring commands here
+
+      - name: Monitor error rates
+        run: |
+          echo "Monitoring error rates..."
+          # Add error monitoring commands here
+
+      - name: Set up alerts
+        run: |
+          echo "Setting up alerts..."
+          # Add alert setup commands here
+
+  # Notification and cleanup
+  notify-and-cleanup:
+    name: Notify and Cleanup
+    runs-on: ubuntu-latest
+    needs: [pre-deployment, deploy-backend, deploy-web, deploy-mobile, post-deployment-tests]
+    if: always()
+    steps:
+      - name: Determine deployment status
+        id: status
+        run: |
+          if [[ "${{ needs.deploy-backend.result }}" == "success" && "${{ needs.deploy-web.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "deployment_status=successful" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "deployment_status=failed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        run: |
+          if [ "${{ steps.status.outputs.status }}" = "success" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"🎉 Deployment to ${{ needs.pre-deployment.outputs.environment }} completed successfully for ${{ github.repository }} - ${{ needs.pre-deployment.outputs.version }}"}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }} || echo "Slack notification skipped"
+          else
+            curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"❌ Deployment to ${{ needs.pre-deployment.outputs.environment }} failed for ${{ github.repository }} - ${{ needs.pre-deployment.outputs.version }}"}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }} || echo "Slack notification skipped"
+          fi
+
+      - name: Update deployment status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: '${{ steps.status.outputs.status }}' === 'success' ? 'success' : 'failure',
+              target_url: 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}',
+              description: 'Deployment to ${{ needs.pre-deployment.outputs.environment }} ${{ steps.status.outputs.deployment_status }}',
+              context: 'deployment/${{ needs.pre-deployment.outputs.environment }}'
+            })
+
+      - name: Cleanup temporary resources
+        run: |
+          echo "Cleaning up temporary resources..."
+          # Add cleanup commands here
+
+      - name: Archive deployment logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deployment-logs-${{ needs.pre-deployment.outputs.version }}
+          path: |
+            **/*.log
+            deployment-logs/

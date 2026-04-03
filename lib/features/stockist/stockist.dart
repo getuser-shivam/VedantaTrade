@@ -1,17 +1,19 @@
 // Stockist Feature Exports
-// Clean Architecture: Domain -> Data -> Presentation
 
 // Domain
-export 'domain/models/stockist_models.dart' if (dart.library.io) 'domain/models/stockist_models.dart';
+export 'domain/models/stockist_profile.dart';
+export 'domain/models/inventory_item.dart';
+export 'domain/models/distribution_order.dart';
 
 // Data
 export 'data/services/stockist_service.dart';
+export 'data/repositories/stockist_repository_impl.dart';
 
 // Presentation
-export 'presentation/screens/stockist_dashboard_screen.dart';
-export 'presentation/screens/inventory_control_screen.dart';
-export 'presentation/screens/order_management_screen.dart';
 export 'presentation/providers/stockist_provider.dart';
+export 'presentation/screens/stockist_dashboard_screen.dart';
+export 'presentation/screens/order_management_screen.dart';
 
-// Legacy (to be migrated)
-// export 'stockist_dashboard.dart'; // DEPRECATED: Use presentation/screens/stockist_dashboard_screen.dart
+// Legacy
+export 'stockist_dashboard.dart';
+export 'order_management_screen.dart';

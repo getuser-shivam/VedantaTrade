@@ -21,7 +21,11 @@
       "Privacy Policy & Terms of Service (Nepal)",
       "Enhanced UI/UX: Transitions, Skeleton Loading, Toast Notifications",
       "CI/CD Pipeline with GitHub Actions",
-      "Project Structure Standardization"
+      "Project Structure Standardization",
+      "MR Expense Claims with Multi-Photo Receipt Upload",
+      "Accountant Expense Reconciliation Dashboard",
+      "Real-time Stock Validation for Orders",
+      "GitHub Pages Web Deployment"
     ],
     "changelog": [
       "Implemented BackgroundGpsService for continuous MR tracking",
@@ -32,7 +36,12 @@
       "Enhanced UX with page transitions and skeleton loading",
       "Implemented toast notification system",
       "Setup CI/CD pipeline with automated testing",
-      "Standardized project structure with barrel exports"
+      "Standardized project structure with barrel exports",
+      "Added MR Dashboard API integration (GET /api/mr/dashboard)",
+      "Implemented Expense submission with photo upload (POST /api/mr/expenses)",
+      "Created Accountant Expense Reconciliation workflow",
+      "Built real-time stock validation for order approval",
+      "Configured GitHub Pages deployment for web demo"
     ],
     "isFeatured": true
   },

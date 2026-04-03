@@ -7,6 +7,7 @@ import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider
 import 'package:vedanta_trade/app/theme/app_theme.dart';
 // Screens
 import 'package:vedanta_trade/features/auth/presentation/screens/login_screen.dart';
+import 'package:vedanta_trade/features/auth/presentation/screens/password_reset_screen.dart';
 import 'package:vedanta_trade/features/splash/splash_screen.dart';
 import 'package:vedanta_trade/features/admin/admin_dashboard.dart';
 import 'package:vedanta_trade/features/admin/map_master_screen.dart';
@@ -66,6 +67,7 @@ class VedantaTradeApp extends StatelessWidget {
       routes: [
         GoRoute(path: '/splash', builder: (c, s) => const SplashScreen()),
         GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
+        GoRoute(path: '/auth/forgot-password', builder: (c, s) => const PasswordResetScreen()),
         GoRoute(path: '/profile', builder: (c, s) => const ProfileScreen()),
         GoRoute(path: '/products', builder: (c, s) => const ProductsScreen()),
         GoRoute(path: '/catalog', builder: (c, s) => const ProductCatalogScreen()),

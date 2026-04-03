@@ -33,7 +33,7 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
   static const _navItems = [
     NavItem(label: 'Dashboard', icon: Icons.dashboard_rounded, route: '/retailer'),
     NavItem(label: 'Orders', icon: Icons.shopping_bag_rounded, route: '/orders'),
-    NavItem(label: 'Inventory', icon: Icons.inventory_rounded, route: '/products'),
+    NavItem(label: 'Inventory', icon: Icons.inventory_rounded, route: '/catalog'),
     NavItem(label: 'Invoices', icon: Icons.receipt_long_rounded, route: '/accounting/invoices'),
     NavItem(label: 'Profile', icon: Icons.person_rounded, route: '/profile'),
   ];

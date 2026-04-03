@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
+import 'package:flutter/foundation.dart';
 
 /// Placeholder screenshot generator for App Gallery
 /// Run: dart tools/generate_placeholders.dart
@@ -41,10 +42,10 @@ void main() {
     
     final file = File('${outputDir.path}/${screenshot['name']}');
     file.writeAsBytesSync(img.encodePng(image));
-    print('Generated: ${file.path}');
+    debugPrint('Generated: ${file.path}');
   }
   
-  print('\n✅ All placeholder screenshots generated!');
+  debugPrint('\n✅ All placeholder screenshots generated!');
 }
 
 img.Image _generatePlaceholder({
