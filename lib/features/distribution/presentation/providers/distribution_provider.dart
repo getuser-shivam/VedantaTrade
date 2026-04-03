@@ -22,6 +22,13 @@ class DistributionProvider extends ChangeNotifier {
   int _activeCampaigns = 0;
   double _totalRevenue = 0.0;
   
+  // Sales & Marketing
+  List<Map<String, dynamic>> _sales = [];
+  List<Map<String, dynamic>> _campaigns = [];
+  Map<String, dynamic> _salesAnalytics = {};
+  double _todaySales = 0.0;
+  int _weeklyOrders = 0;
+  
   // Pagination
   int _currentPage = 1;
   int _totalPages = 1;
@@ -44,6 +51,13 @@ class DistributionProvider extends ChangeNotifier {
   int get activeInventory => _activeInventory;
   int get activeCampaigns => _activeCampaigns;
   double get totalRevenue => _totalRevenue;
+  double get todaySales => _todaySales;
+  int get weeklyOrders => _weeklyOrders;
+  
+  // Sales & Marketing getters
+  List<Map<String, dynamic>> get sales => _sales;
+  List<Map<String, dynamic>> get campaigns => _campaigns;
+  Map<String, dynamic> get salesAnalytics => _salesAnalytics;
   
   // Pagination getters
   int get currentPage => _currentPage;
@@ -287,6 +301,296 @@ class DistributionProvider extends ChangeNotifier {
   // Refresh dashboard data
   Future<void> refreshData() async {
     await loadDashboardData();
+  }
+
+  // ============================================
+  // SALES TRACKING & MARKETING MANAGEMENT
+  // ============================================
+
+  // Load sales data with optional filters
+  Future<void> loadSales({
+    DateTime? startDate,
+    DateTime? endDate,
+    int? centerId,
+    int? productId,
+    int? campaignId,
+  }) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final response = await _distributionService.getSalesAnalytics(
+        startDate: startDate,
+        endDate: endDate,
+        centerId: centerId,
+        productId: productId,
+        campaignId: campaignId,
+      );
+
+      if (response['success'] == true) {
+        _sales = (response['data']['sales'] as List<dynamic>?)
+                ?.cast<Map<String, dynamic>>() ??
+            [];
+        _salesAnalytics = response['data']['analytics'] ?? {};
+        _todaySales = response['data']['today_sales']?.toDouble() ?? 0.0;
+        _weeklyOrders = response['data']['weekly_orders'] ?? 0;
+      } else {
+        _error = response['message'] ?? 'Failed to load sales data';
+      }
+    } catch (e) {
+      _error = 'Failed to load sales: ${e.toString()}';
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Record a new sale
+  Future<bool> recordSale({
+    required int productId,
+    required int centerId,
+    required int quantity,
+    required double unitPrice,
+    double? discount,
+    int? campaignId,
+    String? customerId,
+    String? notes,
+  }) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final response = await _distributionService.recordSale(
+        productId: productId,
+        centerId: centerId,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        discount: discount,
+        campaignId: campaignId,
+        customerId: customerId,
+        notes: notes,
+      );
+
+      if (response['success'] == true) {
+        // Refresh sales data after recording
+        await loadSales();
+        return true;
+      } else {
+        _error = response['message'] ?? 'Failed to record sale';
+        return false;
+      }
+    } catch (e) {
+      _error = 'Failed to record sale: ${e.toString()}';
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Load marketing campaigns
+  Future<void> loadMarketingCampaigns({
+    String? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    int page = 1,
+  }) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final response = await _distributionService.getMarketingCampaigns(
+        status: status,
+        startDate: startDate,
+        endDate: endDate,
+        page: page,
+        limit: _itemsPerPage,
+      );
+
+      if (response['success'] == true) {
+        _campaigns = (response['data']['campaigns'] as List<dynamic>?)
+                ?.cast<Map<String, dynamic>>() ??
+            [];
+        final pagination = response['pagination'] ?? {};
+        _currentPage = pagination['page'] ?? page;
+        _totalPages = pagination['pages'] ?? 1;
+        _totalItems = pagination['total'] ?? 0;
+      } else {
+        _error = response['message'] ?? 'Failed to load campaigns';
+      }
+    } catch (e) {
+      _error = 'Failed to load campaigns: ${e.toString()}';
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Create new marketing campaign
+  Future<bool> createMarketingCampaign({
+    required String name,
+    String? description,
+    required DateTime startDate,
+    DateTime? endDate,
+    double budget = 0,
+    String? targetAudience,
+    required int createdBy,
+  }) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final response = await _distributionService.createMarketingCampaign(
+        name: name,
+        description: description,
+        startDate: startDate,
+        endDate: endDate,
+        budget: budget,
+        targetAudience: targetAudience,
+        createdBy: createdBy,
+      );
+
+      if (response['success'] == true) {
+        await loadMarketingCampaigns();
+        return true;
+      } else {
+        _error = response['message'] ?? 'Failed to create campaign';
+        return false;
+      }
+    } catch (e) {
+      _error = 'Failed to create campaign: ${e.toString()}';
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Add product to campaign
+  Future<bool> addProductToCampaign({
+    required int campaignId,
+    required int productId,
+    double discountPercentage = 0,
+    double? specialPrice,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final response = await _distributionService.addProductToCampaign(
+        campaignId: campaignId,
+        productId: productId,
+        discountPercentage: discountPercentage,
+        specialPrice: specialPrice,
+        startDate: startDate,
+        endDate: endDate,
+      );
+
+      if (response['success'] == true) {
+        return true;
+      } else {
+        _error = response['message'] ?? 'Failed to add product to campaign';
+        return false;
+      }
+    } catch (e) {
+      _error = 'Failed to add product: ${e.toString()}';
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Transfer inventory between centers
+  Future<bool> transferInventory({
+    required int productId,
+    required int fromCenterId,
+    required int toCenterId,
+    required int quantity,
+    String? notes,
+  }) async {
+    _setLoading(true);
+    _error = null;
+
+    try {
+      final response = await _distributionService.transferInventory(
+        productId: productId,
+        fromCenterId: fromCenterId,
+        toCenterId: toCenterId,
+        quantity: quantity,
+        notes: notes,
+      );
+
+      if (response['success'] == true) {
+        // Refresh inventory data
+        if (_inventoryAllocations.isNotEmpty) {
+          await loadInventoryAllocations(fromCenterId);
+        }
+        return true;
+      } else {
+        _error = response['message'] ?? 'Failed to transfer inventory';
+        return false;
+      }
+    } catch (e) {
+      _error = 'Failed to transfer: ${e.toString()}';
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Get campaign metrics
+  Future<Map<String, dynamic>?> getCampaignMetrics({
+    required int campaignId,
+    String? metricType,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      final response = await _distributionService.getCampaignMetrics(
+        campaignId: campaignId,
+        metricType: metricType,
+        startDate: startDate,
+        endDate: endDate,
+      );
+
+      if (response['success'] == true) {
+        return response['data'];
+      } else {
+        _error = response['message'] ?? 'Failed to load metrics';
+        return null;
+      }
+    } catch (e) {
+      _error = 'Failed to load metrics: ${e.toString()}';
+      return null;
+    }
+  }
+
+  // Record campaign metric
+  Future<bool> recordCampaignMetric({
+    required int campaignId,
+    required String metricType,
+    required double metricValue,
+  }) async {
+    try {
+      final response = await _distributionService.recordCampaignMetric(
+        campaignId: campaignId,
+        metricType: metricType,
+        metricValue: metricValue,
+      );
+
+      return response['success'] == true;
+    } catch (e) {
+      _error = 'Failed to record metric: ${e.toString()}';
+      return false;
+    }
+  }
+
+  // Refresh all distribution data
+  Future<void> refreshAllData() async {
+    await Future.wait([
+      loadDashboardData(),
+      loadDistributionCenters(),
+      loadMarketingCampaigns(),
+      loadSales(),
+    ]);
   }
 
   // Private helper methods

@@ -9,6 +9,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
+import 'package:vedanta_trade/core/services/background_gps_service.dart';
 
 class VisitLogScreen extends StatefulWidget {
   const VisitLogScreen({super.key});
@@ -21,84 +22,68 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
   bool _loading = true;
   List<LatLng> _trajectoryPoints = [];
   bool _isTracking = false;
-  StreamSubscription<Position>? _positionStreamSubscription;
+  
+  final BackgroundGpsService _gpsService = BackgroundGpsService();
+  StreamSubscription<List<LatLng>>? _trajectorySubscription;
+  StreamSubscription<bool>? _trackingStatusSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadVisits();
-    _startBackgroundTracking();
+    _initializeGpsTracking();
   }
 
   @override
   void dispose() {
-    _stopBackgroundTracking();
+    _trajectorySubscription?.cancel();
+    _trackingStatusSubscription?.cancel();
     super.dispose();
   }
 
-  Future<void> _startBackgroundTracking() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        serviceEnabled = await Geolocator.openLocationSettings();
-        if (!serviceEnabled) return;
+  /// Initialize GPS service and subscribe to updates
+  Future<void> _initializeGpsTracking() async {
+    // Subscribe to trajectory updates from background service
+    _trajectorySubscription = _gpsService.trajectoryStream.listen((points) {
+      if (mounted) {
+        setState(() => _trajectoryPoints = points);
       }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) {
-          return;
-        }
+    });
+    
+    // Subscribe to tracking status
+    _trackingStatusSubscription = _gpsService.trackingStatusStream.listen((tracking) {
+      if (mounted) {
+        setState(() => _isTracking = tracking);
       }
-
-      const LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10,
-      );
-
-      _positionStreamSubscription = Geolocator.getPositionStream(locationSettings: locationSettings).listen(
-        (Position position) {
-          if (mounted) {
-            setState(() {
-              _trajectoryPoints.add(LatLng(position.latitude, position.longitude));
-              if (_trajectoryPoints.length > 100) {
-                _trajectoryPoints.removeAt(0);
-              }
-            });
-          }
-        },
-        onError: (error) {
-          debugPrint('GPS tracking error: $error');
-        },
-      );
-
-      setState(() => _isTracking = true);
-    } catch (e) {
-      debugPrint('Failed to start GPS tracking: $e');
+    });
+    
+    // Initialize and auto-start if previously tracking
+    final hasPermission = await _gpsService.initialize();
+    if (hasPermission && _gpsService.isTracking) {
+      setState(() {
+        _isTracking = true;
+        _trajectoryPoints = _gpsService.trajectoryPoints;
+      });
     }
   }
 
-  Future<void> _stopBackgroundTracking() async {
-    await _positionStreamSubscription?.cancel();
-    _positionStreamSubscription = null;
-    if (mounted) setState(() => _isTracking = false);
-  }
-
-  Future<Position?> _getCurrentHighAccuracyLocation() async {
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return null;
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.deniedForever) return null;
-
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-        timeLimit: const Duration(seconds: 15),
-      );
-    } catch (e) {
-      return null;
+  /// Toggle background tracking
+  Future<void> _toggleTracking() async {
+    if (_isTracking) {
+      await _gpsService.stopTracking();
+    } else {
+      final auth = context.read<AuthProvider>();
+      final mrId = auth.user?.mrProfile?.id?.toString();
+      
+      final success = await _gpsService.startTracking(mrId: mrId);
+      if (!success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('GPS permission required. Please enable location services.'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
     }
   }
 

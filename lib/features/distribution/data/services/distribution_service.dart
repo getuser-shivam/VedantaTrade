@@ -264,4 +264,374 @@ class DistributionService {
         return 'An unexpected error occurred';
     }
   }
+
+  // ============================================
+  // SALES TRACKING & MARKETING MANAGEMENT
+  // ============================================
+
+  // Sales Analytics
+  Future<Map<String, dynamic>> getSalesAnalytics({
+    DateTime? startDate,
+    DateTime? endDate,
+    int? centerId,
+    int? productId,
+    int? campaignId,
+    String? token,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/distribution/sales/analytics',
+        queryParameters: {
+          if (startDate != null) 'start_date': startDate.toIso8601String(),
+          if (endDate != null) 'end_date': endDate.toIso8601String(),
+          if (centerId != null) 'center_id': centerId,
+          if (productId != null) 'product_id': productId,
+          if (campaignId != null) 'campaign_id': campaignId,
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to load sales analytics',
+      };
+    }
+  }
+
+  // Record a sale
+  Future<Map<String, dynamic>> recordSale({
+    required int productId,
+    required int centerId,
+    required int quantity,
+    required double unitPrice,
+    double? discount,
+    int? campaignId,
+    String? customerId,
+    String? notes,
+    String? token,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/distribution/sales',
+        data: {
+          'product_id': productId,
+          'center_id': centerId,
+          'quantity': quantity,
+          'unit_price': unitPrice,
+          'discount': discount,
+          'campaign_id': campaignId,
+          'customer_id': customerId,
+          'notes': notes,
+          'sale_date': DateTime.now().toIso8601String(),
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to record sale',
+      };
+    }
+  }
+
+  // Marketing Campaigns
+  Future<Map<String, dynamic>> getMarketingCampaigns({
+    String? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    int page = 1,
+    int limit = 20,
+    String? token,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/distribution/campaigns',
+        queryParameters: {
+          if (status != null) 'status': status,
+          if (startDate != null) 'start_date': startDate.toIso8601String(),
+          if (endDate != null) 'end_date': endDate.toIso8601String(),
+          'page': page,
+          'limit': limit,
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to load campaigns',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> createMarketingCampaign({
+    required String name,
+    String? description,
+    required DateTime startDate,
+    DateTime? endDate,
+    double budget = 0,
+    String? targetAudience,
+    required int createdBy,
+    String? token,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/distribution/campaigns',
+        data: {
+          'name': name,
+          'description': description,
+          'start_date': startDate.toIso8601String(),
+          'end_date': endDate?.toIso8601String(),
+          'budget': budget,
+          'target_audience': targetAudience,
+          'created_by': createdBy,
+          'status': 'ACTIVE',
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to create campaign',
+      };
+    }
+  }
+
+  // Campaign Products
+  Future<Map<String, dynamic>> getCampaignProducts({
+    required int campaignId,
+    String? token,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/distribution/campaigns/$campaignId/products',
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to load campaign products',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> addProductToCampaign({
+    required int campaignId,
+    required int productId,
+    double discountPercentage = 0,
+    double? specialPrice,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? token,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/distribution/campaigns/$campaignId/products',
+        data: {
+          'product_id': productId,
+          'discount_percentage': discountPercentage,
+          'special_price': specialPrice,
+          'start_date': startDate?.toIso8601String(),
+          'end_date': endDate?.toIso8601String(),
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to add product to campaign',
+      };
+    }
+  }
+
+  // Product Inventory at Distribution Centers
+  Future<Map<String, dynamic>> getProductInventory({
+    required int productId,
+    int? centerId,
+    String? token,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/distribution/inventory/product/$productId',
+        queryParameters: {
+          if (centerId != null) 'center_id': centerId,
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to load product inventory',
+      };
+    }
+  }
+
+  // Inventory Movement/Transfer
+  Future<Map<String, dynamic>> transferInventory({
+    required int productId,
+    required int fromCenterId,
+    required int toCenterId,
+    required int quantity,
+    String? notes,
+    String? token,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/distribution/inventory/transfer',
+        data: {
+          'product_id': productId,
+          'from_center_id': fromCenterId,
+          'to_center_id': toCenterId,
+          'quantity': quantity,
+          'notes': notes,
+          'transfer_date': DateTime.now().toIso8601String(),
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to transfer inventory',
+      };
+    }
+  }
+
+  // Marketing Metrics
+  Future<Map<String, dynamic>> getCampaignMetrics({
+    required int campaignId,
+    String? metricType,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? token,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/api/distribution/campaigns/$campaignId/metrics',
+        queryParameters: {
+          if (metricType != null) 'metric_type': metricType,
+          if (startDate != null) 'start_date': startDate.toIso8601String(),
+          if (endDate != null) 'end_date': endDate.toIso8601String(),
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to load campaign metrics',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> recordCampaignMetric({
+    required int campaignId,
+    required String metricType,
+    required double metricValue,
+    String? token,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/api/distribution/campaigns/$campaignId/metrics',
+        data: {
+          'metric_type': metricType,
+          'metric_value': metricValue,
+          'metric_date': DateTime.now().toIso8601String(),
+        },
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
+      
+      return response.data;
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Failed to record metric',
+      };
+    }
+  }
 }
