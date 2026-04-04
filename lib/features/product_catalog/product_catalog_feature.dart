@@ -1,0 +1,10 @@
+export 'data/models/product_model.dart';
+export 'data/services/product_service.dart';
+export 'presentation/providers/product_catalog_provider.dart';
+export 'presentation/screens/product_catalog_screen.dart';
+export 'presentation/screens/product_detail_screen.dart';
+export 'presentation/widgets/product_card.dart';
+export 'presentation/widgets/category_grid.dart';
+export 'presentation/widgets/search_filter_bar.dart';
+export 'presentation/widgets/product_detail_sheet.dart';
+export 'presentation/routes/product_catalog_routes.dart';

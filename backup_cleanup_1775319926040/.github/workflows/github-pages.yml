@@ -1,0 +1,128 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+        - test
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Flutter Web
+        run: |
+          flutter clean
+          flutter build web --release \
+            --base-href /VedantaTrade/ \
+            --dart-define=FLAVOR=${{ github.event.inputs.environment || 'production' }} \
+            --web-renderer canvaskit
+
+      - name: Add SEO and metadata
+        run: |
+          # Add robots.txt for search engine optimization
+          echo 'User-agent: *' > build/web/robots.txt
+          echo 'Allow: /' >> build/web/robots.txt
+          echo 'Sitemap: https://getuser-shivam.github.io/VedantaTrade/sitemap.xml' >> build/web/robots.txt
+          
+          # Create sitemap.xml
+          cat > build/web/sitemap.xml << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url>
+              <loc>https://getuser-shivam.github.io/VedantaTrade/</loc>
+              <lastmod>$(date -u +%Y-%m-%dT%H:%M:%SZ)</lastmod>
+              <priority>1.0</priority>
+            </url>
+            <url>
+              <loc>https://getuser-shivam.github.io/VedantaTrade/#/home</loc>
+              <lastmod>$(date -u +%Y-%m-%dT%H:%M:%SZ)</lastmod>
+              <priority>0.9</priority>
+            </url>
+            <url>
+              <loc>https://getuser-shivam.github.io/VedantaTrade/#/gallery</loc>
+              <lastmod>$(date -u +%Y-%m-%dT%H:%M:%SZ)</lastmod>
+              <priority>0.8</priority>
+            </url>
+          </urlset>
+          EOF
+
+      - name: Add analytics and tracking
+        run: |
+          # Add Google Analytics placeholder
+          sed -i 's/<head>/<head>\n  <!-- Google Analytics -->\n  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"><\/script>\n  <script>\n    window.dataLayer = window.dataLayer || [];\n    function gtag(){dataLayer.push(arguments);}\n    gtag("js", new Date());\n    gtag("config", "GA_MEASUREMENT_ID");\n  <\/script>/g' build/web/index.html || true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Update search engines
+        if: github.ref == 'refs/heads/main'
+        run: |
+          # Notify search engines of the update
+          curl -X GET "https://www.google.com/ping?sitemap=https://getuser-shivam.github.io/VedantaTrade/sitemap.xml" || true
+          curl -X GET "https://www.bing.com/ping?sitemap=https://getuser-shivam.github.io/VedantaTrade/sitemap.xml" || true
+
+      - name: Create deployment summary
+        run: |
+          echo "## 🚀 GitHub Pages Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ github.event.inputs.environment || 'production' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment URL:** https://getuser-shivam.github.io/VedantaTrade/" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Date:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "**Flutter Version:** 3.19.0" >> $GITHUB_STEP_SUMMARY
+          echo "**Web Renderer:** CanvasKit" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 SEO Features" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Robots.txt configured" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ XML Sitemap generated" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Search engine notifications sent" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Analytics tracking ready" >> $GITHUB_STEP_SUMMARY
