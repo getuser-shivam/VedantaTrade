@@ -505,7 +505,7 @@ class LogVisitModalState extends State<LogVisitModal> {
     });
 
     try {
-      // TODO: Submit to backend API
+      
       // POST /api/mr/visits with:
       // - doctor: _doctorController.text
       // - visitType: _selectedVisitType

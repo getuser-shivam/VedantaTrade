@@ -34,7 +34,7 @@ class NotificationProvider extends ChangeNotifier {
         _addSampleNotifications();
       }
     } catch (e) {
-      debugPrint('Error loading notifications: $e');
+      
     }
   }
 
@@ -45,7 +45,7 @@ class NotificationProvider extends ChangeNotifier {
           _notifications.map((notification) => notification.toJson()).toList());
       await prefs.setString('notifications', notificationsData);
     } catch (e) {
-      debugPrint('Error saving notifications: $e');
+      
     }
   }
 

@@ -74,7 +74,7 @@ class StockistService {
       }
     } on DioException catch (e) {
       // Simulate API call for development
-      debugPrint('Updating stock for $productId to $newQuantity');
+      
     }
   }
 
@@ -101,7 +101,7 @@ class StockistService {
         'updatedAt': DateTime.now().toIso8601String(),
         'status': 'pending',
       };
-      debugPrint('Creating order: ${newOrder['id']}');
+      
       return newOrder;
     }
   }
@@ -119,7 +119,7 @@ class StockistService {
       }
     } on DioException catch (e) {
       // Simulate API call for development
-      debugPrint('Updating order $orderId to status: $newStatus');
+      
     }
   }
 
@@ -145,7 +145,7 @@ class StockistService {
         'createdAt': DateTime.now().toIso8601String(),
         'updatedAt': DateTime.now().toIso8601String(),
       };
-      debugPrint('Adding product: ${newProduct['id']}');
+      
       return newProduct;
     }
   }
@@ -163,7 +163,7 @@ class StockistService {
       }
     } on DioException catch (e) {
       // Simulate API call for development
-      debugPrint('Updating product $productId with: $updates');
+      
     }
   }
 
@@ -177,7 +177,7 @@ class StockistService {
       }
     } on DioException catch (e) {
       // Simulate API call for development
-      debugPrint('Removing product: $productId');
+      
     }
   }
 

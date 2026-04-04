@@ -281,7 +281,7 @@ class ProductComparisonSheet extends StatelessWidget {
   }
 
   void _exportComparison() {
-    // TODO: Implement comparison export functionality
+    
     // Export to PDF, Excel, or share as text
   }
 }

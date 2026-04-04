@@ -18,7 +18,7 @@ class AppTestingUtils {
       results['Haptic Feedback'] = await _testHapticFeedback();
       
     } catch (e) {
-      debugPrint('Error during UI testing: $e');
+      
       results['Error'] = false;
     }
     
@@ -50,7 +50,7 @@ class AppTestingUtils {
       
       return card != null && button != null && textField != null && loading != null;
     } catch (e) {
-      debugPrint('Enhanced UI Components test failed: $e');
+      
       return false;
     }
   }
@@ -69,7 +69,7 @@ class AppTestingUtils {
       
       return lightTheme != null && darkTheme != null && primaryColor != null && gradient != null;
     } catch (e) {
-      debugPrint('Theme System test failed: $e');
+      
       return false;
     }
   }
@@ -101,7 +101,7 @@ class AppTestingUtils {
       
       return bottomNav != null && appBar != null && fab != null;
     } catch (e) {
-      debugPrint('Navigation Components test failed: $e');
+      
       return false;
     }
   }
@@ -126,7 +126,7 @@ class AppTestingUtils {
       
       return screenSize != null && responsiveValue != null && responsivePadding != null;
     } catch (e) {
-      debugPrint('Responsive Layout test failed: $e');
+      
       return false;
     }
   }
@@ -148,7 +148,7 @@ class AppTestingUtils {
       
       return fadeIn != null && slideIn != null && scaleIn != null;
     } catch (e) {
-      debugPrint('Animation System test failed: $e');
+      
       return false;
     }
   }
@@ -163,7 +163,7 @@ class AppTestingUtils {
       
       return true;
     } catch (e) {
-      debugPrint('Haptic Feedback test failed: $e');
+      
       return false;
     }
   }
@@ -186,7 +186,7 @@ class AppTestingUtils {
       cleanupResults['Duplicate Code Consolidated'] = await _consolidateDuplicateCode();
       
     } catch (e) {
-      debugPrint('Error during cleanup: $e');
+      
       cleanupResults['Error'] = 0;
     }
     
@@ -199,8 +199,7 @@ class AppTestingUtils {
     int removedCount = 0;
     
     // Placeholder implementation
-    debugPrint('Removing unused imports...');
-    
+
     return removedCount;
   }
 
@@ -209,8 +208,7 @@ class AppTestingUtils {
     int removedCount = 0;
     
     // Placeholder implementation
-    debugPrint('Removing dead code...');
-    
+
     return removedCount;
   }
 
@@ -219,8 +217,7 @@ class AppTestingUtils {
     int optimizedCount = 0;
     
     // Placeholder implementation
-    debugPrint('Optimizing widget trees...');
-    
+
     return optimizedCount;
   }
 
@@ -229,8 +226,7 @@ class AppTestingUtils {
     int consolidatedCount = 0;
     
     // Placeholder implementation
-    debugPrint('Consolidating duplicate code...');
-    
+
     return consolidatedCount;
   }
 
@@ -246,7 +242,7 @@ class AppTestingUtils {
       performanceResults['Animation Performance'] = await _checkAnimationPerformance();
       
     } catch (e) {
-      debugPrint('Error during performance validation: $e');
+      
       performanceResults['Error'] = e.toString();
     }
     
@@ -296,7 +292,7 @@ class AppTestingUtils {
       report['Recommendations'] = _generateRecommendations(report);
       
     } catch (e) {
-      debugPrint('Error generating test report: $e');
+      
       report['Error'] = e.toString();
     }
     
@@ -393,17 +389,14 @@ class DevHelper {
   /// Enable debug mode with additional logging
   static void enableDebugMode() {
     if (kDebugMode) {
-      debugPrint('Debug mode enabled');
-      debugPrint('Enhanced UI components available');
-      debugPrint('Theme system active');
-      debugPrint('Navigation components ready');
+
     }
   }
 
   /// Log component performance
   static void logComponentPerformance(String componentName, Duration duration) {
     if (kDebugMode) {
-      debugPrint('$componentName rendered in ${duration.inMilliseconds}ms');
+      
     }
   }
 
@@ -413,7 +406,7 @@ class DevHelper {
       // Basic validation
       return component != null && component.key != null;
     } catch (e) {
-      debugPrint('Component validation failed: $e');
+      
       return false;
     }
   }
@@ -477,7 +470,7 @@ class PerformanceMonitor {
     _startTimes.remove(operation);
     
     if (kDebugMode) {
-      debugPrint('$operation took ${duration.inMilliseconds}ms');
+      
     }
     
     return duration;
@@ -485,13 +478,13 @@ class PerformanceMonitor {
   
   static void logMemoryUsage() {
     if (kDebugMode) {
-      debugPrint('Memory usage logged');
+      
     }
   }
   
   static void logFrameRate() {
     if (kDebugMode) {
-      debugPrint('Frame rate logged');
+      
     }
   }
 }

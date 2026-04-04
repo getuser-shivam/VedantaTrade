@@ -28,7 +28,7 @@ class CartProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('Error loading cart: $e');
+      
     }
   }
 
@@ -38,7 +38,7 @@ class CartProvider extends ChangeNotifier {
       final cartData = json.encode(_items.map((item) => item.toJson()).toList());
       await prefs.setString('cart', cartData);
     } catch (e) {
-      debugPrint('Error saving cart: $e');
+      
     }
   }
 

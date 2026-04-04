@@ -51,7 +51,7 @@ class BackgroundGpsService {
       return true;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('GPS Service init error: $e');
+        
       }
       return false;
     }
@@ -90,14 +90,14 @@ class BackgroundGpsService {
           }
         },
         onError: (error) {
-          debugPrint('GPS Stream Error: $error');
+          
         },
       );
 
       _trackingStatusController.add(true);
       return true;
     } catch (e) {
-      debugPrint('Start tracking error: $e');
+      
       return false;
     }
   }
@@ -170,10 +170,10 @@ class BackgroundGpsService {
 
   /// Sync position to backend (placeholder for API integration)
   Future<void> _syncToBackend(Position position) async {
-    // TODO: Implement backend sync
+    
     // POST /api/mr/location with MR ID, lat, lng, accuracy, timestamp
     if (kDebugMode) {
-      debugPrint('BackgroundGPS: Sync ${position.latitude}, ${position.longitude}');
+      
     }
   }
 

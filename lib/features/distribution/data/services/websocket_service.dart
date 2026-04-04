@@ -92,10 +92,9 @@ class WebSocketService {
       _isConnected = true;
       _connectionController.add(true);
       _startHeartbeat();
-      
-      print('WebSocket connected successfully');
+
     } catch (e) {
-      print('WebSocket connection failed: $e');
+      
       _isConnected = false;
       _connectionController.add(false);
       _scheduleReconnect();
@@ -115,23 +114,23 @@ class WebSocketService {
         try {
           listener(wsMessage);
         } catch (e) {
-          print('Error in WebSocket listener: $e');
+          
         }
       }
     } catch (e) {
-      print('Error parsing WebSocket message: $e');
+      
     }
   }
 
   void _handleError(dynamic error) {
-    print('WebSocket error: $error');
+    
     _isConnected = false;
     _connectionController.add(false);
     _scheduleReconnect();
   }
 
   void _handleDisconnect() {
-    print('WebSocket disconnected');
+    
     _isConnected = false;
     _connectionController.add(false);
     _scheduleReconnect();
@@ -145,7 +144,7 @@ class WebSocketService {
     
     _reconnectTimer = Timer(const Duration(seconds: 5), () {
       _isReconnecting = false;
-      print('Attempting to reconnect WebSocket...');
+      
       connect();
     });
   }
@@ -190,10 +189,10 @@ class WebSocketService {
       try {
         _channel!.sink.add(jsonEncode(message));
       } catch (e) {
-        print('Error sending WebSocket message: $e');
+        
       }
     } else {
-      print('WebSocket not connected, cannot send message');
+      
     }
   }
 
@@ -287,7 +286,7 @@ class WebSocketService {
 
       return await completer.future;
     } catch (e) {
-      print('Error testing WebSocket connection: $e');
+      
       return false;
     }
   }

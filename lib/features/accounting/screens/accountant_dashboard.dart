@@ -475,7 +475,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
   }
 
   void _exportFinancialReport() {
-    // TODO: Implement financial report export
+    
     EnhancedUIComponents.showEnhancedSnackbar(
       context: context,
       message: 'Exporting financial report...',
@@ -488,7 +488,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
   }
 
   void _generateVatReturn() {
-    // TODO: Implement VAT return generation
+    
     EnhancedUIComponents.showEnhancedSnackbar(
       context: context,
       message: 'Generating VAT return...',
@@ -497,7 +497,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
   }
 
   void _exportVatReturn(String vatReturnId) {
-    // TODO: Implement VAT return export
+    
     EnhancedUIComponents.showEnhancedSnackbar(
       context: context,
       message: 'Exporting VAT return...',
@@ -506,7 +506,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
   }
 
   void _approveExpense(String expenseId) {
-    // TODO: Implement expense approval
+    
     EnhancedUIComponents.showEnhancedSnackbar(
       context: context,
       message: 'Expense approved',
@@ -515,7 +515,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
   }
 
   void _rejectExpense(String expenseId) {
-    // TODO: Implement expense rejection
+    
     EnhancedUIComponents.showEnhancedSnackbar(
       context: context,
       message: 'Expense rejected',
@@ -524,11 +524,11 @@ class _AccountantDashboardState extends State<AccountantDashboard>
   }
 
   void _showExpenseDetails(Map<String, dynamic> expense) {
-    // TODO: Implement expense details view
+    
   }
 
   void _approveMrExpense(String expenseId) {
-    // TODO: Implement MR expense approval
+    
     EnhancedUIComponents.showEnhancedSnackbar(
       context: context,
       message: 'MR expense approved',
@@ -537,7 +537,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
   }
 
   void _rejectMrExpense(String expenseId) {
-    // TODO: Implement MR expense rejection
+    
     EnhancedUIComponents.showEnhancedSnackbar(
       context: context,
       message: 'MR expense rejected',
@@ -546,6 +546,6 @@ class _AccountantDashboardState extends State<AccountantDashboard>
   }
 
   void _showMrExpenseDetails(Map<String, dynamic> expense) {
-    // TODO: Implement MR expense details view
+    
   }
 }

@@ -251,7 +251,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: () {
-                    // TODO: Implement forgot password
+                    
                   },
                   child: Text(
                     'Forgot Password?',

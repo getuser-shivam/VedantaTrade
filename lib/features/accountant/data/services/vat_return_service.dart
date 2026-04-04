@@ -1,3 +1,4 @@
+import 'package:vedanta_trade/core/constants/app_constants.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
@@ -12,7 +13,7 @@ class VATReturnService {
   VATReturnService._internal();
 
   late Dio _dio;
-  static const String _baseUrl = 'https://api.vedantatrade.com.np';
+  static const String _baseUrl = 'AppConstants.apiBaseUrl';
   static const double _vatRate = 0.13; // 13% VAT for Nepal
 
   // Stream controllers for real-time updates
@@ -39,16 +40,14 @@ class VATReturnService {
   /// Initialize VAT return service
   Future<void> initialize() async {
     try {
-      print('📊 Initializing VAT Return Service...');
-      
+
       _setupDioClient();
       
       // Load cached data
       await _loadCachedData();
-      
-      print('✅ VAT Return Service initialized');
+
     } catch (e) {
-      print('❌ Failed to initialize VAT Return Service: $e');
+      
       _vatReturnsController.addError(e);
     }
   }
@@ -82,7 +81,7 @@ class VATReturnService {
           handler.next(options);
         },
         onError: (error, handler) async {
-          print('VAT Service API Error: ${error.message}');
+          
           handler.next(error);
         },
       ),
@@ -92,8 +91,7 @@ class VATReturnService {
   /// Load VAT returns from server
   Future<void> loadVATReturns({String? period}) async {
     try {
-      print('📊 Loading VAT returns...');
-      
+
       final response = await _dio.get(
         '/api/vat/returns',
         queryParameters: period != null ? {'period': period} : null,
@@ -108,12 +106,11 @@ class VATReturnService {
           
           _vatReturnsController.add(_vatReturns);
           await _cacheVATReturns();
-          
-          print('✅ Loaded ${_vatReturns.length} VAT returns');
+
         }
       }
     } catch (e) {
-      print('❌ Failed to load VAT returns: $e');
+      
       // Load mock data as fallback
       await _loadMockVATReturns();
     }
@@ -126,8 +123,7 @@ class VATReturnService {
     String? transactionType,
   }) async {
     try {
-      print('📊 Loading VAT transactions...');
-      
+
       final response = await _dio.get(
         '/api/vat/transactions',
         queryParameters: {
@@ -146,12 +142,11 @@ class VATReturnService {
           
           _transactionsController.add(_transactions);
           await _cacheVATTransactions();
-          
-          print('✅ Loaded ${_transactions.length} VAT transactions');
+
         }
       }
     } catch (e) {
-      print('❌ Failed to load VAT transactions: $e');
+      
       // Load mock data as fallback
       await _loadMockVATTransactions();
     }
@@ -164,8 +159,7 @@ class VATReturnService {
     String? period,
   }) async {
     try {
-      print('📊 Calculating VAT summary...');
-      
+
       final response = await _dio.post(
         '/api/vat/summary',
         data: {
@@ -180,13 +174,12 @@ class VATReturnService {
         if (data['success'] == true && data['summary'] != null) {
           _currentSummary = VATSummary.fromJson(data['summary']);
           _vatSummaryController.add(_currentSummary!);
-          
-          print('✅ VAT summary calculated');
+
           return _currentSummary!;
         }
       }
     } catch (e) {
-      print('❌ Failed to calculate VAT summary: $e');
+      
       // Calculate from local data as fallback
       return _calculateLocalVATSummary(startDate, endDate);
     }
@@ -202,8 +195,7 @@ class VATReturnService {
     Map<String, dynamic>? additionalData,
   }) async {
     try {
-      print('📊 Generating VAT return report...');
-      
+
       final response = await _dio.post(
         '/api/vat/returns/generate',
         data: {
@@ -221,13 +213,12 @@ class VATReturnService {
           final vatReturn = VATReturn.fromJson(data['vatReturn']);
           _vatReturns.insert(0, vatReturn);
           _vatReturnsController.add(_vatReturns);
-          
-          print('✅ VAT return generated: ${vatReturn.id}');
+
           return vatReturn;
         }
       }
     } catch (e) {
-      print('❌ Failed to generate VAT return: $e');
+      
       throw Exception('Failed to generate VAT return: $e');
     }
     
@@ -240,8 +231,7 @@ class VATReturnService {
     required Map<String, dynamic> submissionData,
   }) async {
     try {
-      print('📊 Submitting VAT return to tax authorities...');
-      
+
       final response = await _dio.post(
         '/api/vat/returns/$vatReturnId/submit',
         data: {
@@ -263,13 +253,12 @@ class VATReturnService {
             );
             _vatReturnsController.add(_vatReturns);
           }
-          
-          print('✅ VAT return submitted successfully');
+
           return true;
         }
       }
     } catch (e) {
-      print('❌ Failed to submit VAT return: $e');
+      
     }
     
     return false;
@@ -344,8 +333,7 @@ class VATReturnService {
   /// Export VAT return to PDF
   Future<Uint8List> exportVATReturnToPDF(VATReturn vatReturn) async {
     try {
-      print('📄 Exporting VAT return to PDF...');
-      
+
       final response = await _dio.post(
         '/api/vat/returns/${vatReturn.id}/export/pdf',
         data: {
@@ -359,12 +347,12 @@ class VATReturnService {
         final data = response.data;
         if (data['success'] == true && data['pdfData'] != null) {
           final pdfData = base64.decode(data['pdfData']);
-          print('✅ VAT return exported to PDF');
+          
           return Uint8List.fromList(pdfData);
         }
       }
     } catch (e) {
-      print('❌ Failed to export VAT return to PDF: $e');
+      
     }
     
     throw Exception('Failed to export VAT return to PDF');
@@ -421,9 +409,9 @@ class VATReturnService {
       ];
       
       _vatReturnsController.add(_vatReturns);
-      print('✅ Loaded mock VAT returns');
+      
     } catch (e) {
-      print('❌ Failed to load mock VAT returns: $e');
+      
     }
   }
 
@@ -467,9 +455,9 @@ class VATReturnService {
       ];
       
       _transactionsController.add(_transactions);
-      print('✅ Loaded mock VAT transactions');
+      
     } catch (e) {
-      print('❌ Failed to load mock VAT transactions: $e');
+      
     }
   }
 
@@ -546,7 +534,7 @@ class VATReturnService {
       );
       await prefs.setString('cached_vat_returns', vatReturnsJson);
     } catch (e) {
-      print('❌ Failed to cache VAT returns: $e');
+      
     }
   }
 
@@ -559,7 +547,7 @@ class VATReturnService {
       );
       await prefs.setString('cached_vat_transactions', transactionsJson);
     } catch (e) {
-      print('❌ Failed to cache VAT transactions: $e');
+      
     }
   }
 
@@ -591,10 +579,9 @@ class VATReturnService {
             .toList();
         _transactionsController.add(_transactions);
       }
-      
-      print('✅ Loaded cached VAT data');
+
     } catch (e) {
-      print('❌ Failed to load cached VAT data: $e');
+      
     }
   }
 
@@ -611,10 +598,9 @@ class VATReturnService {
       
       _vatReturnsController.add(_vatReturns);
       _transactionsController.add(_transactions);
-      
-      print('✅ VAT cache cleared');
+
     } catch (e) {
-      print('❌ Failed to clear VAT cache: $e');
+      
     }
   }
 
@@ -623,7 +609,7 @@ class VATReturnService {
     _vatReturnsController.close();
     _vatSummaryController.close();
     _transactionsController.close();
-    print('🗑️ VAT Return Service disposed');
+    
   }
 }
 

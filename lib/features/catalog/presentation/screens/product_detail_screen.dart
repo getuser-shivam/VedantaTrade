@@ -145,7 +145,7 @@ class ProductDetailScreen extends StatelessWidget {
         IconButton(
           icon: const Icon(Icons.share, color: Colors.white),
           onPressed: () {
-            // TODO: Share product
+            
           },
         ),
       ],
@@ -446,7 +446,7 @@ class ProductDetailScreen extends StatelessWidget {
                 if (reviews.length > 3)
                   TextButton(
                     onPressed: () {
-                      // TODO: Show all reviews
+                      
                     },
                     child: const Text('View all reviews'),
                   ),
@@ -533,7 +533,7 @@ class ProductDetailScreen extends StatelessWidget {
                   const SizedBox(width: 12),
                   IconButton(
                     onPressed: () {
-                      // TODO: Buy now
+                      
                     },
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.grey[100],

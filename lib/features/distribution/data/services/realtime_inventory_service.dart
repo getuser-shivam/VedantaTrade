@@ -39,7 +39,7 @@ class RealtimeInventoryService {
         await _connectWebSocket();
       }
     } catch (e) {
-      print('Error initializing real-time service: $e');
+      
     }
   }
 
@@ -53,21 +53,21 @@ class RealtimeInventoryService {
       _channel!.stream.listen(
         _handleWebSocketMessage,
         onError: (error) {
-          print('WebSocket error: $error');
+          
           _isConnected = false;
           _scheduleReconnect();
         },
         onDone: () {
-          print('WebSocket connection closed');
+          
           _isConnected = false;
           _scheduleReconnect();
         },
       );
 
       _isConnected = true;
-      print('WebSocket connected successfully');
+      
     } catch (e) {
-      print('Error connecting to WebSocket: $e');
+      
       _isConnected = false;
       _scheduleReconnect();
     }
@@ -98,7 +98,7 @@ class RealtimeInventoryService {
           break;
       }
     } catch (e) {
-      print('Error handling WebSocket message: $e');
+      
     }
   }
 
@@ -153,7 +153,7 @@ class RealtimeInventoryService {
         });
         _channel!.sink.add(message);
       } catch (e) {
-        print('Error sending inventory update: $e');
+        
       }
     }
   }
@@ -168,7 +168,7 @@ class RealtimeInventoryService {
         });
         _channel!.sink.add(message);
       } catch (e) {
-        print('Error sending route update: $e');
+        
       }
     }
   }
@@ -183,7 +183,7 @@ class RealtimeInventoryService {
         });
         _channel!.sink.add(message);
       } catch (e) {
-        print('Error sending campaign update: $e');
+        
       }
     }
   }
@@ -198,7 +198,7 @@ class RealtimeInventoryService {
         });
         _channel!.sink.add(message);
       } catch (e) {
-        print('Error subscribing to inventory updates: $e');
+        
       }
     }
   }
@@ -213,7 +213,7 @@ class RealtimeInventoryService {
         });
         _channel!.sink.add(message);
       } catch (e) {
-        print('Error subscribing to route updates: $e');
+        
       }
     }
   }
@@ -228,21 +228,19 @@ class RealtimeInventoryService {
         });
         _channel!.sink.add(message);
       } catch (e) {
-        print('Error unsubscribing from updates: $e');
+        
       }
     }
   }
 
   // Show stock alert
   void _showStockAlert(StockAlert alert) {
-    // TODO: Implement notification system
-    print('Stock Alert: ${alert.productName} - ${alert.message}');
+
   }
 
   // Show delivery update
   void _showDeliveryUpdate(DeliveryUpdate update) {
-    // TODO: Implement notification system
-    print('Delivery Update: ${update.orderId} - ${update.status}');
+
   }
 
   // Disconnect WebSocket

@@ -305,7 +305,7 @@ class _EnhancedNavigationRailState extends State<EnhancedNavigationRail>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'John Doe', // TODO: Get from user provider
+                              'John Doe', 
                               style: TextStyle(
                                 color: PremiumGlassmorphicTheme.textPrimary,
                                 fontSize: PremiumGlassmorphicTheme.fontSizeSm,
@@ -314,7 +314,7 @@ class _EnhancedNavigationRailState extends State<EnhancedNavigationRail>
                             ),
                             const SizedBox(height: PremiumGlassmorphicTheme.spacingXs),
                             Text(
-                              'Administrator', // TODO: Get from user provider
+                              'Administrator', 
                               style: TextStyle(
                                 color: PremiumGlassmorphicTheme.textSecondary,
                                 fontSize: PremiumGlassmorphicTheme.fontSizeXs,
@@ -395,7 +395,7 @@ class _EnhancedNavigationRailState extends State<EnhancedNavigationRail>
   }
 
   void _showUserMenu() {
-    // TODO: Implement user menu
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('User menu coming soon!'),
@@ -405,7 +405,7 @@ class _EnhancedNavigationRailState extends State<EnhancedNavigationRail>
   }
 
   void _showSettings() {
-    // TODO: Navigate to settings
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Settings coming soon!'),
@@ -415,7 +415,7 @@ class _EnhancedNavigationRailState extends State<EnhancedNavigationRail>
   }
 
   void _showHelp() {
-    // TODO: Navigate to help
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Help center coming soon!'),

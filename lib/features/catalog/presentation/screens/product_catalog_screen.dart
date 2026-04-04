@@ -452,7 +452,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
         return Card(
           child: InkWell(
             onTap: () {
-              // TODO: Filter by manufacturer
+              
             },
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -530,7 +530,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
   }
 
   void _searchForProductByBarcode(String barcode) {
-    // TODO: Implement barcode-based product search
+    
     // For now, show a snackbar with the scanned barcode
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -561,14 +561,14 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
   }
 
   void _showFilterSheet() {
-    // TODO: Implement filter sheet
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Filter functionality coming soon')),
     );
   }
 
   void _showComparisonSheet() {
-    // TODO: Implement comparison sheet
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Comparison functionality coming soon')),
     );
@@ -579,7 +579,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
   }
 
   void _handleLogout() {
-    // TODO: Implement logout functionality
+    
     Navigator.of(context).pushReplacementNamed('/login');
   }
 }

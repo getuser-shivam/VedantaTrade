@@ -794,22 +794,22 @@ class _EnhancedAuthScreenState extends State<EnhancedAuthScreen>
   }
 
   void _openTermsOfService() {
-    // TODO: Navigate to Terms of Service
+    
     context.go('/terms-of-service');
   }
 
   void _openPrivacyPolicy() {
-    // TODO: Navigate to Privacy Policy
+    
     context.go('/privacy-policy');
   }
 
   void _contactSupport() {
-    // TODO: Open email client with support email
+    
     // launch('mailto:support@vedantatrade.com');
   }
 
   void _callSupport() {
-    // TODO: Open phone dialer with support number
+    
     // launch('tel:+977-XXXXXXX');
   }
 }

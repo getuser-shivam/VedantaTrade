@@ -314,7 +314,7 @@ class EnhancedDistributionProvider extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('Error recording sales transaction: ${e.toString()}');
+      
       return false;
     }
   }
@@ -331,7 +331,7 @@ class EnhancedDistributionProvider extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('Error adding distribution center: ${e.toString()}');
+      
       return false;
     }
   }
@@ -358,7 +358,7 @@ class EnhancedDistributionProvider extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('Error updating inventory allocation: ${e.toString()}');
+      
       return false;
     }
   }

@@ -44,7 +44,7 @@ class VatPdfGenerator {
       return pdf.save();
     } catch (e) {
       // Using print instead of debugPrint for web compatibility
-      print('Error generating VAT PDF: $e');
+      
       rethrow;
     }
   }
@@ -239,7 +239,7 @@ class VatPdfGenerator {
       final xFile = XFile.fromData(pdfBytes, name: fileName);
       await Share.shareXFiles([xFile]);
     } catch (e) {
-      print('Error saving/sharing PDF: $e');
+      
       throw Exception('Failed to save PDF: $e');
     }
   }
@@ -276,7 +276,7 @@ class VatPdfGenerator {
         text: 'IRDN-compliant VAT Return Report for ${_getMonthName(month)} $year',
       );
     } catch (e) {
-      print('Error exporting PDF: $e');
+      
       throw Exception('Failed to export PDF: $e');
     }
   }

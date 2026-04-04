@@ -513,7 +513,7 @@ class _EnhancedRegisterFormState extends State<EnhancedRegisterForm> {
             const SizedBox(width: PremiumGlassmorphicTheme.spacingXs),
             TextButton(
               onPressed: () {
-                // TODO: Navigate to Terms of Service
+                
               },
               child: const Text(
                 'Terms of Service',
@@ -533,7 +533,7 @@ class _EnhancedRegisterFormState extends State<EnhancedRegisterForm> {
             ),
             TextButton(
               onPressed: () {
-                // TODO: Navigate to Privacy Policy
+                
               },
               child: const Text(
                 'Privacy Policy',

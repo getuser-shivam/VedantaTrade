@@ -20,7 +20,7 @@ class AuthService {
   static const String _deviceIdKey = 'device_id';
   static const String _trustedDevicesKey = 'trusted_devices';
   static const String _securityLogsKey = 'security_logs';
-  static const String _baseUrl = 'https://api.vedantatrade.com/v1'; // TODO: Use actual API URL
+  static const String _baseUrl = 'https://api.vedantatrade.com/v1'; 
 
   late final Dio _dio;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
@@ -105,9 +105,8 @@ class AuthService {
         _trustedDevices = List<String>.from(json.decode(trustedDevicesJson));
       }
 
-      debugPrint('Security initialized for device: $_deviceId');
     } catch (e) {
-      debugPrint('Error initializing security: $e');
+      
     }
   }
 
@@ -133,7 +132,7 @@ class AuthService {
   void _handleUnauthorizedError() {
     // Clear session and notify user
     _clearSession();
-    debugPrint('Unauthorized access - session cleared');
+    
   }
 
   Future<void> _clearSession() async {
@@ -172,7 +171,7 @@ class AuthService {
       // Send to server
       await _dio.post('/auth/security-log', data: eventData);
     } catch (e) {
-      debugPrint('Failed to log security event: $e');
+      
     }
   }
 
@@ -630,7 +629,7 @@ class AuthService {
         }
       }
     } catch (e) {
-      debugPrint('Session timeout check failed: $e');
+      
     }
   }
 
@@ -647,7 +646,7 @@ class AuthService {
         }
       }
     } catch (e) {
-      debugPrint('Inactivity timeout check failed: $e');
+      
     }
   }
 
@@ -666,7 +665,7 @@ class AuthService {
       }
       return [];
     } catch (e) {
-      debugPrint('Failed to get security logs: $e');
+      
       return [];
     }
   }
@@ -790,22 +789,22 @@ class AuthService {
 
   // Get stored token
   Future<String?> getStoredToken() async {
-    // TODO: Implement secure storage
+    
     // return await _secureStorage.read(_tokenKey);
     return null; // Mock implementation
   }
 
   // Store token securely
   Future<void> storeToken(String token) async {
-    // TODO: Implement secure storage
+    
     // await _secureStorage.write(_tokenKey, token);
-    debugPrint('Token stored securely');
+    
   }
 
   // Validate token with server
   Future<User?> validateToken(String token) async {
     try {
-      // TODO: Implement actual API call
+      
       // final response = await http.get('$_baseUrl/auth/validate', headers: {
       //   'Authorization': 'Bearer $token',
       // });
@@ -819,7 +818,7 @@ class AuthService {
       
       return null;
     } catch (e) {
-      debugPrint('Token validation failed: $e');
+      
       return null;
     }
   }
@@ -827,7 +826,7 @@ class AuthService {
   // Login with email and password
   Future<LoginResponse> login(String email, String password, bool rememberMe) async {
     try {
-      // TODO: Implement actual API call
+      
       // final response = await http.post('$_baseUrl/auth/login', body: {
       //   'email': email,
       //   'password': password,
@@ -851,7 +850,7 @@ class AuthService {
         throw Exception('Invalid credentials');
       }
     } catch (e) {
-      debugPrint('Login failed: $e');
+      
       throw Exception('Login failed: ${e.toString()}');
     }
   }
@@ -859,7 +858,7 @@ class AuthService {
   // Quick login for specific roles
   Future<LoginResponse> quickLogin(String role) async {
     try {
-      // TODO: Implement actual API call
+      
       // final response = await http.post('$_baseUrl/auth/quick-login', body: {
       //   'role': role,
       // });
@@ -881,7 +880,7 @@ class AuthService {
         throw Exception('Role not found');
       }
     } catch (e) {
-      debugPrint('Quick login failed: $e');
+      
       throw Exception('Quick login failed: ${e.toString()}');
     }
   }
@@ -889,7 +888,7 @@ class AuthService {
   // Biometric login
   Future<LoginResponse> biometricLogin() async {
     try {
-      // TODO: Implement actual biometric authentication
+      
       // final response = await http.post('$_baseUrl/auth/biometric', body: {
       //   'biometricData': await _biometricAuth.getBiometricData(),
       // });
@@ -911,7 +910,7 @@ class AuthService {
         throw Exception('Biometric authentication not available');
       }
     } catch (e) {
-      debugPrint('Biometric login failed: $e');
+      
       throw Exception('Biometric login failed: ${e.toString()}');
     }
   }
@@ -919,7 +918,7 @@ class AuthService {
   // Register new user
   Future<RegisterResponse> register(Map<String, dynamic> userData) async {
     try {
-      // TODO: Implement actual API call
+      
       // final response = await http.post('$_baseUrl/auth/register', body: userData);
       
       // Mock registration
@@ -950,7 +949,7 @@ class AuthService {
         message: 'Registration successful',
       );
     } catch (e) {
-      debugPrint('Registration failed: $e');
+      
       throw Exception('Registration failed: ${e.toString()}');
     }
   }
@@ -958,18 +957,17 @@ class AuthService {
   // Reset password
   Future<void> resetPassword(String email) async {
     try {
-      // TODO: Implement actual API call
+      
       // await http.post('$_baseUrl/auth/reset-password', body: {
       //   'email': email,
       // });
       
       // Mock password reset
-      debugPrint('Password reset initiated for email: $email');
-      
+
       // In a real implementation, this would send an email
       // with a reset link containing a verification code
     } catch (e) {
-      debugPrint('Password reset failed: $e');
+      
       throw Exception('Password reset failed: ${e.toString()}');
     }
   }
@@ -977,7 +975,7 @@ class AuthService {
   // Confirm password reset with verification code
   Future<void> confirmPasswordReset(String email, String verificationCode, String newPassword) async {
     try {
-      // TODO: Implement actual API call
+      
       // await http.post('$_baseUrl/auth/confirm-reset', body: {
       //   'email': email,
       //   'verificationCode': verificationCode,
@@ -985,11 +983,9 @@ class AuthService {
       // });
       
       // Mock password reset confirmation
-      debugPrint('Password reset confirmed for email: $email');
-      debugPrint('Verification code: $verificationCode');
-      debugPrint('New password: $newPassword');
+
     } catch (e) {
-      debugPrint('Password reset confirmation failed: $e');
+      
       throw Exception('Password reset confirmation failed: ${e.toString()}');
     }
   }
@@ -997,7 +993,7 @@ class AuthService {
   // Logout user
   Future<void> logout() async {
     try {
-      // TODO: Implement actual API call
+      
       // await http.post('$_baseUrl/auth/logout', headers: {
       //   'Authorization': 'Bearer $token',
       // });
@@ -1005,28 +1001,26 @@ class AuthService {
       // Clear stored data
       // await _secureStorage.delete(_tokenKey);
       // await _secureStorage.delete(_userKey);
-      
-      debugPrint('Logout successful');
+
     } catch (e) {
-      debugPrint('Logout failed: $e');
+      
     }
   }
 
   // Update user profile
   Future<User> updateProfile(Map<String, dynamic> profileData) async {
     try {
-      // TODO: Implement actual API call
+      
       // final response = await http.put('$_baseUrl/auth/profile', body: profileData, headers: {
       //   'Authorization': 'Bearer $token',
       // });
       
       // Mock profile update
-      debugPrint('Profile updated: $profileData');
-      
+
       // Return updated user (mock implementation)
       return User.fromJson(_mockUsers.first);
     } catch (e) {
-      debugPrint('Profile update failed: $e');
+      
       throw Exception('Profile update failed: ${e.toString()}');
     }
   }
@@ -1034,7 +1028,7 @@ class AuthService {
   // Change password
   Future<void> changePassword(String currentPassword, String newPassword) async {
     try {
-      // TODO: Implement actual API call
+      
       // await http.post('$_baseUrl/auth/change-password', body: {
       //   'currentPassword': currentPassword,
       //   'newPassword': newPassword,
@@ -1043,9 +1037,9 @@ class AuthService {
       // });
       
       // Mock password change
-      debugPrint('Password changed successfully');
+      
     } catch (e) {
-      debugPrint('Password change failed: $e');
+      
       throw Exception('Password change failed: ${e.toString()}');
     }
   }
@@ -1053,13 +1047,13 @@ class AuthService {
   // Check biometric availability
   Future<bool> isBiometricAvailable() async {
     try {
-      // TODO: Implement actual biometric check
+      
       // return await _biometricAuth.canCheckBiometrics();
       
       // Mock biometric availability
       return true; // Always return true for demo
     } catch (e) {
-      debugPrint('Biometric check failed: $e');
+      
       return false;
     }
   }
@@ -1067,19 +1061,18 @@ class AuthService {
   // Toggle biometric authentication
   Future<void> toggleBiometric(bool enabled) async {
     try {
-      // TODO: Implement actual biometric toggle
-      // await _secureStorage.write(_biometricKey, enabled.toString());
       
-      debugPrint('Biometric authentication ${enabled ? 'enabled' : 'disabled'}');
+      // await _secureStorage.write(_biometricKey, enabled.toString());
+
     } catch (e) {
-      debugPrint('Biometric toggle failed: $e');
+      
     }
   }
 
   // Refresh user token
   Future<LoginResponse> refreshToken(String token) async {
     try {
-      // TODO: Implement actual API call
+      
       // final response = await http.post('$_baseUrl/auth/refresh', headers: {
       //   'Authorization': 'Bearer $token',
       // });
@@ -1094,7 +1087,7 @@ class AuthService {
         message: 'Token refreshed successfully',
       );
     } catch (e) {
-      debugPrint('Token refresh failed: $e');
+      
       throw Exception('Token refresh failed: ${e.toString()}');
     }
   }

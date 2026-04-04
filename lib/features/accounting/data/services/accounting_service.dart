@@ -97,7 +97,7 @@ class AccountingService {
     } on DioException catch (e) {
       // Simulate API call for development
       final vatReturn = _generateMockVatReturn(startDate, endDate);
-      debugPrint('Generating VAT return for ${startDate.toIso8601String()} to ${endDate.toIso8601String()}');
+      
       return vatReturn;
     }
   }
@@ -115,7 +115,7 @@ class AccountingService {
       }
     } on DioException catch (e) {
       // Simulate API call for development
-      debugPrint('Updating expense $expenseId to status: $status');
+      
     }
   }
 
@@ -132,7 +132,7 @@ class AccountingService {
       }
     } on DioException catch (e) {
       // Simulate API call for development
-      debugPrint('Updating MR expense $expenseId to status: $status');
+      
     }
   }
 
@@ -146,7 +146,7 @@ class AccountingService {
       }
     } on DioException catch (e) {
       // Simulate API call for development
-      debugPrint('Exporting VAT return: $vatReturnId');
+      
     }
   }
 
@@ -163,7 +163,7 @@ class AccountingService {
       }
     } on DioException catch (e) {
       // Simulate API call for development
-      debugPrint('Exporting financial report for ${startDate.toIso8601String()} to ${endDate.toIso8601String()}');
+      
     }
   }
 

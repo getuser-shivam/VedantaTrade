@@ -662,7 +662,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
   }
 
   void _shareProduct() {
-    // TODO: Implement share functionality
+    
   }
 
   void _increaseQuantity() {
@@ -682,7 +682,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen>
   }
 
   void _addToCart() {
-    // TODO: Implement add to cart functionality
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Added $_quantity items to cart'),

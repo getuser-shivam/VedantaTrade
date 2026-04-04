@@ -29,7 +29,7 @@ class ReviewProvider extends ChangeNotifier {
         _addSampleReviews();
       }
     } catch (e) {
-      debugPrint('Error loading reviews: $e');
+      
     }
   }
 
@@ -39,7 +39,7 @@ class ReviewProvider extends ChangeNotifier {
       final reviewsData = json.encode(_reviews.map((review) => review.toJson()).toList());
       await prefs.setString('reviews', reviewsData);
     } catch (e) {
-      debugPrint('Error saving reviews: $e');
+      
     }
   }
 
@@ -173,7 +173,7 @@ class ReviewProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      debugPrint('Error adding review: $e');
+      
       _isLoading = false;
       notifyListeners();
       return false;
@@ -200,7 +200,7 @@ class ReviewProvider extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('Error marking review as helpful: $e');
+      
       return false;
     }
   }

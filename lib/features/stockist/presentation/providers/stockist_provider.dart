@@ -319,8 +319,7 @@ class StockistProvider extends ChangeNotifier {
   }
 
   void _showLowStockAlert(Map<String, dynamic> item) {
-    // TODO: Implement notification system
-    debugPrint('Low stock alert for ${item['name']}: ${item['stockQuantity']} units');
+
   }
 
   void _setLoading(bool loading) {

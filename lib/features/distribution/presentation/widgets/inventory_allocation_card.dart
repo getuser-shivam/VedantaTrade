@@ -115,7 +115,7 @@ class InventoryAllocationCard extends StatelessWidget {
                 children: [
                   OutlinedButton.icon(
                     onPressed: () {
-                      // TODO: Edit allocation
+                      
                     },
                     icon: const Icon(Icons.edit_outlined),
                     label: 'Edit',
@@ -126,7 +126,7 @@ class InventoryAllocationCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   OutlinedButton.icon(
                     onPressed: () {
-                      // TODO: Transfer inventory
+                      
                     },
                     icon: const Icon(Icons.swap_horiz_outlined),
                     label: 'Transfer',

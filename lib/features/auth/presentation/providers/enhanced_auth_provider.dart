@@ -105,9 +105,8 @@ class EnhancedAuthProvider extends ChangeNotifier {
       final twoFactorEnabled = await _storage.read(key: 'two_factor_enabled');
       _twoFactorEnabled = twoFactorEnabled == 'true';
 
-      debugPrint('Security initialized for device: $_deviceId');
     } catch (e) {
-      debugPrint('Error initializing security: $e');
+      
     }
   }
 
@@ -133,7 +132,7 @@ class EnhancedAuthProvider extends ChangeNotifier {
       // Check biometric availability
       _isBiometricAvailable = await authService.isBiometricAvailable();
     } catch (e) {
-      debugPrint('Error loading session: $e');
+      
       await _clearSession();
     }
   }
@@ -190,7 +189,6 @@ class EnhancedAuthProvider extends ChangeNotifier {
         await _addTrustedDevice(_deviceId!);
       }
 
-      debugPrint('Enhanced login successful for user: ${loginResponse.user.email}');
     } catch (e) {
       await _handleLoginFailure(e);
     } finally {
@@ -240,7 +238,6 @@ class EnhancedAuthProvider extends ChangeNotifier {
       'locked_out': isLockedOut,
     });
 
-    debugPrint('Login failed: $error, attempts: $_failedLoginAttempts');
     notifyListeners();
   }
 
@@ -337,11 +334,10 @@ class EnhancedAuthProvider extends ChangeNotifier {
       );
       
       await _handleLoginSuccess(loginResponse, true);
-      
-      debugPrint('Biometric login successful for user: ${loginResponse.user.email}');
+
     } catch (e) {
       _errorMessage = _getErrorMessage(e);
-      debugPrint('Biometric login failed: $e');
+      
     } finally {
       _setLoading(false);
     }
@@ -360,7 +356,7 @@ class EnhancedAuthProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = 'Failed to setup two-factor authentication';
-      debugPrint('2FA setup failed: $e');
+      
       return false;
     }
   }
@@ -377,7 +373,7 @@ class EnhancedAuthProvider extends ChangeNotifier {
       }
       return isValid;
     } catch (e) {
-      debugPrint('2FA verification failed: $e');
+      
       return false;
     }
   }
@@ -402,10 +398,9 @@ class EnhancedAuthProvider extends ChangeNotifier {
       _sessionTimer?.cancel();
       _inactivityTimer?.cancel();
 
-      debugPrint('Enhanced logout successful');
     } catch (e) {
       _errorMessage = _getErrorMessage(e);
-      debugPrint('Logout failed: $e');
+      
     } finally {
       _setLoading(false);
     }
@@ -491,7 +486,7 @@ class EnhancedAuthProvider extends ChangeNotifier {
         _isSessionExpired = true;
       }
     } catch (e) {
-      debugPrint('Session validation failed: $e');
+      
       await _clearSession();
     }
   }
@@ -529,7 +524,7 @@ class EnhancedAuthProvider extends ChangeNotifier {
         await authService.logSecurityEvent(eventData, _token!);
       }
     } catch (e) {
-      debugPrint('Failed to log security event: $e');
+      
     }
   }
 
@@ -567,7 +562,7 @@ class EnhancedAuthProvider extends ChangeNotifier {
       // This would typically show a password dialog
       return false;
     } catch (e) {
-      debugPrint('Re-authentication failed: $e');
+      
       return false;
     }
   }
@@ -645,10 +640,9 @@ class EnhancedAuthProvider extends ChangeNotifier {
         'device_trusted': isDeviceTrusted,
       });
 
-      debugPrint('Enhanced registration successful for user: ${registerResponse.user.email}');
     } catch (e) {
       _errorMessage = _getErrorMessage(e);
-      debugPrint('Registration failed: $e');
+      
     } finally {
       _setLoading(false);
     }
@@ -832,10 +826,10 @@ class EnhancedAuthProvider extends ChangeNotifier {
       await authService.enhancedResetPassword(email, securityContext);
       
       await _logSecurityEvent('password_reset_requested', {'email': email});
-      debugPrint('Password reset initiated for email: $email');
+      
     } catch (e) {
       _errorMessage = _getErrorMessage(e);
-      debugPrint('Password reset failed: $e');
+      
     } finally {
       _setLoading(false);
     }
@@ -852,10 +846,10 @@ class EnhancedAuthProvider extends ChangeNotifier {
       await authService.enhancedConfirmPasswordReset(email, verificationCode, newPassword, securityContext);
       
       await _logSecurityEvent('password_reset_confirmed', {'email': email});
-      debugPrint('Password reset confirmed for email: $email');
+      
     } catch (e) {
       _errorMessage = _getErrorMessage(e);
-      debugPrint('Password reset confirmation failed: $e');
+      
     } finally {
       _setLoading(false);
     }
@@ -870,11 +864,10 @@ class EnhancedAuthProvider extends ChangeNotifier {
     try {
       final updatedUser = await authService.updateProfile(profileData);
       _user = updatedUser;
-      
-      debugPrint('Profile updated for user: ${updatedUser.email}');
+
     } catch (e) {
       _errorMessage = _getErrorMessage(e);
-      debugPrint('Profile update failed: $e');
+      
     } finally {
       _setLoading(false);
     }
@@ -887,10 +880,10 @@ class EnhancedAuthProvider extends ChangeNotifier {
 
     try {
       await authService.changePassword(currentPassword, newPassword);
-      debugPrint('Password changed for user: ${_user?.email}');
+      
     } catch (e) {
       _errorMessage = _getErrorMessage(e);
-      debugPrint('Password change failed: $e');
+      
     } finally {
       _setLoading(false);
     }
@@ -901,10 +894,10 @@ class EnhancedAuthProvider extends ChangeNotifier {
     try {
       await authService.toggleBiometric(enabled);
       _isBiometricAvailable = enabled;
-      debugPrint('Biometric authentication ${enabled ? 'enabled' : 'disabled'}');
+      
     } catch (e) {
       _errorMessage = _getErrorMessage(e);
-      debugPrint('Biometric toggle failed: $e');
+      
     }
   }
 
@@ -922,11 +915,9 @@ class EnhancedAuthProvider extends ChangeNotifier {
       _user = refreshResponse.user;
       _lastLoginTime = DateTime.now();
 
-      debugPrint('Token refreshed for user: ${refreshResponse.user.email}');
     } catch (e) {
       _errorMessage = _getErrorMessage(e);
-      debugPrint('Token refresh failed: $e');
-      
+
       // If refresh fails, logout user
       await logout();
     } finally {
@@ -1103,7 +1094,7 @@ class EnhancedAuthProvider extends ChangeNotifier {
       }
       return isValid;
     } catch (e) {
-      debugPrint('Session validation failed: $e');
+      
       await logout();
       return false;
     }

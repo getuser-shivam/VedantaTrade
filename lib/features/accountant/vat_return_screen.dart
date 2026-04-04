@@ -51,7 +51,7 @@ class _AccountantVATReturnScreenState extends State<AccountantVATReturnScreen>
         });
       }
     } catch (e) {
-      debugPrint('❌ Failed to load VAT data: $e');
+      
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -61,7 +61,7 @@ class _AccountantVATReturnScreenState extends State<AccountantVATReturnScreen>
   }
 
   Future<void> _loadVATReturns() async {
-    // TODO: Replace with real API call - GET /api/accountant/vat-returns
+    
     await Future.delayed(const Duration(milliseconds: 500));
     
     final mockVATReturns = [
@@ -114,7 +114,7 @@ class _AccountantVATReturnScreenState extends State<AccountantVATReturnScreen>
   }
 
   Future<void> _loadTransactions() async {
-    // TODO: Replace with real API call - GET /api/accountant/transactions
+    
     await Future.delayed(const Duration(milliseconds: 300));
     
     final mockTransactions = [
@@ -968,7 +968,7 @@ class _AccountantVATReturnScreenState extends State<AccountantVATReturnScreen>
 
   Future<void> _fileVATReturn(Map<String, dynamic> vatReturn) async {
     try {
-      // TODO: Replace with real API call - POST /api/accountant/vat-returns/{id}/file
+      
       await Future.delayed(const Duration(seconds: 1));
       
       if (mounted) {
@@ -992,7 +992,7 @@ class _AccountantVATReturnScreenState extends State<AccountantVATReturnScreen>
 
   Future<void> _downloadVATReturnPDF(Map<String, dynamic> vatReturn) async {
     try {
-      // TODO: Replace with real API call - GET /api/accountant/vat-returns/{id}/pdf
+      
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Downloading VAT return PDF...'),

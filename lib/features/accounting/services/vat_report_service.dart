@@ -1,3 +1,4 @@
+import 'package:vedanta_trade/core/constants/app_constants.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
@@ -29,8 +30,7 @@ class VATReportService {
   /// Initialize VAT report service
   Future<void> initialize() async {
     try {
-      print('📊 Initializing VAT Report Service...');
-      
+
       // Setup Dio client
       _setupDioClient();
       
@@ -39,11 +39,9 @@ class VATReportService {
       
       // Load cached expense claims
       await _loadCachedExpenseClaims();
-      
-      print('✅ VAT Report Service initialized');
-      
+
     } catch (e) {
-      print('❌ Failed to initialize VAT Report Service: $e');
+      
       _reportsController.addError(e);
     }
   }
@@ -51,7 +49,7 @@ class VATReportService {
   /// Setup Dio client with Nepal-specific configurations
   void _setupDioClient() {
     _dio = Dio(BaseOptions(
-      baseUrl: 'https://api.vedantatrade.com.np',
+      baseUrl: 'AppConstants.apiBaseUrl',
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -77,7 +75,7 @@ class VATReportService {
           handler.next(options);
         },
         onError: (error, handler) async {
-          print('API Error: ${error.message}');
+          
           handler.next(error);
         },
       ),
@@ -87,8 +85,7 @@ class VATReportService {
   /// Load cached reports from storage
   Future<void> _loadCachedReports() async {
     try {
-      print('📂 Loading cached VAT reports...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final reportsJson = prefs.getString('cached_vat_reports');
       
@@ -102,19 +99,18 @@ class VATReportService {
             .toList();
         
         _reportsController.add(_reports);
-        print('✅ Loaded ${_reports.length} cached VAT reports');
+        
       }
       
     } catch (e) {
-      print('❌ Failed to load cached VAT reports: $e');
+      
     }
   }
 
   /// Load cached expense claims from storage
   Future<void> _loadCachedExpenseClaims() async {
     try {
-      print('📂 Loading cached expense claims...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final claimsJson = prefs.getString('cached_expense_claims');
       
@@ -128,11 +124,11 @@ class VATReportService {
             .toList();
         
         _claimsController.add(_expenseClaims);
-        print('✅ Loaded ${_expenseClaims.length} cached expense claims');
+        
       }
       
     } catch (e) {
-      print('❌ Failed to load cached expense claims: $e');
+      
     }
   }
 
@@ -144,8 +140,7 @@ class VATReportService {
     String? description,
   }) async {
     try {
-      print('📊 Generating VAT report for ${startDate.toIso8601String()} to ${endDate.toIso8601String()}');
-      
+
       // Fetch transactions from server
       final transactions = await _fetchTransactions(startDate, endDate);
       
@@ -182,13 +177,12 @@ class VATReportService {
         
         // Cache reports
         await _cacheReports();
-        
-        print('✅ VAT report generated successfully: ${newReport.id}');
+
         return newReport;
       }
       
     } catch (e) {
-      print('❌ Failed to generate VAT report: $e');
+      
       throw Exception('Failed to generate VAT report: $e');
     }
     
@@ -198,8 +192,7 @@ class VATReportService {
   /// Fetch transactions for VAT calculation
   Future<List<Transaction>> _fetchTransactions(DateTime startDate, DateTime endDate) async {
     try {
-      print('📡 Fetching transactions for VAT calculation...');
-      
+
       final response = await _dio.get(
         '/api/transactions/vat-calculation',
         queryParameters: {
@@ -213,13 +206,12 @@ class VATReportService {
         final transactions = transactionsData
             .map((json) => Transaction.fromJson(json))
             .toList();
-        
-        print('✅ Fetched ${transactions.length} transactions');
+
         return transactions;
       }
       
     } catch (e) {
-      print('❌ Failed to fetch transactions: $e');
+      
     }
     
     return [];
@@ -227,8 +219,7 @@ class VATReportService {
 
   /// Calculate VAT amounts
   VATCalculations _calculateVAT(List<Transaction> transactions) {
-    print('🧮 Calculating VAT amounts...');
-    
+
     double totalSales = 0.0;
     double totalPurchases = 0.0;
     double totalVATOnSales = 0.0;
@@ -265,8 +256,7 @@ class VATReportService {
   /// Generate VAT return PDF
   Future<String?> generateVATReturnPDF(String reportId) async {
     try {
-      print('📄 Generating VAT return PDF for report: $reportId');
-      
+
       // Find the report
       final report = _reports.firstWhere((r) => r.id == reportId);
       
@@ -305,12 +295,11 @@ class VATReportService {
       final filePath = '${directory.path}/VAT_Return_${report.id}.pdf';
       final file = File(filePath);
       await file.writeAsBytes(await pdf.save());
-      
-      print('✅ VAT return PDF generated: $filePath');
+
       return filePath;
       
     } catch (e) {
-      print('❌ Failed to generate VAT return PDF: $e');
+      
       throw Exception('Failed to generate VAT return PDF: $e');
     }
   }
@@ -611,8 +600,7 @@ class VATReportService {
   /// Submit expense claim for MR
   Future<ExpenseClaim?> submitExpenseClaim(ExpenseClaimRequest request) async {
     try {
-      print('💳 Submitting expense claim for MR: ${request.mrId}');
-      
+
       final response = await _dio.post(
         '/api/expense-claims',
         data: request.toJson(),
@@ -627,13 +615,12 @@ class VATReportService {
         
         // Cache claims
         await _cacheExpenseClaims();
-        
-        print('✅ Expense claim submitted successfully: ${newClaim.id}');
+
         return newClaim;
       }
       
     } catch (e) {
-      print('❌ Failed to submit expense claim: $e');
+      
       throw Exception('Failed to submit expense claim: $e');
     }
     
@@ -643,8 +630,7 @@ class VATReportService {
   /// Approve expense claim (Accountant action)
   Future<bool> approveExpenseClaim(String claimId, String? notes) async {
     try {
-      print('✅ Approving expense claim: $claimId');
-      
+
       final response = await _dio.put(
         '/api/expense-claims/$claimId/approve',
         data: {
@@ -667,14 +653,13 @@ class VATReportService {
           
           // Cache claims
           await _cacheExpenseClaims();
-          
-          print('✅ Expense claim approved successfully');
+
           return true;
         }
       }
       
     } catch (e) {
-      print('❌ Failed to approve expense claim: $e');
+      
       throw Exception('Failed to approve expense claim: $e');
     }
     
@@ -684,8 +669,7 @@ class VATReportService {
   /// Reject expense claim (Accountant action)
   Future<bool> rejectExpenseClaim(String claimId, String reason) async {
     try {
-      print('❌ Rejecting expense claim: $claimId');
-      
+
       final response = await _dio.put(
         '/api/expense-claims/$claimId/reject',
         data: {
@@ -708,14 +692,13 @@ class VATReportService {
           
           // Cache claims
           await _cacheExpenseClaims();
-          
-          print('✅ Expense claim rejected successfully');
+
           return true;
         }
       }
       
     } catch (e) {
-      print('❌ Failed to reject expense claim: $e');
+      
       throw Exception('Failed to reject expense claim: $e');
     }
     
@@ -758,8 +741,7 @@ class VATReportService {
   /// Cache reports to storage
   Future<void> _cacheReports() async {
     try {
-      print('💾 Caching VAT reports...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final reportsJson = jsonEncode(
         _reports.map((report) => report.toJson()).toList(),
@@ -767,19 +749,16 @@ class VATReportService {
       
       await prefs.setString('cached_vat_reports', reportsJson);
       await prefs.setString('last_reports_update', DateTime.now().toIso8601String());
-      
-      print('✅ VAT reports cached successfully');
-      
+
     } catch (e) {
-      print('❌ Failed to cache VAT reports: $e');
+      
     }
   }
 
   /// Cache expense claims to storage
   Future<void> _cacheExpenseClaims() async {
     try {
-      print('💾 Caching expense claims...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final claimsJson = jsonEncode(
         _expenseClaims.map((claim) => claim.toJson()).toList(),
@@ -787,40 +766,35 @@ class VATReportService {
       
       await prefs.setString('cached_expense_claims', claimsJson);
       await prefs.setString('last_claims_update', DateTime.now().toIso8601String());
-      
-      print('✅ Expense claims cached successfully');
-      
+
     } catch (e) {
-      print('❌ Failed to cache expense claims: $e');
+      
     }
   }
 
   /// Open generated PDF
   Future<void> openPDF(String filePath) async {
     try {
-      print('📄 Opening PDF: $filePath');
-      
+
       final result = await OpenFile.open(filePath);
       
       if (result.type == ResultType.done) {
-        print('✅ PDF opened successfully');
+        
       } else {
-        print('❌ Failed to open PDF: ${result.message}');
+        
       }
       
     } catch (e) {
-      print('❌ Error opening PDF: $e');
+      
     }
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing VAT Report Service...');
-    
+
     _reportsController.close();
     _claimsController.close();
-    
-    print('✅ VAT Report Service disposed');
+
   }
 }
 

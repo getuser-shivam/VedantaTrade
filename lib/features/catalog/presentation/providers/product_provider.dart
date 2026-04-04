@@ -48,7 +48,7 @@ class ProductProvider extends ChangeNotifier {
       _allProducts = await _catalogService.loadRegisteredProducts(token: _token);
       _applyLocalFilters();
     } catch (error, stackTrace) {
-      debugPrint('Failed to load product catalog: $error');
+      
       debugPrintStack(stackTrace: stackTrace);
       _allProducts = [];
       _products = [];
@@ -120,7 +120,7 @@ class ProductProvider extends ChangeNotifier {
       _hasMoreProducts = newProducts.length == _pageSize;
       _applyLocalFilters();
     } catch (e) {
-      debugPrint('Failed to load more products: $e');
+      
     } finally {
       _isLoadingMore = false;
       notifyListeners();

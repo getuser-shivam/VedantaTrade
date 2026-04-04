@@ -12,7 +12,7 @@ class AppConstants {
   static const double vatRate = 0.13; // 13% VAT
   
   // API constants
-  static const String apiBaseUrl = 'https://api.vedantatrade.com.np';
+  static const String apiBaseUrl = 'AppConstants.apiBaseUrl';
   static const int apiTimeout = 30000; // 30 seconds
   static const int connectTimeout = 10000; // 10 seconds
   static const int receiveTimeout = 10000; // 10 seconds

@@ -405,7 +405,7 @@ class _EnhancedSearchBarState extends State<EnhancedSearchBar>
   }
 
   void _startVoiceSearch() {
-    // TODO: Implement voice search
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Voice search coming soon!'),
@@ -415,7 +415,7 @@ class _EnhancedSearchBarState extends State<EnhancedSearchBar>
   }
 
   void _startCameraSearch() {
-    // TODO: Implement camera search (QR code, barcode)
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Camera search coming soon!'),

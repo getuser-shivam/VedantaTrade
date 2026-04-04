@@ -43,7 +43,7 @@ class ProductCatalogService {
       final List<dynamic> data = json.decode(response);
       return data.map((json) => Product.fromJson(json)).toList();
     } catch (e) {
-      debugPrint('Failed to load local products JSON: $e');
+      
       return [];
     }
   }
@@ -63,7 +63,7 @@ class ProductCatalogService {
       }
       return [];
     } catch (e) {
-      debugPrint('Failed to load categories: $e');
+      
       // Fallback to local
       try {
         final String response = await rootBundle.loadString('assets/data/products.json');
@@ -105,7 +105,7 @@ class ProductCatalogService {
       }
       return [];
     } catch (e) {
-      debugPrint('Failed to load more products: $e');
+      
       return [];
     }
   }

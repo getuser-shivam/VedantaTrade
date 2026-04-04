@@ -1,3 +1,4 @@
+import 'package:vedanta_trade/core/constants/app_constants.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
@@ -49,23 +50,21 @@ class DistributionManagementService {
 
   void initialize({String? stockistId}) {
     try {
-      debugPrint('🚀 Initializing Distribution Management Service...');
-      
+
       _currentStockistId = stockistId;
       _setupDioClient();
       _loadInitialData();
       _startRealtimeUpdates();
-      
-      debugPrint('✅ Distribution Management Service initialized');
+
     } catch (e) {
-      debugPrint('❌ Failed to initialize Distribution Management Service: $e');
+      
       _centersController.addError(e);
     }
   }
 
   void _setupDioClient() {
     _dio = Dio(BaseOptions(
-      baseUrl: 'https://api.vedantatrade.com.np',
+      baseUrl: 'AppConstants.apiBaseUrl',
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -88,7 +87,7 @@ class DistributionManagementService {
           handler.next(options);
         },
         onError: (error, handler) {
-          debugPrint('Distribution API Error: ${error.message}');
+          
           handler.next(error);
         },
       ),
@@ -97,8 +96,7 @@ class DistributionManagementService {
 
   Future<void> _loadInitialData() async {
     try {
-      debugPrint('📂 Loading initial distribution data...');
-      
+
       // Load distribution centers
       await _loadDistributionCenters();
       
@@ -113,10 +111,9 @@ class DistributionManagementService {
       
       // Calculate metrics
       _calculateMetrics();
-      
-      debugPrint('✅ Initial data loaded successfully');
+
     } catch (e) {
-      debugPrint('❌ Failed to load initial data: $e');
+      
       // Load mock data as fallback
       await _loadMockData();
     }
@@ -132,7 +129,7 @@ class DistributionManagementService {
         _centersController.add(_centers);
       }
     } catch (e) {
-      debugPrint('Failed to load distribution centers: $e');
+      
       rethrow;
     }
   }
@@ -147,7 +144,7 @@ class DistributionManagementService {
         _inventoryController.add(_inventory);
       }
     } catch (e) {
-      debugPrint('Failed to load inventory: $e');
+      
       rethrow;
     }
   }
@@ -162,7 +159,7 @@ class DistributionManagementService {
         _salesController.add(_sales);
       }
     } catch (e) {
-      debugPrint('Failed to load sales data: $e');
+      
       rethrow;
     }
   }
@@ -177,19 +174,17 @@ class DistributionManagementService {
         _alertsController.add(_alerts);
       }
     } catch (e) {
-      debugPrint('Failed to load stock alerts: $e');
+      
       rethrow;
     }
   }
 
   void _startRealtimeUpdates() {
-    debugPrint('🔄 Starting real-time updates...');
-    
+
     _realtimeTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       _refreshData();
     });
-    
-    debugPrint('✅ Real-time updates started');
+
   }
 
   Future<void> _refreshData() async {
@@ -201,7 +196,7 @@ class DistributionManagementService {
       ]);
       _calculateMetrics();
     } catch (e) {
-      debugPrint('Failed to refresh data: $e');
+      
     }
   }
 
@@ -225,8 +220,7 @@ class DistributionManagementService {
   }
 
   Future<void> _loadMockData() async {
-    debugPrint('📋 Loading mock distribution data...');
-    
+
     // Mock distribution centers
     _centers = [
       DistributionCenter(
@@ -444,8 +438,7 @@ class DistributionManagementService {
     _salesController.add(_sales);
     _alertsController.add(_alerts);
     _calculateMetrics();
-    
-    debugPrint('✅ Mock data loaded successfully');
+
   }
 
   // Inventory Management Methods
@@ -471,7 +464,7 @@ class DistributionManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to update inventory: $e');
+      
     }
     return false;
   }
@@ -492,7 +485,7 @@ class DistributionManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to transfer stock: $e');
+      
     }
     return false;
   }
@@ -510,7 +503,7 @@ class DistributionManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to create sales order: $e');
+      
     }
     return false;
   }
@@ -531,7 +524,7 @@ class DistributionManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to update sales status: $e');
+      
     }
     return false;
   }
@@ -625,7 +618,7 @@ class DistributionManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to acknowledge alert: $e');
+      
     }
     return false;
   }
@@ -640,7 +633,7 @@ class DistributionManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to resolve alert: $e');
+      
     }
     return false;
   }
@@ -691,15 +684,13 @@ class DistributionManagementService {
   }
 
   void dispose() {
-    debugPrint('🗑️ Disposing Distribution Management Service...');
-    
+
     _realtimeTimer?.cancel();
     _centersController.close();
     _inventoryController.close();
     _salesController.close();
     _alertsController.close();
     _metricsController.close();
-    
-    debugPrint('✅ Distribution Management Service disposed');
+
   }
 }

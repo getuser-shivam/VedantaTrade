@@ -1,3 +1,4 @@
+import 'package:vedanta_trade/core/constants/app_constants.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -35,8 +36,7 @@ class RealtimeInventoryService {
   /// Initialize real-time inventory service
   Future<void> initialize({String? stockistId}) async {
     try {
-      print('📦 Initializing Real-time Inventory Service...');
-      
+
       _stockistId = stockistId;
       
       // Setup Dio client
@@ -53,11 +53,9 @@ class RealtimeInventoryService {
       
       // Start reconnection timer
       _startReconnectionTimer();
-      
-      print('✅ Real-time Inventory Service initialized');
-      
+
     } catch (e) {
-      print('❌ Failed to initialize Real-time Inventory Service: $e');
+      
       _inventoryController.addError(e);
     }
   }
@@ -65,7 +63,7 @@ class RealtimeInventoryService {
   /// Setup Dio client
   void _setupDioClient() {
     _dio = Dio(BaseOptions(
-      baseUrl: 'https://api.vedantatrade.com.np',
+      baseUrl: 'AppConstants.apiBaseUrl',
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -90,7 +88,7 @@ class RealtimeInventoryService {
           handler.next(options);
         },
         onError: (error, handler) async {
-          print('API Error: ${error.message}');
+          
           handler.next(error);
         },
       ),
@@ -100,8 +98,7 @@ class RealtimeInventoryService {
   /// Load initial inventory
   Future<void> _loadInitialInventory() async {
     try {
-      print('📂 Loading initial inventory...');
-      
+
       if (_stockistId == null) {
         final prefs = await SharedPreferences.getInstance();
         _stockistId = prefs.getString('stockist_id');
@@ -119,20 +116,19 @@ class RealtimeInventoryService {
               .toList();
           
           _inventoryListController.add(_inventory);
-          print('✅ Loaded ${_inventory.length} inventory items');
+          
         }
       }
       
     } catch (e) {
-      print('❌ Failed to load initial inventory: $e');
+      
     }
   }
 
   /// Load initial alerts
   Future<void> _loadInitialAlerts() async {
     try {
-      print('📂 Loading initial alerts...');
-      
+
       if (_stockistId != null) {
         final response = await _dio.get(
           '/api/inventory/alerts/stockist/$_stockistId',
@@ -145,20 +141,19 @@ class RealtimeInventoryService {
               .toList();
           
           _alertController.add(_alerts);
-          print('✅ Loaded ${_alerts.length} alerts');
+          
         }
       }
       
     } catch (e) {
-      print('❌ Failed to load initial alerts: $e');
+      
     }
   }
 
   /// Connect to WebSocket
   Future<void> _connectWebSocket() async {
     try {
-      print('🔌 Connecting to WebSocket...');
-      
+
       if (_stockistId == null) {
         final prefs = await SharedPreferences.getInstance();
         _stockistId = prefs.getString('stockist_id');
@@ -171,8 +166,7 @@ class RealtimeInventoryService {
         await _webSocketChannel!.ready;
         
         _isConnected = true;
-        print('✅ WebSocket connected');
-        
+
         // Listen to WebSocket messages
         _webSocketChannel!.stream.listen(
           _handleWebSocketMessage,
@@ -185,7 +179,7 @@ class RealtimeInventoryService {
       }
       
     } catch (e) {
-      print('❌ Failed to connect WebSocket: $e');
+      
       _isConnected = false;
     }
   }
@@ -212,7 +206,7 @@ class RealtimeInventoryService {
       }
       
     } catch (e) {
-      print('❌ Failed to handle WebSocket message: $e');
+      
     }
   }
 
@@ -254,11 +248,9 @@ class RealtimeInventoryService {
       // Emit update
       _inventoryController.add(update);
       _inventoryListController.add(_inventory);
-      
-      print('📦 Inventory updated: ${update.sku} -> ${update.newStock}');
-      
+
     } catch (e) {
-      print('❌ Failed to handle inventory update: $e');
+      
     }
   }
 
@@ -285,11 +277,9 @@ class RealtimeInventoryService {
       
       // Emit alert
       _alertController.add(alert);
-      
-      print('🚨 Stock alert: ${alert.type} for ${alert.sku}');
-      
+
     } catch (e) {
-      print('❌ Failed to handle stock alert: $e');
+      
     }
   }
 
@@ -302,31 +292,28 @@ class RealtimeInventoryService {
           .toList();
       
       _inventoryListController.add(_inventory);
-      
-      print('📦 Inventory synchronized: ${_inventory.length} items');
-      
+
     } catch (e) {
-      print('❌ Failed to handle inventory sync: $e');
+      
     }
   }
 
   /// Handle heartbeat
   void _handleHeartbeat() {
-    print('💓 WebSocket heartbeat received');
-    
+
     // Send heartbeat response
     _sendHeartbeatResponse();
   }
 
   /// Handle WebSocket error
   void _handleWebSocketError(dynamic error) {
-    print('❌ WebSocket error: $error');
+    
     _isConnected = false;
   }
 
   /// Handle WebSocket close
   void _handleWebSocketClose() {
-    print('🔌 WebSocket connection closed');
+    
     _isConnected = false;
     
     // Attempt to reconnect
@@ -347,11 +334,11 @@ class RealtimeInventoryService {
         };
         
         _webSocketChannel!.sink.add(jsonEncode(authMessage));
-        print('🔐 Authentication message sent');
+        
       }
       
     } catch (e) {
-      print('❌ Failed to send authentication message: $e');
+      
     }
   }
 
@@ -368,7 +355,7 @@ class RealtimeInventoryService {
       }
       
     } catch (e) {
-      print('❌ Failed to send heartbeat response: $e');
+      
     }
   }
 
@@ -378,7 +365,7 @@ class RealtimeInventoryService {
       const Duration(seconds: 30),
       (timer) {
         if (!_isConnected) {
-          print('🔄 Attempting to reconnect...');
+          
           _connectWebSocket();
         }
       },
@@ -402,8 +389,7 @@ class RealtimeInventoryService {
     DateTime? expiryDate,
   }) async {
     try {
-      print('📦 Updating inventory item: $sku');
-      
+
       final updateData = {
         'sku': sku,
         'stockistId': _stockistId,
@@ -419,12 +405,12 @@ class RealtimeInventoryService {
       );
       
       if (response.statusCode == 200) {
-        print('✅ Inventory item updated successfully');
+        
         return true;
       }
       
     } catch (e) {
-      print('❌ Failed to update inventory item: $e');
+      
     }
     
     return false;
@@ -443,8 +429,7 @@ class RealtimeInventoryService {
     DateTime? expiryDate,
   }) async {
     try {
-      print('📦 Adding new inventory item: $sku');
-      
+
       final itemData = {
         'sku': sku,
         'productName': productName,
@@ -465,12 +450,12 @@ class RealtimeInventoryService {
       );
       
       if (response.statusCode == 201) {
-        print('✅ New inventory item added successfully');
+        
         return true;
       }
       
     } catch (e) {
-      print('❌ Failed to add new inventory item: $e');
+      
     }
     
     return false;
@@ -479,8 +464,7 @@ class RealtimeInventoryService {
   /// Delete inventory item
   Future<bool> deleteInventoryItem(String sku) async {
     try {
-      print('🗑️ Deleting inventory item: $sku');
-      
+
       final response = await _dio.delete(
         '/api/inventory/item/$sku',
         queryParameters: {
@@ -489,12 +473,12 @@ class RealtimeInventoryService {
       );
       
       if (response.statusCode == 200) {
-        print('✅ Inventory item deleted successfully');
+        
         return true;
       }
       
     } catch (e) {
-      print('❌ Failed to delete inventory item: $e');
+      
     }
     
     return false;
@@ -549,8 +533,7 @@ class RealtimeInventoryService {
   /// Dismiss alert
   Future<bool> dismissAlert(String alertId) async {
     try {
-      print('🚨 Dismissing alert: $alertId');
-      
+
       final response = await _dio.put(
         '/api/inventory/alerts/$alertId/dismiss',
         data: {
@@ -562,13 +545,12 @@ class RealtimeInventoryService {
         // Remove from local alerts
         _alerts.removeWhere((alert) => alert.id == alertId);
         _alertController.add(_alerts);
-        
-        print('✅ Alert dismissed successfully');
+
         return true;
       }
       
     } catch (e) {
-      print('❌ Failed to dismiss alert: $e');
+      
     }
     
     return false;
@@ -613,8 +595,7 @@ class RealtimeInventoryService {
   /// Sync inventory with server
   Future<void> syncInventory() async {
     try {
-      print('🔄 Syncing inventory with server...');
-      
+
       final response = await _dio.post(
         '/api/inventory/sync',
         data: {
@@ -645,26 +626,23 @@ class RealtimeInventoryService {
           
           _alertController.add(_alerts);
         }
-        
-        print('✅ Inventory synced successfully');
+
       }
       
     } catch (e) {
-      print('❌ Failed to sync inventory: $e');
+      
     }
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Real-time Inventory Service...');
-    
+
     _reconnectTimer?.cancel();
     _webSocketChannel?.sink.close();
     _inventoryController.close();
     _alertController.close();
     _inventoryListController.close();
-    
-    print('✅ Real-time Inventory Service disposed');
+
   }
 }
 

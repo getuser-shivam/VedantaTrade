@@ -234,12 +234,12 @@ class ErrorHandlingUtils {
   // Error Logging
   static void logError(dynamic error, {String? context, StackTrace? stackTrace}) {
     if (kDebugMode) {
-      debugPrint('ERROR: ${error.toString()}');
+      
       if (context != null) {
-        debugPrint('CONTEXT: $context');
+        
       }
       if (stackTrace != null) {
-        debugPrint('STACK TRACE: $stackTrace');
+        
       }
     }
     

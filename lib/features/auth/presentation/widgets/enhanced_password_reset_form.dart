@@ -421,7 +421,7 @@ class _EnhancedPasswordResetFormState extends State<EnhancedPasswordResetForm> {
       icon: Icons.error_outline,
       color: PremiumGlassmorphicTheme.error,
       onClose: () {
-        // TODO: Clear error message
+        
       },
     );
   }
@@ -434,7 +434,7 @@ class _EnhancedPasswordResetFormState extends State<EnhancedPasswordResetForm> {
 
   void _handlePasswordConfirm() {
     if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Handle password confirmation with verification code
+      
       // This would typically involve calling an API with the verification code and new password
     }
   }

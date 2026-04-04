@@ -34,8 +34,7 @@ class GPSTrackingService {
   /// Initialize GPS tracking service
   Future<void> initialize() async {
     try {
-      print('🛰️ Initializing GPS tracking service...');
-      
+
       // Request location permissions
       await _requestLocationPermissions();
       
@@ -47,11 +46,9 @@ class GPSTrackingService {
       
       // Check if location services are enabled
       await _checkLocationServices();
-      
-      print('✅ GPS tracking service initialized');
-      
+
     } catch (e) {
-      print('❌ Failed to initialize GPS tracking: $e');
+      
       _trackingController.addError(e);
     }
   }
@@ -59,8 +56,7 @@ class GPSTrackingService {
   /// Request location permissions
   Future<void> _requestLocationPermissions() async {
     try {
-      print('🔍 Requesting location permissions...');
-      
+
       final permissions = [
         Permission.locationWhenInUse,
         Permission.locationAlways,
@@ -74,24 +70,23 @@ class GPSTrackingService {
         _permissionController.add(permissionStatus);
         
         if (permissionStatus == PermissionStatus.granted) {
-          print('✅ Permission granted: $permission');
+          
         } else if (permissionStatus == PermissionStatus.denied) {
-          print('❌ Permission denied: $permission');
+          
         } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
-          print('⚠️ Permission permanently denied: $permission');
+          
         }
       }
       
     } catch (e) {
-      print('❌ Failed to request permissions: $e');
+      
     }
   }
 
   /// Setup location settings for high accuracy
   Future<void> _setupLocationSettings() async {
     try {
-      print('⚙️ Setting up location settings...');
-      
+
       _locationSettings = const LocationSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 5.0, // 5 meters
@@ -104,7 +99,7 @@ class GPSTrackingService {
       _isHighAccuracyMode = isHighAccuracyAvailable;
       
       if (!isHighAccuracyAvailable) {
-        print('⚠️ High accuracy GPS not available, using standard accuracy');
+        
         _locationSettings = const LocationSettings(
           accuracy: LocationAccuracy.best,
           distanceFilter: 10.0, // 10 meters
@@ -112,11 +107,9 @@ class GPSTrackingService {
           forceAndroidLocationManager: true,
         );
       }
-      
-      print('✅ Location settings configured');
-      
+
     } catch (e) {
-      print('❌ Failed to setup location settings: $e');
+      
     }
   }
 
@@ -132,7 +125,7 @@ class GPSTrackingService {
              locationPermission == LocationPermission.always &&
              await _hasGPSHardware();
     } catch (e) {
-      print('❌ Failed to check high accuracy availability: $e');
+      
       return false;
     }
   }
@@ -144,7 +137,7 @@ class GPSTrackingService {
       // we'd use device info plugins to check for GPS
       return true; // Assume GPS is available for now
     } catch (e) {
-      print('❌ Failed to check GPS hardware: $e');
+      
       return false;
     }
   }
@@ -152,23 +145,22 @@ class GPSTrackingService {
   /// Check if location services are enabled
   Future<void> _checkLocationServices() async {
     try {
-      print('🔍 Checking location services...');
-      
+
       final isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
       
       if (!isLocationServiceEnabled) {
-        print('⚠️ Location services are disabled');
+        
         _permissionController.add(LocationPermissionStatus.denied);
         
         // Request user to enable location services
         await _requestLocationServiceEnable();
       } else {
-        print('✅ Location services are enabled');
+        
         _permissionController.add(LocationPermissionStatus.granted);
       }
       
     } catch (e) {
-      print('❌ Failed to check location services: $e');
+      
     }
   }
 
@@ -177,25 +169,24 @@ class GPSTrackingService {
     try {
       final bool opened = await Geolocator.openLocationSettings();
       if (opened) {
-        print('📱 Location settings opened');
+        
       } else {
-        print('❌ Could not open location settings');
+        
       }
     } catch (e) {
-      print('❌ Failed to open location settings: $e');
+      
     }
   }
 
   /// Start GPS tracking with high accuracy
   Future<void> startHighAccuracyTracking() async {
     if (_isTracking) {
-      print('⚠️ GPS tracking is already active');
+      
       return;
     }
 
     try {
-      print('🛰️ Starting high accuracy GPS tracking...');
-      
+
       // Ensure high accuracy settings
       await _setupLocationSettings();
       
@@ -215,11 +206,9 @@ class GPSTrackingService {
       await for (final position in positionStream) {
         await _handlePositionUpdate(position);
       }
-      
-      print('✅ High accuracy GPS tracking started');
-      
+
     } catch (e) {
-      print('❌ Failed to start GPS tracking: $e');
+      
       _isTracking = false;
       _trackingController.addError(e);
     }
@@ -255,11 +244,9 @@ class GPSTrackingService {
       
       // Save to cache
       await _saveCachedCoordinates();
-      
-      print('📍 Position updated: ${coordinate.latitude}, ${coordinate.longitude} (Accuracy: ${coordinate.accuracy}m)');
-      
+
     } catch (e) {
-      print('❌ Failed to handle position update: $e');
+      
     }
   }
 
@@ -294,7 +281,7 @@ class GPSTrackingService {
       ));
       
     } catch (e) {
-      print('❌ Failed to process tracking data: $e');
+      
     }
   }
 
@@ -400,13 +387,12 @@ class GPSTrackingService {
   /// Stop GPS tracking
   Future<void> stopTracking() async {
     if (!_isTracking) {
-      print('⚠️ GPS tracking is not active');
+      
       return;
     }
 
     try {
-      print('🛑 Stopping GPS tracking...');
-      
+
       _isTracking = false;
       
       // Cancel tracking timer
@@ -423,19 +409,16 @@ class GPSTrackingService {
         currentCoordinate: _todayCoordinates.isNotEmpty ? _todayCoordinates.last : null,
         isHighAccuracy: _isHighAccuracyMode,
       ));
-      
-      print('✅ GPS tracking stopped');
-      
+
     } catch (e) {
-      print('❌ Failed to stop GPS tracking: $e');
+      
     }
   }
 
   /// Clear today's coordinates
   Future<void> clearTodayCoordinates() async {
     try {
-      print('🗑️ Clearing today's coordinates...');
-      
+
       _todayCoordinates.clear();
       
       // Save cleared state
@@ -447,19 +430,16 @@ class GPSTrackingService {
         isTracking: _isTracking,
         isHighAccuracy: _isHighAccuracyMode,
       ));
-      
-      print('✅ Today's coordinates cleared');
-      
+
     } catch (e) {
-      print('❌ Failed to clear coordinates: $e');
+      
     }
   }
 
   /// Load cached coordinates from storage
   Future<void> _loadCachedCoordinates() async {
     try {
-      print('📂 Loading cached coordinates...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final coordinatesJson = prefs.getString('cached_coordinates');
       
@@ -477,21 +457,18 @@ class GPSTrackingService {
         _todayCoordinates = _cachedCoordinates
             .where((coord) => _isSameDay(coord.timestamp, today))
             .toList();
-        
-        print('✅ Loaded ${_cachedCoordinates.length} cached coordinates');
-        print('✅ Loaded ${_todayCoordinates.length} today's coordinates');
+
       }
       
     } catch (e) {
-      print('❌ Failed to load cached coordinates: $e');
+      
     }
   }
 
   /// Save cached coordinates to storage
   Future<void> _saveCachedCoordinates() async {
     try {
-      print('💾 Saving cached coordinates...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final coordinatesJson = jsonEncode(
         _cachedCoordinates.map((coord) => coord.toJson()).toList(),
@@ -499,11 +476,9 @@ class GPSTrackingService {
       
       await prefs.setString('cached_coordinates', coordinatesJson);
       await prefs.setString('last_coordinates_update', DateTime.now().toIso8601String());
-      
-      print('✅ Saved ${_cachedCoordinates.length} cached coordinates');
-      
+
     } catch (e) {
-      print('❌ Failed to save cached coordinates: $e');
+      
     }
   }
 
@@ -534,7 +509,7 @@ class GPSTrackingService {
       );
       
     } catch (e) {
-      print('❌ Failed to get GPS status: $e');
+      
       return GPSStatus(
         isLocationServiceEnabled: false,
         permissionStatus: LocationPermissionStatus.denied,
@@ -565,13 +540,11 @@ class GPSTrackingService {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing GPS tracking service...');
-    
+
     _trackingTimer?.cancel();
     _trackingController.close();
     _permissionController.close();
-    
-    print('✅ GPS tracking service disposed');
+
   }
 }
 

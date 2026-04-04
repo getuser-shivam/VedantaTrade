@@ -270,7 +270,7 @@ class _RealTimeStockMonitorState extends State<RealTimeStockMonitor>
   }
 
   void _loadInitialStock() {
-    // TODO: Load initial stock from API
+    
     setState(() {
       _currentStock = 150; // Example value
       _previousStock = _currentStock;

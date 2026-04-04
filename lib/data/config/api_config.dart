@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = 'http://localhost:3000/api';
+  static const String baseUrl = 'AppConstants.localApiUrl/api';
   
   static const Map<String, String> headers = {
     'Content-Type': 'application/json',

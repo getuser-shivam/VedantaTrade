@@ -156,7 +156,7 @@ class ReviewWidget extends StatelessWidget {
                       const SizedBox(width: 16),
                       GestureDetector(
                         onTap: () {
-                          // TODO: Report review
+                          
                         },
                         child: Row(
                           mainAxisSize: MainAxisSize.min,

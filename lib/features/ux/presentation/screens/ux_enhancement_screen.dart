@@ -415,7 +415,7 @@ class _UXEnhancementScreenState extends State<UXEnhancementScreen>
                 ),
               ),
               Switch(
-                value: true, // TODO: Get from provider
+                value: true, 
                 onChanged: (value) => _toggleHapticFeedback(value),
                 activeColor: PremiumGlassmorphicTheme.indigo500,
               ),
@@ -582,7 +582,7 @@ class _UXEnhancementScreenState extends State<UXEnhancementScreen>
               ),
               _buildAccessibilityOption(
                 'Color Blind Friendly',
-                false, // TODO: Implement
+                false, 
                 (value) => _toggleColorBlindFriendly(value),
                 Icons.color_lens,
               ),
@@ -609,7 +609,7 @@ class _UXEnhancementScreenState extends State<UXEnhancementScreen>
               ),
               _buildAccessibilityOption(
                 'Voice Navigation',
-                false, // TODO: Implement
+                false, 
                 (value) => _toggleVoiceNavigation(value),
                 Icons.mic,
               ),
@@ -1034,7 +1034,7 @@ class _UXEnhancementScreenState extends State<UXEnhancementScreen>
 
   Widget _buildBottomNavigation() {
     return EnhancedBottomNavigation(
-      currentIndex: 0, // TODO: Get from provider
+      currentIndex: 0, 
       onTap: (index) => _handleBottomNavigationTap(index),
       items: [
         BottomNavigationBarItem(
@@ -1220,11 +1220,11 @@ class _UXEnhancementScreenState extends State<UXEnhancementScreen>
   }
 
   void _showFilterOptions() {
-    // TODO: Implement filter options
+    
   }
 
   void _handleGesture(String direction) {
-    // TODO: Implement gesture navigation
+    
     _slideController.forward().then((_) {
       _slideController.reverse();
     });
@@ -1275,14 +1275,14 @@ class _UXEnhancementScreenState extends State<UXEnhancementScreen>
   }
 
   void _handleBottomNavigationTap(int index) {
-    // TODO: Handle bottom navigation
+    
     _slideController.forward().then((_) {
       _slideController.reverse();
     });
   }
 
   void _showQuickActions() {
-    // TODO: Implement quick actions
+    
   }
 
   void _showTextSizeDialog() {

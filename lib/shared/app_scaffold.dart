@@ -174,7 +174,6 @@ class AppScaffold extends StatelessWidget {
     );
   }
 
-
   String _roleLabel(String? role) {
     switch (role) {
       case 'ADMIN': return 'Administrator';

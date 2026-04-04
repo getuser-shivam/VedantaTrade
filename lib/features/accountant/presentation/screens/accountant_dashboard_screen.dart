@@ -91,7 +91,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
         });
       }
     } catch (e) {
-      debugPrint('Error loading stats: $e');
+      
       // Set default stats
       if (mounted) {
         setState(() {
@@ -141,7 +141,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
         });
       }
     } catch (e) {
-      debugPrint('Error loading VAT returns: $e');
+      
     }
   }
 
@@ -182,7 +182,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
         });
       }
     } catch (e) {
-      debugPrint('Error loading expenses: $e');
+      
     }
   }
 
@@ -212,7 +212,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
         });
       }
     } catch (e) {
-      debugPrint('Error loading reconciliations: $e');
+      
     }
   }
 
@@ -808,7 +808,7 @@ class _AccountantDashboardState extends State<AccountantDashboard>
   }
 
   void _showAnalytics() {
-    // TODO: Navigate to analytics screen
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Analytics functionality')),
     );

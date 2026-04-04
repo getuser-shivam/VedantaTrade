@@ -174,7 +174,7 @@ class _AuthSettingsScreenState extends State<AuthSettingsScreen>
         const SizedBox(height: 12),
         _buildStatusRow(
           'Two-Factor Authentication',
-          false, // TODO: Implement 2FA
+          false, 
           Icons.security,
           () => _showComingSoon('Two-Factor Authentication'),
         ),

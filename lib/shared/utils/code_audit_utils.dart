@@ -347,7 +347,7 @@ class CodeAuditUtils {
         }
       }
     } catch (e) {
-      if (kDebugMode) print('Error scanning directory ${dir.path}: $e');
+      if (kDebugMode) 
     }
   }
 
@@ -369,7 +369,7 @@ class CodeAuditUtils {
         }
       }
     } catch (e) {
-      if (kDebugMode) print('Error scanning directory ${dir.path}: $e');
+      if (kDebugMode) 
     }
   }
 
@@ -614,7 +614,7 @@ class CodeAuditUtils {
         await file.writeAsString(lines.join('\n'));
       }
     } catch (e) {
-      if (kDebugMode) print('Failed to auto-fix issue: $e');
+      if (kDebugMode) 
     }
   }
 }
@@ -644,30 +644,24 @@ class AuditReport {
   }
   
   void printReport() {
-    print('\n=== Code Audit Report ===');
-    print('Total Issues: $totalIssues');
-    print('Errors: $errorCount');
-    print('Warnings: $warningCount');
-    print('Info: $infoCount');
-    
+
     if (errors.isNotEmpty) {
-      print('\nErrors:');
+      
       for (final error in errors) {
-        print('  - $error');
+        
       }
     }
     
     if (issues.isNotEmpty) {
-      print('\nIssues:');
+      
       for (final issue in issues) {
-        print('  [${issue.severity.name.toUpperCase()}] ${issue.file}:${issue.line} - ${issue.message}');
+        
         if (issue.suggestion != null) {
-          print('    Suggestion: ${issue.suggestion}');
+          
         }
       }
     }
-    
-    print('\n=== End Report ===\n');
+
   }
 }
 

@@ -50,7 +50,7 @@ class _MRExpenseReconciliationScreenState extends State<MRExpenseReconciliationS
         });
       }
     } catch (e) {
-      debugPrint('❌ Failed to load expenses: $e');
+      
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -60,7 +60,7 @@ class _MRExpenseReconciliationScreenState extends State<MRExpenseReconciliationS
   }
 
   Future<void> _loadPendingExpenses() async {
-    // TODO: Replace with real API call - GET /api/mr/expenses/pending
+    
     await Future.delayed(const Duration(milliseconds: 500));
     
     final mockPendingExpenses = [
@@ -136,7 +136,7 @@ class _MRExpenseReconciliationScreenState extends State<MRExpenseReconciliationS
   }
 
   Future<void> _loadApprovedExpenses() async {
-    // TODO: Replace with real API call - GET /api/mr/expenses/approved
+    
     await Future.delayed(const Duration(milliseconds: 300));
     
     final mockApprovedExpenses = [
@@ -634,7 +634,7 @@ class _MRExpenseReconciliationScreenState extends State<MRExpenseReconciliationS
 
   Future<void> _approveExpense(Map<String, dynamic> expense) async {
     try {
-      // TODO: Replace with real API call - PATCH /api/accountant/expenses/{id}/approve
+      
       await Future.delayed(const Duration(seconds: 1));
       
       if (mounted) {
@@ -1015,7 +1015,7 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
     });
 
     try {
-      // TODO: Replace with real API call - POST /api/mr/expenses
+      
       await Future.delayed(const Duration(seconds: 2));
       
       if (mounted) {

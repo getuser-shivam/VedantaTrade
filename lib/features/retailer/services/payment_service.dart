@@ -1,3 +1,4 @@
+import 'package:vedanta_trade/core/constants/app_constants.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
@@ -18,15 +19,12 @@ class PaymentService {
   /// Initialize payment service
   Future<void> initialize() async {
     try {
-      print('💳 Initializing Payment Service...');
-      
+
       // Setup Dio client
       _setupDioClient();
-      
-      print('✅ Payment Service initialized');
-      
+
     } catch (e) {
-      print('❌ Failed to initialize Payment Service: $e');
+      
       _paymentStatusController.addError(e);
     }
   }
@@ -34,7 +32,7 @@ class PaymentService {
   /// Setup Dio client with Nepal-specific configurations
   void _setupDioClient() {
     _dio = Dio(BaseOptions(
-      baseUrl: 'https://api.vedantatrade.com.np',
+      baseUrl: 'AppConstants.apiBaseUrl',
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -60,7 +58,7 @@ class PaymentService {
           handler.next(options);
         },
         onError: (error, handler) async {
-          print('Payment API Error: ${error.message}');
+          
           handler.next(error);
         },
       ),
@@ -70,8 +68,7 @@ class PaymentService {
   /// Process payment with Nepal-specific validation
   Future<Map<String, dynamic>> processPayment(Map<String, dynamic> orderData) async {
     try {
-      print('💳 Processing payment...');
-      
+
       // Validate order data
       _validateOrderData(orderData);
       
@@ -94,8 +91,7 @@ class PaymentService {
           
           // Send confirmation
           await _sendOrderConfirmation(orderResult['orderId'], nepalOrderData);
-          
-          print('✅ Payment processed successfully');
+
           return {
             'success': true,
             'orderId': orderResult['orderId'],
@@ -110,7 +106,7 @@ class PaymentService {
       }
       
     } catch (e) {
-      print('❌ Failed to process payment: $e');
+      
       return {
         'success': false,
         'error': e.toString(),
@@ -201,8 +197,7 @@ class PaymentService {
   /// Process cash payment
   Future<Map<String, dynamic>> _processCashPayment(Map<String, dynamic> orderData) async {
     try {
-      print('💰 Processing cash payment...');
-      
+
       // Create cash payment record
       final paymentData = {
         'method': 'cash',
@@ -233,7 +228,7 @@ class PaymentService {
       }
       
     } catch (e) {
-      print('❌ Failed to process cash payment: $e');
+      
     }
     
     return {
@@ -245,8 +240,7 @@ class PaymentService {
   /// Process card payment
   Future<Map<String, dynamic>> _processCardPayment(Map<String, dynamic> orderData) async {
     try {
-      print('💳 Processing card payment...');
-      
+
       final payment = orderData['payment'];
       
       // Validate card details
@@ -293,7 +287,7 @@ class PaymentService {
       }
       
     } catch (e) {
-      print('❌ Failed to process card payment: $e');
+      
     }
     
     return {
@@ -305,8 +299,7 @@ class PaymentService {
   /// Process bank transfer
   Future<Map<String, dynamic>> _processBankTransfer(Map<String, dynamic> orderData) async {
     try {
-      print('🏦 Processing bank transfer...');
-      
+
       final payment = orderData['payment'];
       
       // Validate bank details
@@ -346,7 +339,7 @@ class PaymentService {
       }
       
     } catch (e) {
-      print('❌ Failed to process bank transfer: $e');
+      
     }
     
     return {
@@ -358,8 +351,7 @@ class PaymentService {
   /// Create order in backend
   Future<Map<String, dynamic>> _createOrder(Map<String, dynamic> orderData) async {
     try {
-      print('📦 Creating order...');
-      
+
       final orderRequest = {
         'items': orderData['items'],
         'subtotal': orderData['subtotal'],
@@ -391,7 +383,7 @@ class PaymentService {
       }
       
     } catch (e) {
-      print('❌ Failed to create order: $e');
+      
     }
     
     return {
@@ -403,8 +395,7 @@ class PaymentService {
   /// Generate receipt
   Future<Map<String, dynamic>> _generateReceipt(String orderId) async {
     try {
-      print('🧾 Generating receipt...');
-      
+
       final response = await _dio.post(
         '/api/receipts/generate',
         data: {
@@ -427,7 +418,7 @@ class PaymentService {
       }
       
     } catch (e) {
-      print('❌ Failed to generate receipt: $e');
+      
     }
     
     return {
@@ -439,8 +430,7 @@ class PaymentService {
   /// Send order confirmation
   Future<void> _sendOrderConfirmation(String orderId, Map<String, dynamic> orderData) async {
     try {
-      print('📧 Sending order confirmation...');
-      
+
       final confirmationData = {
         'orderId': orderId,
         'customerName': orderData['shipping']['name'],
@@ -462,11 +452,9 @@ class PaymentService {
         '/api/notifications/order-confirmation',
         data: confirmationData,
       );
-      
-      print('✅ Order confirmation sent');
-      
+
     } catch (e) {
-      print('❌ Failed to send order confirmation: $e');
+      
     }
   }
 
@@ -639,7 +627,7 @@ class PaymentService {
         );
       }
     } catch (e) {
-      print('❌ Failed to get payment status: $e');
+      
     }
     
     return PaymentStatus.failed;
@@ -654,7 +642,7 @@ class PaymentService {
       
       return response.statusCode == 200;
     } catch (e) {
-      print('❌ Failed to cancel payment: $e');
+      
       return false;
     }
   }
@@ -673,18 +661,16 @@ class PaymentService {
       
       return response.statusCode == 200;
     } catch (e) {
-      print('❌ Failed to refund payment: $e');
+      
       return false;
     }
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Payment Service...');
-    
+
     _paymentStatusController.close();
-    
-    print('✅ Payment Service disposed');
+
   }
 }
 

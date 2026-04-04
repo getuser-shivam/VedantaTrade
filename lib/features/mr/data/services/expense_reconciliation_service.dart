@@ -1,3 +1,4 @@
+import 'package:vedanta_trade/core/constants/app_constants.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -17,7 +18,7 @@ class ExpenseReconciliationService {
 
   late Dio _dio;
   final ImagePicker _imagePicker = ImagePicker();
-  static const String _baseUrl = 'https://api.vedantatrade.com.np';
+  static const String _baseUrl = 'AppConstants.apiBaseUrl';
 
   // Stream controllers for real-time updates
   final StreamController<List<Expense>> _expensesController = 
@@ -48,14 +49,12 @@ class ExpenseReconciliationService {
   /// Initialize expense reconciliation service
   Future<void> initialize() async {
     try {
-      print('💰 Initializing Expense Reconciliation Service...');
-      
+
       _setupDioClient();
       await _loadCachedData();
-      
-      print('✅ Expense Reconciliation Service initialized');
+
     } catch (e) {
-      print('❌ Failed to initialize Expense Reconciliation Service: $e');
+      
       _expensesController.addError(e);
     }
   }
@@ -88,7 +87,7 @@ class ExpenseReconciliationService {
           handler.next(options);
         },
         onError: (error, handler) async {
-          print('Expense Service API Error: ${error.message}');
+          
           handler.next(error);
         },
       ),
@@ -98,8 +97,7 @@ class ExpenseReconciliationService {
   /// Load expenses from server
   Future<void> loadExpenses({String? mrId, String? status}) async {
     try {
-      print('💰 Loading expenses...');
-      
+
       final response = await _dio.get(
         '/api/expenses',
         queryParameters: {
@@ -118,12 +116,11 @@ class ExpenseReconciliationService {
           _expensesController.add(_expenses);
           await _cacheExpenses();
           await _updateExpenseCategories();
-          
-          print('✅ Loaded ${_expenses.length} expenses');
+
         }
       }
     } catch (e) {
-      print('❌ Failed to load expenses: $e');
+      
       await _loadMockExpenses();
     }
   }
@@ -135,7 +132,7 @@ class ExpenseReconciliationService {
       _pendingExpenses = pending;
       _pendingExpensesController.add(_pendingExpenses);
     } catch (e) {
-      print('❌ Failed to load pending expenses: $e');
+      
     }
   }
 
@@ -146,7 +143,7 @@ class ExpenseReconciliationService {
       _approvedExpenses = approved;
       _approvedExpensesController.add(_approvedExpenses);
     } catch (e) {
-      print('❌ Failed to load approved expenses: $e');
+      
     }
   }
 
@@ -163,8 +160,7 @@ class ExpenseReconciliationService {
     String? location,
   }) async {
     try {
-      print('💰 Creating new expense...');
-      
+
       // Upload photos first
       final photoUrls = <String>[];
       for (final photo in receiptPhotos) {
@@ -197,13 +193,12 @@ class ExpenseReconciliationService {
           _expenses.insert(0, expense);
           _expensesController.add(_expenses);
           await _cacheExpenses();
-          
-          print('✅ Expense created: ${expense.id}');
+
           return expense;
         }
       }
     } catch (e) {
-      print('❌ Failed to create expense: $e');
+      
       throw Exception('Failed to create expense: $e');
     }
     
@@ -230,7 +225,7 @@ class ExpenseReconciliationService {
         }
       }
     } catch (e) {
-      print('❌ Failed to upload expense photo: $e');
+      
     }
     
     throw Exception('Failed to upload expense photo');
@@ -250,7 +245,7 @@ class ExpenseReconciliationService {
         return File(image.path);
       }
     } catch (e) {
-      print('❌ Failed to capture photo: $e');
+      
     }
     
     return null;
@@ -270,7 +265,7 @@ class ExpenseReconciliationService {
         return File(image.path);
       }
     } catch (e) {
-      print('❌ Failed to pick photo from gallery: $e');
+      
     }
     
     return null;
@@ -279,8 +274,7 @@ class ExpenseReconciliationService {
   /// Process receipt photo with OCR
   Future<ReceiptOCRResult> processReceiptPhoto(File photo) async {
     try {
-      print('📷 Processing receipt photo with OCR...');
-      
+
       final formData = FormData.fromMap({
         'photo': await MultipartFile.fromFile(photo.path),
         'language': 'en',
@@ -295,12 +289,12 @@ class ExpenseReconciliationService {
         final data = response.data;
         if (data['success'] == true && data['result'] != null) {
           final result = ReceiptOCRResult.fromJson(data['result']);
-          print('✅ Receipt processed successfully');
+          
           return result;
         }
       }
     } catch (e) {
-      print('❌ Failed to process receipt photo: $e');
+      
     }
     
     // Return mock result as fallback
@@ -316,8 +310,7 @@ class ExpenseReconciliationService {
   /// Update expense status
   Future<bool> updateExpenseStatus(String expenseId, ExpenseStatus status, {String? remarks}) async {
     try {
-      print('💰 Updating expense status: $expenseId -> $status');
-      
+
       final response = await _dio.put(
         '/api/expenses/$expenseId/status',
         data: {
@@ -341,14 +334,13 @@ class ExpenseReconciliationService {
             
             await _updateExpenseCategories();
             await _cacheExpenses();
-            
-            print('✅ Expense status updated successfully');
+
             return true;
           }
         }
       }
     } catch (e) {
-      print('❌ Failed to update expense status: $e');
+      
     }
     
     return false;
@@ -367,8 +359,7 @@ class ExpenseReconciliationService {
   /// Calculate expense summary
   Future<ExpenseSummary> calculateExpenseSummary({String? mrId, DateTime? startDate, DateTime? endDate}) async {
     try {
-      print('💰 Calculating expense summary...');
-      
+
       final response = await _dio.post(
         '/api/expenses/summary',
         data: {
@@ -387,7 +378,7 @@ class ExpenseReconciliationService {
         }
       }
     } catch (e) {
-      print('❌ Failed to calculate expense summary: $e');
+      
     }
     
     // Calculate from local data as fallback
@@ -425,8 +416,7 @@ class ExpenseReconciliationService {
   /// Delete expense
   Future<bool> deleteExpense(String expenseId) async {
     try {
-      print('💰 Deleting expense: $expenseId');
-      
+
       final response = await _dio.delete('/api/expenses/$expenseId');
       
       if (response.statusCode == 200) {
@@ -437,13 +427,12 @@ class ExpenseReconciliationService {
           
           await _updateExpenseCategories();
           await _cacheExpenses();
-          
-          print('✅ Expense deleted successfully');
+
           return true;
         }
       }
     } catch (e) {
-      print('❌ Failed to delete expense: $e');
+      
     }
     
     return false;
@@ -559,9 +548,9 @@ class ExpenseReconciliationService {
       
       _expensesController.add(_expenses);
       await _updateExpenseCategories();
-      print('✅ Loaded mock expenses');
+      
     } catch (e) {
-      print('❌ Failed to load mock expenses: $e');
+      
     }
   }
 
@@ -574,7 +563,7 @@ class ExpenseReconciliationService {
       );
       await prefs.setString('cached_expenses', expensesJson);
     } catch (e) {
-      print('❌ Failed to cache expenses: $e');
+      
     }
   }
 
@@ -594,10 +583,10 @@ class ExpenseReconciliationService {
         _expensesController.add(_expenses);
         
         await _updateExpenseCategories();
-        print('✅ Loaded cached expenses');
+        
       }
     } catch (e) {
-      print('❌ Failed to load cached expenses: $e');
+      
     }
   }
 
@@ -615,10 +604,9 @@ class ExpenseReconciliationService {
       _expensesController.add(_expenses);
       _pendingExpensesController.add(_pendingExpenses);
       _approvedExpensesController.add(_approvedExpenses);
-      
-      print('✅ Expense cache cleared');
+
     } catch (e) {
-      print('❌ Failed to clear expense cache: $e');
+      
     }
   }
 
@@ -628,7 +616,7 @@ class ExpenseReconciliationService {
     _pendingExpensesController.close();
     _approvedExpensesController.close();
     _summaryController.close();
-    print('🗑️ Expense Reconciliation Service disposed');
+    
   }
 }
 

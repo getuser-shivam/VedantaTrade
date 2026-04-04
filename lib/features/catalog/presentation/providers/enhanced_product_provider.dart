@@ -47,7 +47,7 @@ class ProductProvider extends ChangeNotifier {
       _applyFiltersAndSearch();
     } catch (e) {
       _error = e.toString();
-      debugPrint('Error loading products: $e');
+      
     } finally {
       _setLoading(false);
     }
@@ -60,7 +60,7 @@ class ProductProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _error = e.toString();
-      debugPrint('Error loading categories: $e');
+      
     }
   }
 
@@ -71,7 +71,7 @@ class ProductProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _error = e.toString();
-      debugPrint('Error loading manufacturers: $e');
+      
     }
   }
 
@@ -294,7 +294,7 @@ class ProductProvider extends ChangeNotifier {
       _applyFiltersAndSearch();
     } catch (e) {
       _error = e.toString();
-      debugPrint('Error adding product: $e');
+      
     }
   }
 
@@ -309,7 +309,7 @@ class ProductProvider extends ChangeNotifier {
       }
     } catch (e) {
       _error = e.toString();
-      debugPrint('Error updating product: $e');
+      
     }
   }
 
@@ -321,7 +321,7 @@ class ProductProvider extends ChangeNotifier {
       _applyFiltersAndSearch();
     } catch (e) {
       _error = e.toString();
-      debugPrint('Error deleting product: $e');
+      
     }
   }
 }

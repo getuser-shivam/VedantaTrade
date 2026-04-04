@@ -93,7 +93,7 @@ class _StockistDashboardState extends State<StockistDashboard>
         });
       }
     } catch (e) {
-      debugPrint('Error loading orders: $e');
+      
     }
   }
 
@@ -131,7 +131,7 @@ class _StockistDashboardState extends State<StockistDashboard>
         });
       }
     } catch (e) {
-      debugPrint('Error loading inventory: $e');
+      
     }
   }
 
@@ -468,7 +468,7 @@ class _StockistDashboardState extends State<StockistDashboard>
   }
 
   void _showOrderDetails(Map<String, dynamic> order) {
-    // TODO: Show order details
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Order ${order['id']} details')),
     );
@@ -505,14 +505,14 @@ class _StockistDashboardState extends State<StockistDashboard>
   }
 
   void _showInventoryDetails(Map<String, dynamic> item) {
-    // TODO: Show inventory details
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Inventory details for ${item['productName']}')),
     );
   }
 
   void _showRestockDialog(Map<String, dynamic> item) {
-    // TODO: Show restock dialog
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Restock ${item['productName']}')),
     );

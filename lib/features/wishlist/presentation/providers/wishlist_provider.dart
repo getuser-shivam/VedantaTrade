@@ -23,7 +23,7 @@ class WishlistProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint('Error loading wishlist: $e');
+      
     }
   }
 
@@ -33,7 +33,7 @@ class WishlistProvider extends ChangeNotifier {
       final wishlistData = json.encode(_wishlistProductIds);
       await prefs.setString('wishlist', wishlistData);
     } catch (e) {
-      debugPrint('Error saving wishlist: $e');
+      
     }
   }
 

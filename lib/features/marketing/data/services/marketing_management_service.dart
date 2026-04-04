@@ -1,3 +1,4 @@
+import 'package:vedanta_trade/core/constants/app_constants.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
@@ -42,23 +43,21 @@ class MarketingManagementService {
 
   void initialize({String? userId}) {
     try {
-      debugPrint('🚀 Initializing Marketing Management Service...');
-      
+
       _currentUserId = userId;
       _setupDioClient();
       _loadInitialData();
       _startAnalyticsUpdates();
-      
-      debugPrint('✅ Marketing Management Service initialized');
+
     } catch (e) {
-      debugPrint('❌ Failed to initialize Marketing Management Service: $e');
+      
       _campaignsController.addError(e);
     }
   }
 
   void _setupDioClient() {
     _dio = Dio(BaseOptions(
-      baseUrl: 'https://api.vedantatrade.com.np',
+      baseUrl: 'AppConstants.apiBaseUrl',
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -81,7 +80,7 @@ class MarketingManagementService {
           handler.next(options);
         },
         onError: (error, handler) {
-          debugPrint('Marketing API Error: ${error.message}');
+          
           handler.next(error);
         },
       ),
@@ -90,8 +89,7 @@ class MarketingManagementService {
 
   Future<void> _loadInitialData() async {
     try {
-      debugPrint('📂 Loading initial marketing data...');
-      
+
       // Load campaigns
       await _loadCampaigns();
       
@@ -103,10 +101,9 @@ class MarketingManagementService {
       
       // Load analytics
       await _loadAnalytics();
-      
-      debugPrint('✅ Initial data loaded successfully');
+
     } catch (e) {
-      debugPrint('Failed to load initial data: $e');
+      
       // Load mock data as fallback
       await _loadMockData();
     }
@@ -122,7 +119,7 @@ class MarketingManagementService {
         _campaignsController.add(_campaigns);
       }
     } catch (e) {
-      debugPrint('Failed to load campaigns: $e');
+      
       rethrow;
     }
   }
@@ -137,7 +134,7 @@ class MarketingManagementService {
         _segmentsController.add(_segments);
       }
     } catch (e) {
-      debugPrint('Failed to load customer segments: $e');
+      
       rethrow;
     }
   }
@@ -152,7 +149,7 @@ class MarketingManagementService {
         _promotionsController.add(_promotions);
       }
     } catch (e) {
-      debugPrint('Failed to load promotions: $e');
+      
       rethrow;
     }
   }
@@ -165,32 +162,29 @@ class MarketingManagementService {
         _analyticsController.add(_analytics);
       }
     } catch (e) {
-      debugPrint('Failed to load analytics: $e');
+      
       rethrow;
     }
   }
 
   void _startAnalyticsUpdates() {
-    debugPrint('🔄 Starting analytics updates...');
-    
+
     _analyticsTimer = Timer.periodic(const Duration(minutes: 5), (timer) {
       _refreshAnalytics();
     });
-    
-    debugPrint('✅ Analytics updates started');
+
   }
 
   Future<void> _refreshAnalytics() async {
     try {
       await _loadAnalytics();
     } catch (e) {
-      debugPrint('Failed to refresh analytics: $e');
+      
     }
   }
 
   Future<void> _loadMockData() async {
-    debugPrint('📋 Loading mock marketing data...');
-    
+
     // Mock campaigns
     _campaigns = [
       MarketingCampaign(
@@ -365,8 +359,7 @@ class MarketingManagementService {
     _segmentsController.add(_segments);
     _promotionsController.add(_promotions);
     _analyticsController.add(_analytics);
-    
-    debugPrint('✅ Mock data loaded successfully');
+
   }
 
   // Campaign Management Methods
@@ -381,7 +374,7 @@ class MarketingManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to create campaign: $e');
+      
     }
     return false;
   }
@@ -399,7 +392,7 @@ class MarketingManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to update campaign: $e');
+      
     }
     return false;
   }
@@ -414,7 +407,7 @@ class MarketingManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to delete campaign: $e');
+      
     }
     return false;
   }
@@ -431,7 +424,7 @@ class MarketingManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to create promotion: $e');
+      
     }
     return false;
   }
@@ -449,7 +442,7 @@ class MarketingManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to update promotion: $e');
+      
     }
     return false;
   }
@@ -511,7 +504,7 @@ class MarketingManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to create customer segment: $e');
+      
     }
     return false;
   }
@@ -529,7 +522,7 @@ class MarketingManagementService {
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to update customer segment: $e');
+      
     }
     return false;
   }
@@ -616,14 +609,12 @@ class MarketingManagementService {
   }
 
   void dispose() {
-    debugPrint('🗑️ Disposing Marketing Management Service...');
-    
+
     _analyticsTimer?.cancel();
     _campaignsController.close();
     _segmentsController.close();
     _analyticsController.close();
     _promotionsController.close();
-    
-    debugPrint('✅ Marketing Management Service disposed');
+
   }
 }

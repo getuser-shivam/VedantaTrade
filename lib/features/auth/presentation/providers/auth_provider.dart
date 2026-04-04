@@ -256,7 +256,7 @@ class AuthProvider extends ChangeNotifier {
         return true;
       }
     } catch (e) {
-      debugPrint('Token refresh failed: $e');
+      
     }
     
     // If refresh fails, logout user

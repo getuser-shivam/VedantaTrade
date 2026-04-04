@@ -890,7 +890,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
 
   void _addToCart(Product product) {
     HapticFeedback.mediumImpact();
-    // TODO: Implement add to cart functionality
+    
     EnhancedUIComponents.showEnhancedSnackbar(
       context: context,
       message: '${product.name} added to cart',
@@ -900,7 +900,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
 
   void _bulkAddToCart() {
     HapticFeedback.heavyImpact();
-    // TODO: Implement bulk add to cart functionality
+    
     EnhancedUIComponents.showEnhancedSnackbar(
       context: context,
       message: '${_selectedProducts.length} products added to cart',

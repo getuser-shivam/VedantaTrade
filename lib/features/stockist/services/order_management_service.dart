@@ -1,3 +1,4 @@
+import 'package:vedanta_trade/core/constants/app_constants.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
@@ -31,8 +32,7 @@ class OrderManagementService {
   /// Initialize order management service
   Future<void> initialize({String? stockistId}) async {
     try {
-      print('📦 Initializing Order Management Service...');
-      
+
       _currentStockistId = stockistId;
       
       // Setup Dio client
@@ -46,11 +46,9 @@ class OrderManagementService {
       
       // Start real-time updates
       _startRealtimeUpdates();
-      
-      print('✅ Order Management Service initialized');
-      
+
     } catch (e) {
-      print('❌ Failed to initialize Order Management Service: $e');
+      
       _ordersController.addError(e);
     }
   }
@@ -58,7 +56,7 @@ class OrderManagementService {
   /// Setup Dio client with Nepal-specific configurations
   void _setupDioClient() {
     _dio = Dio(BaseOptions(
-      baseUrl: 'https://api.vedantatrade.com.np',
+      baseUrl: 'AppConstants.apiBaseUrl',
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -83,7 +81,7 @@ class OrderManagementService {
           handler.next(options);
         },
         onError: (error, handler) async {
-          print('API Error: ${error.message}');
+          
           handler.next(error);
         },
       ),
@@ -93,8 +91,7 @@ class OrderManagementService {
   /// Load cached orders from storage
   Future<void> _loadCachedOrders() async {
     try {
-      print('📂 Loading cached orders...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final ordersJson = prefs.getString('cached_orders');
       
@@ -108,19 +105,18 @@ class OrderManagementService {
             .toList();
         
         _ordersController.add(_orders);
-        print('✅ Loaded ${_orders.length} cached orders');
+        
       }
       
     } catch (e) {
-      print('❌ Failed to load cached orders: $e');
+      
     }
   }
 
   /// Load cached stock alerts from storage
   Future<void> _loadCachedStockAlerts() async {
     try {
-      print('📂 Loading cached stock alerts...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final alertsJson = prefs.getString('cached_stock_alerts');
       
@@ -134,33 +130,29 @@ class OrderManagementService {
             .toList();
         
         _stockAlertsController.add(_stockAlerts);
-        print('✅ Loaded ${_stockAlerts.length} cached stock alerts');
+        
       }
       
     } catch (e) {
-      print('❌ Failed to load cached stock alerts: $e');
+      
     }
   }
 
   /// Start real-time updates
   void _startRealtimeUpdates() {
-    print('🔄 Starting real-time updates...');
-    
+
     _realtimeTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       _fetchOrdersFromServer();
       _fetchStockAlertsFromServer();
     });
-    
-    print('✅ Real-time updates started');
+
   }
 
   /// Fetch orders from server
   Future<void> _fetchOrdersFromServer() async {
     try {
       if (_currentStockistId == null) return;
-      
-      print('📡 Fetching orders from server...');
-      
+
       final response = await _dio.get(
         '/api/orders/stockist/$_currentStockistId',
       );
@@ -179,12 +171,11 @@ class OrderManagementService {
         
         // Cache orders
         await _cacheOrders();
-        
-        print('✅ Fetched ${newOrders.length} orders from server');
+
       }
       
     } catch (e) {
-      print('❌ Failed to fetch orders from server: $e');
+      
     }
   }
 
@@ -192,9 +183,7 @@ class OrderManagementService {
   Future<void> _fetchStockAlertsFromServer() async {
     try {
       if (_currentStockistId == null) return;
-      
-      print('📡 Fetching stock alerts from server...');
-      
+
       final response = await _dio.get(
         '/api/stock/alerts/stockist/$_currentStockistId',
       );
@@ -210,12 +199,11 @@ class OrderManagementService {
         
         // Cache alerts
         await _cacheStockAlerts();
-        
-        print('✅ Fetched ${newAlerts.length} stock alerts from server');
+
       }
       
     } catch (e) {
-      print('❌ Failed to fetch stock alerts from server: $e');
+      
     }
   }
 
@@ -228,7 +216,7 @@ class OrderManagementService {
       );
       
       if (existingOrder != null && existingOrder.status != newOrder.status) {
-        print('🔄 Order ${newOrder.id} status changed: ${existingOrder.status} -> ${newOrder.status}');
+        
         _orderUpdateController.add(newOrder);
       }
     }
@@ -237,8 +225,7 @@ class OrderManagementService {
   /// Create new order
   Future<Order?> createOrder(CreateOrderRequest request) async {
     try {
-      print('📝 Creating new order...');
-      
+
       final response = await _dio.post(
         '/api/orders',
         data: request.toJson(),
@@ -253,13 +240,12 @@ class OrderManagementService {
         
         // Cache updated orders
         await _cacheOrders();
-        
-        print('✅ Order created successfully: ${newOrder.id}');
+
         return newOrder;
       }
       
     } catch (e) {
-      print('❌ Failed to create order: $e');
+      
       throw Exception('Failed to create order: $e');
     }
     
@@ -269,8 +255,7 @@ class OrderManagementService {
   /// Update order status
   Future<bool> updateOrderStatus(String orderId, OrderStatus newStatus) async {
     try {
-      print('📝 Updating order status: $orderId -> $newStatus');
-      
+
       final response = await _dio.put(
         '/api/orders/$orderId/status',
         data: {'status': newStatus.toString()},
@@ -287,14 +272,13 @@ class OrderManagementService {
           
           // Cache updated orders
           await _cacheOrders();
-          
-          print('✅ Order status updated successfully');
+
           return true;
         }
       }
       
     } catch (e) {
-      print('❌ Failed to update order status: $e');
+      
       throw Exception('Failed to update order status: $e');
     }
     
@@ -304,8 +288,7 @@ class OrderManagementService {
   /// Process payment for order
   Future<bool> processPayment(String orderId, PaymentRequest paymentRequest) async {
     try {
-      print('💳 Processing payment for order: $orderId');
-      
+
       final response = await _dio.post(
         '/api/orders/$orderId/payment',
         data: paymentRequest.toJson(),
@@ -325,14 +308,13 @@ class OrderManagementService {
           
           // Cache updated orders
           await _cacheOrders();
-          
-          print('✅ Payment processed successfully');
+
           return true;
         }
       }
       
     } catch (e) {
-      print('❌ Failed to process payment: $e');
+      
       throw Exception('Failed to process payment: $e');
     }
     
@@ -384,8 +366,7 @@ class OrderManagementService {
   /// Cache orders to storage
   Future<void> _cacheOrders() async {
     try {
-      print('💾 Caching orders...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final ordersJson = jsonEncode(
         _orders.map((order) => order.toJson()).toList(),
@@ -393,19 +374,16 @@ class OrderManagementService {
       
       await prefs.setString('cached_orders', ordersJson);
       await prefs.setString('last_orders_update', DateTime.now().toIso8601String());
-      
-      print('✅ Orders cached successfully');
-      
+
     } catch (e) {
-      print('❌ Failed to cache orders: $e');
+      
     }
   }
 
   /// Cache stock alerts to storage
   Future<void> _cacheStockAlerts() async {
     try {
-      print('💾 Caching stock alerts...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final alertsJson = jsonEncode(
         _stockAlerts.map((alert) => alert.toJson()).toList(),
@@ -413,19 +391,16 @@ class OrderManagementService {
       
       await prefs.setString('cached_stock_alerts', alertsJson);
       await prefs.setString('last_alerts_update', DateTime.now().toIso8601String());
-      
-      print('✅ Stock alerts cached successfully');
-      
+
     } catch (e) {
-      print('❌ Failed to cache stock alerts: $e');
+      
     }
   }
 
   /// Clear cached data
   Future<void> clearCache() async {
     try {
-      print('🗑️ Clearing cached data...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('cached_orders');
       await prefs.remove('cached_stock_alerts');
@@ -437,24 +412,20 @@ class OrderManagementService {
       
       _ordersController.add(_orders);
       _stockAlertsController.add(_stockAlerts);
-      
-      print('✅ Cache cleared successfully');
-      
+
     } catch (e) {
-      print('❌ Failed to clear cache: $e');
+      
     }
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Order Management Service...');
-    
+
     _realtimeTimer?.cancel();
     _ordersController.close();
     _orderUpdateController.close();
     _stockAlertsController.close();
-    
-    print('✅ Order Management Service disposed');
+
   }
 }
 

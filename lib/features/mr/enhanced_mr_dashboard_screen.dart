@@ -590,8 +590,7 @@ class _EnhancedMRDashboardScreenState extends State<EnhancedMRDashboardScreen>
           backgroundColor: AppTheme.success,
         ),
       );
-      
-      debugPrint('📤 Exported trajectory data: ${trajectoryData.keys}');
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -34,7 +34,7 @@ class PerformanceOptimization {
     });
     
     if (kDebugMode) {
-      debugPrint('🚀 Performance optimization initialized');
+      
     }
   }
   
@@ -48,7 +48,7 @@ class PerformanceOptimization {
     _isInitialized = false;
     
     if (kDebugMode) {
-      debugPrint('🗑️ Performance optimization disposed');
+      
     }
   }
   
@@ -68,7 +68,7 @@ class PerformanceOptimization {
     _lastAccessTimes[key] = DateTime.now();
     
     if (kDebugMode) {
-      debugPrint('💾 Cached: $key');
+      
     }
   }
   
@@ -111,7 +111,7 @@ class PerformanceOptimization {
     _lastAccessTimes.remove(key);
     
     if (kDebugMode) {
-      debugPrint('🗑️ Cache removed: $key');
+      
     }
   }
   
@@ -122,7 +122,7 @@ class PerformanceOptimization {
     _lastAccessTimes.clear();
     
     if (kDebugMode) {
-      debugPrint('🗑️ All cache cleared');
+      
     }
   }
   
@@ -144,7 +144,7 @@ class PerformanceOptimization {
     }
     
     if (expiredKeys.isNotEmpty && kDebugMode) {
-      debugPrint('🧹 Cleaned up ${expiredKeys.length} expired cache entries');
+      
     }
   }
   
@@ -166,7 +166,7 @@ class PerformanceOptimization {
     }
     
     if (toRemove.isNotEmpty && kDebugMode) {
-      debugPrint('🧹 Cleaned up ${toRemove.length} old cache entries');
+      
     }
   }
   
@@ -188,7 +188,7 @@ class PerformanceOptimization {
         final average = measurements.reduce((a, b) => a + b) / measurements.length;
         
         if (kDebugMode) {
-          debugPrint('⏱️ $operation: ${lastMeasurement}ms (avg: ${average.toStringAsFixed(2)}ms)');
+          
         }
         
         return lastMeasurement;
@@ -226,7 +226,7 @@ class PerformanceOptimization {
     _performanceMetrics.clear();
     
     if (kDebugMode) {
-      debugPrint('📊 Performance metrics cleared');
+      
     }
   }
   
@@ -300,7 +300,7 @@ class PerformanceOptimization {
     }
     
     if (kDebugMode) {
-      debugPrint('🖼️ Image cache cleared (${keysToRemove.length} entries)');
+      
     }
   }
   
@@ -366,11 +366,11 @@ class PerformanceOptimization {
       await prefs.setString(key, jsonString);
       
       if (kDebugMode) {
-        debugPrint('💾 Saved to persistent storage: $key');
+        
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('❌ Failed to save to persistent storage: $e');
+        
       }
     }
   }
@@ -387,7 +387,7 @@ class PerformanceOptimization {
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('❌ Failed to load from persistent storage: $e');
+        
       }
     }
     
@@ -401,11 +401,11 @@ class PerformanceOptimization {
       await prefs.remove(key);
       
       if (kDebugMode) {
-        debugPrint('🗑️ Removed from persistent storage: $key');
+        
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('❌ Failed to remove from persistent storage: $e');
+        
       }
     }
   }
@@ -417,11 +417,11 @@ class PerformanceOptimization {
       await prefs.clear();
       
       if (kDebugMode) {
-        debugPrint('🗑️ Persistent storage cleared');
+        
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('❌ Failed to clear persistent storage: $e');
+        
       }
     }
   }
@@ -453,7 +453,7 @@ class PerformanceOptimization {
     }
     
     if (kDebugMode) {
-      debugPrint('🌐 API cache cleared (${keysToRemove.length} entries)');
+      
     }
   }
   
@@ -509,7 +509,7 @@ class PerformanceOptimization {
     
     if (usagePercentage > 80) {
       if (kDebugMode) {
-        debugPrint('⚠️ High memory usage: ${usagePercentage.toStringAsFixed(1)}%');
+        
       }
       
       // Trigger cleanup

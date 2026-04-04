@@ -390,9 +390,9 @@ class SecuritySettingsWidget extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
-                    value: false, // TODO: Implement 2FA
+                    value: false, 
                     onChanged: (value) {
-                      // TODO: Implement 2FA toggle
+                      
                     },
                   ),
                 ],
@@ -468,7 +468,7 @@ class SecuritySettingsWidget extends StatelessWidget {
             onPressed: () {
               Navigator.pop(context);
               // Navigate to biometric setup screen
-              // TODO: Navigate to biometric setup
+              
             },
             child: const Text('Continue'),
           ),

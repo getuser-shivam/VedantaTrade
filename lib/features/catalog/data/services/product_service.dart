@@ -1,3 +1,4 @@
+import 'package:vedanta_trade/core/constants/app_constants.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
@@ -27,7 +28,7 @@ class ProductService {
   /// Setup Dio client with Nepal-specific configurations
   void _setupDioClient() {
     _dio.options = BaseOptions(
-      baseUrl: 'https://api.vedantatrade.com.np',
+      baseUrl: 'AppConstants.apiBaseUrl',
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -52,7 +53,7 @@ class ProductService {
           handler.next(options);
         },
         onError: (error, handler) async {
-          print('Product Service Error: ${error.message}');
+          
           handler.next(error);
         },
       ),
@@ -62,8 +63,7 @@ class ProductService {
   /// Load cached products from storage
   Future<void> _loadCachedProducts() async {
     try {
-      print('📦 Loading cached products...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final productsJson = prefs.getString('cached_products');
       
@@ -77,19 +77,18 @@ class ProductService {
             .toList();
         
         _filteredProducts = List.from(_products);
-        print('✅ Loaded ${_products.length} cached products');
+        
       }
       
     } catch (e) {
-      print('❌ Failed to load cached products: $e');
+      
     }
   }
 
   /// Cache products to storage
   Future<void> _cacheProducts() async {
     try {
-      print('💾 Caching products...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final productsJson = jsonEncode(
         _products.map((product) => product.toJson()).toList(),
@@ -97,11 +96,9 @@ class ProductService {
       
       await prefs.setString('cached_products', productsJson);
       await prefs.setString('last_products_update', DateTime.now().toIso8601String());
-      
-      print('✅ Products cached successfully');
-      
+
     } catch (e) {
-      print('❌ Failed to cache products: $e');
+      
     }
   }
 
@@ -114,8 +111,7 @@ class ProductService {
   /// Fetch products from server
   Future<List<Product>> fetchProducts({bool forceRefresh = false}) async {
     try {
-      print('📡 Fetching products from server...');
-      
+
       // Check if we need to refresh
       if (!forceRefresh) {
         final prefs = await SharedPreferences.getInstance();
@@ -127,7 +123,7 @@ class ProductService {
           
           // Use cached data if less than 5 minutes old
           if (timeSinceUpdate.inMinutes < 5) {
-            print('📱 Using cached products (${timeSinceUpdate.inMinutes}m old)');
+            
             return _products;
           }
         }
@@ -144,18 +140,17 @@ class ProductService {
         _products = newProducts;
         _applyCurrentFilter();
         await _cacheProducts();
-        
-        print('✅ Fetched ${newProducts.length} products from server');
+
         return newProducts;
       } else {
         throw Exception('Failed to fetch products: ${response.statusCode}');
       }
       
     } catch (e) {
-      print('❌ Failed to fetch products: $e');
+      
       // Return cached products if available
       if (_products.isNotEmpty) {
-        print('📱 Falling back to cached products');
+        
         return _products;
       }
       throw Exception('Failed to fetch products: $e');
@@ -170,7 +165,7 @@ class ProductService {
         orElse: () => null as Product,
       );
     } catch (e) {
-      print('❌ Failed to get product by ID: $e');
+      
       return null;
     }
   }
@@ -178,8 +173,7 @@ class ProductService {
   /// Search products
   Future<List<Product>> searchProducts(String query) async {
     try {
-      print('🔍 Searching products: $query');
-      
+
       final response = await _dio.get(
         '/api/products/search',
         queryParameters: {'q': query},
@@ -190,15 +184,14 @@ class ProductService {
         final searchResults = productsData
             .map((json) => Product.fromJson(json))
             .toList();
-        
-        print('✅ Found ${searchResults.length} search results');
+
         return searchResults;
       } else {
         throw Exception('Failed to search products: ${response.statusCode}');
       }
       
     } catch (e) {
-      print('❌ Failed to search products: $e');
+      
       throw Exception('Failed to search products: $e');
     }
   }
@@ -259,15 +252,14 @@ class ProductService {
     }
 
     _filteredProducts = _products.where((product) => _currentFilter!.matches(product)).toList();
-    
-    print('🔍 Filter applied: ${_filteredProducts.length} products match filter');
+
   }
 
   /// Clear current filter
   void clearFilter() {
     _currentFilter = null;
     _filteredProducts = List.from(_products);
-    print('🗑️ Filter cleared');
+    
   }
 
   /// Get product categories
@@ -315,8 +307,7 @@ class ProductService {
   /// Create new product
   Future<Product?> createProduct(CreateProductRequest request) async {
     try {
-      print('📝 Creating new product...');
-      
+
       final response = await _dio.post(
         '/api/products',
         data: request.toJson(),
@@ -329,15 +320,14 @@ class ProductService {
         _products.insert(0, newProduct);
         _applyCurrentFilter();
         await _cacheProducts();
-        
-        print('✅ Product created successfully: ${newProduct.id}');
+
         return newProduct;
       } else {
         throw Exception('Failed to create product: ${response.statusCode}');
       }
       
     } catch (e) {
-      print('❌ Failed to create product: $e');
+      
       throw Exception('Failed to create product: $e');
     }
   }
@@ -345,8 +335,7 @@ class ProductService {
   /// Update existing product
   Future<bool> updateProduct(Product product) async {
     try {
-      print('📝 Updating product: ${product.id}');
-      
+
       final response = await _dio.put(
         '/api/products/${product.id}',
         data: product.toJson(),
@@ -362,15 +351,14 @@ class ProductService {
           _applyCurrentFilter();
           await _cacheProducts();
         }
-        
-        print('✅ Product updated successfully: ${updatedProduct.id}');
+
         return true;
       } else {
         throw Exception('Failed to update product: ${response.statusCode}');
       }
       
     } catch (e) {
-      print('❌ Failed to update product: $e');
+      
       throw Exception('Failed to update product: $e');
     }
   }
@@ -378,23 +366,21 @@ class ProductService {
   /// Delete product
   Future<bool> deleteProduct(String productId) async {
     try {
-      print('🗑️ Deleting product: $productId');
-      
+
       final response = await _dio.delete('/api/products/$productId');
       
       if (response.statusCode == 200) {
         _products.removeWhere((product) => product.id == productId);
         _applyCurrentFilter();
         await _cacheProducts();
-        
-        print('✅ Product deleted successfully: $productId');
+
         return true;
       } else {
         throw Exception('Failed to delete product: ${response.statusCode}');
       }
       
     } catch (e) {
-      print('❌ Failed to delete product: $e');
+      
       throw Exception('Failed to delete product: $e');
     }
   }
@@ -402,8 +388,7 @@ class ProductService {
   /// Update product stock
   Future<bool> updateProductStock(String productId, int quantity) async {
     try {
-      print('📦 Updating product stock: $productId -> $quantity');
-      
+
       final response = await _dio.patch(
         '/api/products/$productId/stock',
         data: {'quantity': quantity},
@@ -419,15 +404,14 @@ class ProductService {
           _applyCurrentFilter();
           await _cacheProducts();
         }
-        
-        print('✅ Product stock updated successfully: $productId');
+
         return true;
       } else {
         throw Exception('Failed to update product stock: ${response.statusCode}');
       }
       
     } catch (e) {
-      print('❌ Failed to update product stock: $e');
+      
       throw Exception('Failed to update product stock: $e');
     }
   }
@@ -474,8 +458,7 @@ class ProductService {
   /// Clear cached data
   Future<void> clearCache() async {
     try {
-      print('🗑️ Clearing product cache...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('cached_products');
       await prefs.remove('last_products_update');
@@ -483,11 +466,9 @@ class ProductService {
       _products.clear();
       _filteredProducts.clear();
       _currentFilter = null;
-      
-      print('✅ Product cache cleared');
-      
+
     } catch (e) {
-      print('❌ Failed to clear cache: $e');
+      
     }
   }
 
@@ -496,7 +477,7 @@ class ProductService {
     _debounceTimer?.cancel();
     _products.clear();
     _filteredProducts.clear();
-    print('🗑️ Product service disposed');
+    
   }
 }
 

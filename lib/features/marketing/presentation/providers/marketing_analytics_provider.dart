@@ -314,7 +314,7 @@ class MarketingAnalyticsProvider extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('Error creating customer segment: ${e.toString()}');
+      
       return false;
     }
   }
@@ -340,7 +340,7 @@ class MarketingAnalyticsProvider extends ChangeNotifier {
       }
       return false;
     } catch (e) {
-      debugPrint('Error creating attribution model: ${e.toString()}');
+      
       return false;
     }
   }
@@ -364,7 +364,7 @@ class MarketingAnalyticsProvider extends ChangeNotifier {
       
       return result['success'] == true;
     } catch (e) {
-      debugPrint('Error tracking conversion: ${e.toString()}');
+      
       return false;
     }
   }
@@ -391,7 +391,7 @@ class MarketingAnalyticsProvider extends ChangeNotifier {
       }
       return null;
     } catch (e) {
-      debugPrint('Error calculating ROI: ${e.toString()}');
+      
       return null;
     }
   }

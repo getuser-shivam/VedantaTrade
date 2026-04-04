@@ -1,3 +1,4 @@
+import 'package:vedanta_trade/core/constants/app_constants.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
@@ -38,22 +39,20 @@ class CheckoutService {
 
   void initialize({String? userId}) {
     try {
-      debugPrint('🛒 Initializing Checkout Service...');
-      
+
       _currentUserId = userId;
       _setupDioClient();
       _loadPaymentMethods();
-      
-      debugPrint('✅ Checkout Service initialized');
+
     } catch (e) {
-      debugPrint('❌ Failed to initialize Checkout Service: $e');
+      
       _sessionController.addError(e);
     }
   }
 
   void _setupDioClient() {
     _dio = Dio(BaseOptions(
-      baseUrl: 'https://api.vedantatrade.com.np',
+      baseUrl: 'AppConstants.apiBaseUrl',
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {
@@ -76,7 +75,7 @@ class CheckoutService {
           handler.next(options);
         },
         onError: (error, handler) {
-          debugPrint('Checkout API Error: ${error.message}');
+          
           handler.next(error);
         },
       ),
@@ -85,8 +84,7 @@ class CheckoutService {
 
   Future<void> _loadPaymentMethods() async {
     try {
-      debugPrint('💳 Loading payment methods...');
-      
+
       final response = await _dio.get('/api/payments/methods');
       if (response.statusCode == 200) {
         _availablePaymentMethods = (response.data['methods'] as List)
@@ -95,15 +93,14 @@ class CheckoutService {
         _paymentMethodsController.add(_availablePaymentMethods);
       }
     } catch (e) {
-      debugPrint('Failed to load payment methods: $e');
+      
       // Load mock payment methods as fallback
       await _loadMockPaymentMethods();
     }
   }
 
   Future<void> _loadMockPaymentMethods() async {
-    debugPrint('📋 Loading mock payment methods...');
-    
+
     _availablePaymentMethods = [
       PaymentMethod(
         id: 'cod',
@@ -178,13 +175,12 @@ class CheckoutService {
     ];
     
     _paymentMethodsController.add(_availablePaymentMethods);
-    debugPrint('✅ Mock payment methods loaded');
+    
   }
 
   Future<CheckoutSession> initiateCheckout(CheckoutRequest request) async {
     try {
-      debugPrint('🛒 Initiating checkout...');
-      
+
       final response = await _dio.post('/api/checkout/initiate', data: request.toJson());
       
       if (response.statusCode == 201) {
@@ -193,12 +189,11 @@ class CheckoutService {
         
         // Start session timeout timer
         _startSessionTimer();
-        
-        debugPrint('✅ Checkout session initiated: ${_currentSession!.id}');
+
         return _currentSession!;
       }
     } catch (e) {
-      debugPrint('Failed to initiate checkout: $e');
+      
       // Create mock session as fallback
       return _createMockSession(request);
     }
@@ -251,14 +246,13 @@ class CheckoutService {
       );
       _sessionController.add(_currentSession!);
       _sessionTimer?.cancel();
-      debugPrint('⏰ Checkout session expired');
+      
     }
   }
 
   Future<PaymentResult> processPayment(PaymentRequest request) async {
     try {
-      debugPrint('💳 Processing payment...');
-      
+
       if (_currentSession == null) {
         throw Exception('No active checkout session');
       }
@@ -280,12 +274,11 @@ class CheckoutService {
           );
           _sessionController.add(_currentSession!);
         }
-        
-        debugPrint('✅ Payment processed: ${result.success ? 'Success' : 'Failed'}');
+
         return result;
       }
     } catch (e) {
-      debugPrint('Failed to process payment: $e');
+      
       // Return mock result as fallback
       return _createMockPaymentResult(request);
     }
@@ -324,8 +317,7 @@ class CheckoutService {
 
   Future<bool> confirmOrder(String orderId) async {
     try {
-      debugPrint('📦 Confirming order: $orderId');
-      
+
       final response = await _dio.post('/api/orders/confirm', data: {
         'orderId': orderId,
         'sessionId': _currentSession?.id,
@@ -334,12 +326,11 @@ class CheckoutService {
       if (response.statusCode == 200) {
         _currentOrderStatus = OrderStatus.confirmed;
         _orderStatusController.add(_currentOrderStatus);
-        
-        debugPrint('✅ Order confirmed: $orderId');
+
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to confirm order: $e');
+      
     }
     
     return false;
@@ -347,15 +338,14 @@ class CheckoutService {
 
   Future<OrderSummary> getOrderSummary(String orderId) async {
     try {
-      debugPrint('📋 Getting order summary: $orderId');
-      
+
       final response = await _dio.get('/api/orders/$orderId/summary');
       
       if (response.statusCode == 200) {
         return OrderSummary.fromJson(response.data['summary']);
       }
     } catch (e) {
-      debugPrint('Failed to get order summary: $e');
+      
       // Return mock summary as fallback
       return _createMockOrderSummary(orderId);
     }
@@ -398,8 +388,7 @@ class CheckoutService {
 
   Future<List<DeliveryOption>> getDeliveryOptions(String retailerId) async {
     try {
-      debugPrint('🚚 Getting delivery options for retailer: $retailerId');
-      
+
       final response = await _dio.get('/api/delivery/options/$retailerId');
       
       if (response.statusCode == 200) {
@@ -408,7 +397,7 @@ class CheckoutService {
             .toList();
       }
     } catch (e) {
-      debugPrint('Failed to get delivery options: $e');
+      
       // Return mock options as fallback
       return _getMockDeliveryOptions(retailerId);
     }
@@ -450,8 +439,7 @@ class CheckoutService {
 
   Future<bool> applyPromoCode(String promoCode, String sessionId) async {
     try {
-      debugPrint('🎫 Applying promo code: $promoCode');
-      
+
       final response = await _dio.post('/api/promotions/apply', data: {
         'promoCode': promoCode,
         'sessionId': sessionId,
@@ -468,12 +456,11 @@ class CheckoutService {
           );
           _sessionController.add(_currentSession!);
         }
-        
-        debugPrint('✅ Promo code applied: $promoCode (Discount: NPR $discount)');
+
         return true;
       }
     } catch (e) {
-      debugPrint('Failed to apply promo code: $e');
+      
     }
     
     return false;
@@ -481,19 +468,18 @@ class CheckoutService {
 
   Future<bool> validateInventory(CheckoutRequest request) async {
     try {
-      debugPrint('📦 Validating inventory...');
-      
+
       final response = await _dio.post('/api/inventory/validate', data: {
         'items': request.items.map((item) => item.toJson()).toList(),
       });
       
       if (response.statusCode == 200) {
         final isValid = response.data['valid'] as bool;
-        debugPrint('✅ Inventory validation: ${isValid ? 'Valid' : 'Invalid'}');
+        
         return isValid;
       }
     } catch (e) {
-      debugPrint('Failed to validate inventory: $e');
+      
     }
     
     return true; // Assume valid for mock
@@ -506,7 +492,7 @@ class CheckoutService {
       );
       _sessionController.add(_currentSession!);
       _sessionTimer?.cancel();
-      debugPrint('❌ Checkout session cancelled');
+      
     }
   }
 
@@ -514,7 +500,7 @@ class CheckoutService {
     _currentSession = null;
     _sessionTimer?.cancel();
     _sessionController.add(null);
-    debugPrint('🗑️ Checkout session cleared');
+    
   }
 
   double calculateDeliveryFee(String retailerId, double orderValue, String deliveryOption) {
@@ -546,13 +532,11 @@ class CheckoutService {
   }
 
   void dispose() {
-    debugPrint('🗑️ Disposing Checkout Service...');
-    
+
     _sessionTimer?.cancel();
     _sessionController.close();
     _paymentMethodsController.close();
     _orderStatusController.close();
-    
-    debugPrint('✅ Checkout Service disposed');
+
   }
 }

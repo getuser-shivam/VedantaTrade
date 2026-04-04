@@ -151,7 +151,7 @@ class _EnhancedMRDashboardScreenState extends State<EnhancedMRDashboardScreen>
         });
       }
     } catch (e) {
-      print('Failed to update GPS status: $e');
+      
     }
   }
 

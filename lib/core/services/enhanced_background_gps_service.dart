@@ -42,24 +42,23 @@ class EnhancedBackgroundGpsService {
       // Check location permissions
       final hasPermission = await _checkLocationPermission();
       if (!hasPermission) {
-        debugPrint('❌ Location permission denied');
+        
         return false;
       }
       
       // Check location services
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        debugPrint('❌ Location services disabled');
+        
         return false;
       }
       
       // Load cached trajectory data
       await _loadCachedTrajectory();
-      
-      debugPrint('✅ GPS service initialized successfully');
+
       return true;
     } catch (e) {
-      debugPrint('❌ GPS service initialization failed: $e');
+      
       return false;
     }
   }
@@ -67,7 +66,7 @@ class EnhancedBackgroundGpsService {
   /// Start tracking MR with enhanced features
   Future<bool> startTracking({required String mrId}) async {
     if (_isTracking) {
-      debugPrint('⚠️ Tracking already active');
+      
       return true;
     }
     
@@ -91,11 +90,10 @@ class EnhancedBackgroundGpsService {
       
       _isTracking = true;
       _trackingStatusController.add(true);
-      
-      debugPrint('✅ Started tracking for MR: $mrId');
+
       return true;
     } catch (e) {
-      debugPrint('❌ Failed to start tracking: $e');
+      
       return false;
     }
   }
@@ -113,10 +111,9 @@ class EnhancedBackgroundGpsService {
       
       // Save trajectory to cache
       await _saveTrajectory();
-      
-      debugPrint('✅ Stopped tracking. Trajectory points: ${_trajectoryPoints.length}');
+
     } catch (e) {
-      debugPrint('❌ Failed to stop tracking: $e');
+      
     }
   }
   
@@ -130,14 +127,14 @@ class EnhancedBackgroundGpsService {
       
       // Validate accuracy
       if (position.accuracy > _requiredAccuracy) {
-        debugPrint('⚠️ GPS accuracy too low: ${position.accuracy}m');
+        
         return null;
       }
       
       _lastPosition = position;
       return position;
     } catch (e) {
-      debugPrint('❌ Failed to get current position: $e');
+      
       return null;
     }
   }
@@ -151,7 +148,7 @@ class EnhancedBackgroundGpsService {
       );
       
       if (position.accuracy > _requiredAccuracy) {
-        debugPrint('⚠️ GPS accuracy too low: ${position.accuracy}m');
+        
         return;
       }
       
@@ -187,13 +184,12 @@ class EnhancedBackgroundGpsService {
         // Update streams
         _trajectoryController.add(List.from(_trajectoryPoints));
         _locationDataController.add(locationData);
-        
-        debugPrint('📍 New location: ${position.latitude}, ${position.longitude} (±${position.accuracy}m)');
+
       }
       
       _lastPosition = position;
     } catch (e) {
-      debugPrint('❌ Failed to update location: $e');
+      
     }
   }
   
@@ -225,10 +221,10 @@ class EnhancedBackgroundGpsService {
         await Geolocator.requestPermission();
         return false;
       case LocationPermission.deniedForever:
-        debugPrint('❌ Location permission permanently denied');
+        
         return false;
       case LocationPermission.unableToDetermine:
-        debugPrint('❌ Unable to determine location permission');
+        
         return false;
       default:
         return false;
@@ -242,10 +238,9 @@ class EnhancedBackgroundGpsService {
       // For now, initialize empty trajectory
       _trajectoryPoints = [];
       _locationHistory = [];
-      
-      debugPrint('📂 Loaded cached trajectory: ${_trajectoryPoints.length} points');
+
     } catch (e) {
-      debugPrint('❌ Failed to load cached trajectory: $e');
+      
     }
   }
   
@@ -254,18 +249,16 @@ class EnhancedBackgroundGpsService {
     try {
       // This would integrate with SharedPreferences or local storage
       // For now, just log the save
-      debugPrint('💾 Saved trajectory: ${_trajectoryPoints.length} points');
-      
+
       // Clean old data (older than 24 hours)
       final now = DateTime.now();
       _locationHistory.removeWhere((location) {
         final timestamp = DateTime.parse(location['timestamp']);
         return now.difference(timestamp) > _maxAge;
       });
-      
-      debugPrint('🧹 Cleaned old location data');
+
     } catch (e) {
-      debugPrint('❌ Failed to save trajectory: $e');
+      
     }
   }
   
@@ -348,8 +341,7 @@ class EnhancedBackgroundGpsService {
     
     _trajectoryController.add([]);
     _locationDataController.add({});
-    
-    debugPrint('🗑️ Cleared all tracking data');
+
   }
   
   /// Dispose resources

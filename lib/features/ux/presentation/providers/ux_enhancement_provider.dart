@@ -63,7 +63,7 @@ class UXEnhancementProvider extends ChangeNotifier {
 
   // Load user preferences from storage
   Future<void> loadUserPreferences() async {
-    // TODO: Implement actual storage
+    
     // final prefs = await SharedPreferences.getInstance();
     
     // Mock data for demonstration
@@ -93,13 +93,12 @@ class UXEnhancementProvider extends ChangeNotifier {
 
   // Save user preferences to storage
   Future<void> saveUserPreferences() async {
-    // TODO: Implement actual storage
+    
     // final prefs = await SharedPreferences.getInstance();
     // await prefs.setString('theme', _selectedTheme);
     // await prefs.setBool('isDarkMode', _isDarkMode);
     // ... save all preferences
 
-    debugPrint('User preferences saved');
   }
 
   // Theme Settings
@@ -383,19 +382,19 @@ class UXEnhancementProvider extends ChangeNotifier {
     
     switch (type) {
       case HapticFeedbackType.light:
-        // TODO: Implement light haptic feedback
+        
         break;
       case HapticFeedbackType.medium:
-        // TODO: Implement medium haptic feedback
+        
         break;
       case HapticFeedbackType.heavy:
-        // TODO: Implement heavy haptic feedback
+        
         break;
       case HapticFeedbackType.success:
-        // TODO: Implement success haptic feedback
+        
         break;
       case HapticFeedbackType.error:
-        // TODO: Implement error haptic feedback
+        
         break;
     }
   }
@@ -509,7 +508,7 @@ class UXEnhancementProvider extends ChangeNotifier {
       await saveUserPreferences();
       notifyListeners();
     } catch (e) {
-      debugPrint('Error importing settings: $e');
+      
     }
   }
 }

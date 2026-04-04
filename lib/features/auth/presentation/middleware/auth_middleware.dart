@@ -347,7 +347,7 @@ class SecurityMonitor {
 
   void _lockoutUser(String identifier) {
     // Additional security measures can be implemented here
-    debugPrint('User $identifier is locked out due to too many failed attempts');
+    
   }
 
   void clearFailedAttempts(String identifier) {

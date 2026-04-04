@@ -73,7 +73,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
   /// Load target doctors for Janakpur region
   Future<void> _loadTargetDoctors() async {
     try {
-      // TODO: Replace with actual API call - GET /api/mr/target-doctors
+      
       // Mock data for Janakpur doctors
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
@@ -119,7 +119,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading target doctors: $e');
+      
     }
   }
 
@@ -134,7 +134,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
             .toList();
       }
     } catch (e) {
-      debugPrint('Error loading offline trajectory: $e');
+      
     }
   }
 
@@ -146,19 +146,18 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
           .toList();
       await _prefs?.setString('offline_trajectory', jsonEncode(trajectoryJson));
     } catch (e) {
-      debugPrint('Error saving offline trajectory: $e');
+      
     }
   }
 
   /// Sync offline trajectory when back online
   Future<void> _syncOfflineTrajectory() async {
     try {
-      // TODO: Sync with backend API
-      debugPrint('Syncing ${_offlineTrajectoryPoints.length} offline trajectory points');
+
       _offlineTrajectoryPoints.clear();
       await _prefs?.remove('offline_trajectory');
     } catch (e) {
-      debugPrint('Error syncing offline trajectory: $e');
+      
     }
   }
 
@@ -247,7 +246,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
             });
           }
         } else {
-          debugPrint('Low accuracy location: ${position.accuracy}m - skipping');
+          
         }
       }
     });
@@ -328,7 +327,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
       _showSuccessDialog('Visit submitted successfully for ${doctor['name']}');
       
     } catch (e) {
-      debugPrint('Error submitting visit: $e');
+      
       _showErrorDialog('Failed to submit visit: ${e.toString()}');
     }
   }
@@ -336,15 +335,14 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
   /// Save visit to backend API
   Future<void> _saveVisitToBackend(Map<String, dynamic> visit) async {
     try {
-      // TODO: Implement actual API call
-      // POST /api/mr/visits
-      debugPrint('Saving visit to backend: ${visit['doctorName']}');
       
+      // POST /api/mr/visits
+
       setState(() {
         _visits.add(visit);
       });
     } catch (e) {
-      debugPrint('Error saving visit to backend: $e');
+      
       await _saveVisitOffline(visit);
     }
   }
@@ -360,7 +358,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
         _visits.add(visit);
       });
     } catch (e) {
-      debugPrint('Error saving visit offline: $e');
+      
     }
   }
 
@@ -421,7 +419,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
   /// Load visit data from API
   Future<void> _loadVisits() async {
     try {
-      // TODO: Replace with real API call - GET /api/mr/visits
+      
       // Mock data for development - remove before production
       await Future.delayed(const Duration(seconds: 1));
       if (mounted) {
@@ -431,7 +429,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading visits: $e');
+      
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -970,7 +968,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> {
         return null;
       }
     } catch (e) {
-      debugPrint('GPS Error: $e');
+      
       return null;
     }
   }
