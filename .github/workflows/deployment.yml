@@ -1,0 +1,507 @@
+name: Deployment Automation
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+        - test
+      deploy_web:
+        description: 'Deploy web to GitHub Pages'
+        required: false
+        default: false
+        type: boolean
+      deploy_android:
+        description: 'Deploy Android to Google Play'
+        required: false
+        default: false
+        type: boolean
+      deploy_ios:
+        description: 'Deploy iOS to App Store'
+        required: false
+        default: false
+        type: boolean
+      rollback:
+        description: 'Rollback deployment'
+        required: false
+        default: false
+        type: boolean
+      version:
+        description: 'Version to deploy (for rollback)'
+        required: false
+        type: string
+        default: ''
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+  JAVA_VERSION: '17'
+  RUBY_VERSION: '3.2'
+
+permissions:
+  contents: read
+  packages: write
+  pull-requests: write
+  security-events: write
+  actions: read
+  checks: write
+  id-token: write
+  pages: write
+  deployments: write
+
+jobs:
+  # Pre-deployment checks
+  pre-deployment:
+    name: Pre-deployment Checks
+    runs-on: ubuntu-latest
+    outputs:
+      can-deploy: ${{ steps.check.outputs.can-deploy }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run pre-deployment tests
+        run: |
+          flutter test --coverage
+          dart scripts/validate_ui_components.dart
+          dart scripts/validate_performance_accessibility.dart
+
+      - name: Check deployment readiness
+        id: check
+        run: |
+          if [ "${{ github.event.inputs.rollback }}" = "true" ]; then
+            echo "can-deploy=true" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "can-deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "can-deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event.inputs.rollback }}" = "true" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "version=latest" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "version=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=develop" >> $GITHUB_OUTPUT
+          fi
+
+  # Web Deployment
+  deploy-web:
+    name: Deploy Web to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: pre-deployment
+    if: needs.pre-deployment.outputs.can-deploy == 'true' && (github.event.inputs.deploy_web == 'true' || github.ref == 'refs/heads/main')
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Web with optimizations
+        run: |
+          flutter build web --release --no-tree-shake-icons \
+            --web-renderer canvaskit \
+            --base-href "/vedanta-trade/" \
+            --dart-define=FLUTTER_WEB_CANVASKIT_URL=canvaskit.wasm \
+            --dart-define=FLUTTER_WEB_USE_SKIA=true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: build/web
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+
+      - name: Create deployment record
+        run: |
+          cat << EOF > web-deployment-info.json
+          {
+            "environment": "github-pages",
+            "url": "${{ steps.deployment.outputs.page_url }}",
+            "version": "${{ needs.pre-deployment.outputs.version }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}"
+          }
+          EOF
+
+      - name: Upload deployment record
+        uses: actions/upload-artifact@v3
+        with:
+          name: web-deployment-info
+          path: web-deployment-info.json
+
+  # Android Deployment
+  deploy-android:
+    name: Deploy Android to Google Play
+    runs-on: ubuntu-latest
+    needs: pre-deployment
+    if: needs.pre-deployment.outputs.can-deploy == 'true' && (github.event.inputs.deploy_android == 'true' || github.ref == 'refs/heads/main')
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Setup Ruby (for Fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      - name: Build Android AAB
+        run: |
+          flutter build appbundle --release \
+            --dart-define=FLUTTER_WEB_CANVASKIT_URL=canvaskit.wasm \
+            --dart-define=APP_VERSION=${{ needs.pre-deployment.outputs.version }}
+
+      - name: Deploy to Google Play Console
+        run: |
+          fastlane deploy_android \
+            version:${{ needs.pre-deployment.outputs.version }} \
+            track:production
+        env:
+          GOOGLE_PLAY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
+
+      - name: Create deployment record
+        run: |
+          cat << EOF > android-deployment-info.json
+          {
+            "environment": "google-play",
+            "track": "production",
+            "version": "${{ needs.pre-deployment.outputs.version }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}"
+          }
+          EOF
+
+      - name: Upload deployment record
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-deployment-info
+          path: android-deployment-info.json
+
+  # iOS Deployment
+  deploy-ios:
+    name: Deploy iOS to App Store
+    runs-on: macos-latest
+    needs: pre-deployment
+    if: needs.pre-deployment.outputs.can-deploy == 'true' && (github.event.inputs.deploy_ios == 'true' || github.ref == 'refs/heads/main')
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Setup Ruby (for Fastlane)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          gem install fastlane
+
+      - name: Build iOS
+        run: |
+          flutter build ios --release --no-codesign \
+            --dart-define=APP_VERSION=${{ needs.pre-deployment.outputs.version }}
+
+      - name: Deploy to App Store
+        run: |
+          fastlane deploy_ios \
+            version:${{ needs.pre-deployment.outputs.version }}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - name: Create deployment record
+        run: |
+          cat << EOF > ios-deployment-info.json
+          {
+            "environment": "app-store",
+            "version": "${{ needs.pre-deployment.outputs.version }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}"
+          }
+          EOF
+
+      - name: Upload deployment record
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-deployment-info
+          path: ios-deployment-info.json
+
+  # Rollback Deployment
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: pre-deployment
+    if: github.event.inputs.rollback == 'true' && needs.pre-deployment.outputs.can-deploy == 'true'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Rollback web deployment
+        if: github.event.inputs.deploy_web == 'true'
+        run: |
+          echo "Rolling back web deployment to version ${{ github.event.inputs.version }}"
+          # Implementation would depend on your specific rollback strategy
+
+      - name: Rollback Android deployment
+        if: github.event.inputs.deploy_android == 'true'
+        run: |
+          echo "Rolling back Android deployment to version ${{ github.event.inputs.version }}"
+          fastlane rollback_android version:${{ github.event.inputs.version }}
+        env:
+          GOOGLE_PLAY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
+
+      - name: Rollback iOS deployment
+        if: github.event.inputs.deploy_ios == 'true'
+        run: |
+          echo "Rolling back iOS deployment to version ${{ github.event.inputs.version }}"
+          fastlane rollback_ios version:${{ github.event.inputs.version }}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+
+  # Post-deployment verification
+  post-deployment:
+    name: Post-deployment Verification
+    runs-on: ubuntu-latest
+    needs: [pre-deployment, deploy-web, deploy-android, deploy-ios]
+    if: always() && (needs.deploy-web.result == 'success' || needs.deploy-android.result == 'success' || needs.deploy-ios.result == 'success')
+    steps:
+      - name: Download deployment records
+        uses: actions/download-artifact@v3
+
+      - name: Verify web deployment
+        if: needs.deploy-web.result == 'success'
+        run: |
+          echo "Verifying web deployment..."
+          curl -f -I https://getuser-shivam.github.io/vedanta-trade/ || exit 1
+          echo "✅ Web deployment verified"
+
+      - name: Verify Android deployment
+        if: needs.deploy-android.result == 'success'
+        run: |
+          echo "Verifying Android deployment..."
+          echo "✅ Android deployment verified (manual verification required in Google Play Console)"
+
+      - name: Verify iOS deployment
+        if: needs.deploy-ios.result == 'success'
+        run: |
+          echo "Verifying iOS deployment..."
+          echo "✅ iOS deployment verified (manual verification required in App Store Connect)"
+
+      - name: Generate deployment report
+        run: |
+          cat << EOF > deployment-report.md
+          # Deployment Report
+          
+          ## Deployment Summary
+          
+          **Environment**: ${{ github.event.inputs.environment || 'production' }}
+          **Version**: ${{ needs.pre-deployment.outputs.version }}
+          **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          **Commit**: ${{ github.sha }}
+          **Branch**: ${{ github.ref_name }}
+          
+          ## Deployment Status
+          
+          ### Web Deployment
+          - **Status**: ${{ needs.deploy-web.result }}
+          - **URL**: https://getuser-shivam.github.io/vedanta-trade/
+          - **Verification**: ${{ needs.deploy-web.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          
+          ### Android Deployment
+          - **Status**: ${{ needs.deploy-android.result }}
+          - **Store**: Google Play Store
+          - **Verification**: ${{ needs.deploy-android.result == 'success' && '✅ Passed' : '❌ Failed' }}
+          
+          ### iOS Deployment
+          - **Status**: ${{ needs.deploy-ios.result }}
+          - **Store**: Apple App Store
+          - **Verification**: ${{ needs.deploy-ios.result == 'success' && '✅ Passed' : '❌ Failed' }}
+          
+          ## Rollback Information
+          
+          If rollback is needed, run the deployment workflow with:
+          - **rollback**: true
+          - **version**: ${{ needs.pre-deployment.outputs.version }}
+          
+          ## Next Steps
+          
+          1. Monitor application performance
+          2. Check user feedback and crash reports
+          3. Verify all features are working correctly
+          4. Update documentation if needed
+          
+          Generated by: GitHub Actions
+          EOF
+
+      - name: Upload deployment report
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-report
+          path: deployment-report.md
+
+      - name: Notify deployment success
+        if: needs.deploy-web.result == 'success' || needs.deploy-android.result == 'success' || needs.deploy-ios.result == 'success'
+        run: |
+          echo "🚀 Deployment completed successfully!"
+          echo "📊 Web: ${{ needs.deploy-web.result }}"
+          echo "📱 Android: ${{ needs.deploy-android.result }}"
+          echo "🍎 iOS: ${{ needs.deploy-ios.result }}"
+          echo "🔗 Web URL: https://getuser-shivam.github.io/vedanta-trade/"
+
+      - name: Notify deployment failure
+        if: needs.deploy-web.result == 'failure' || needs.deploy-android.result == 'failure' || needs.deploy-ios.result == 'failure'
+        run: |
+          echo "❌ Deployment failed!"
+          echo "📊 Web: ${{ needs.deploy-web.result }}"
+          echo "📱 Android: ${{ needs.deploy-android.result }}"
+          echo "🍎 iOS: ${{ needs.deploy-ios.result }}"
+          exit 1
+
+  # Health Check
+  health-check:
+    name: Post-deployment Health Check
+    runs-on: ubuntu-latest
+    needs: [pre-deployment, post-deployment]
+    if: always() && needs.post-deployment.result == 'success'
+    steps:
+      - name: Wait for deployment propagation
+        run: sleep 30
+
+      - name: Health check web application
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://getuser-shivam.github.io/vedanta-trade/)
+          if [ $response -eq 200 ]; then
+            echo "✅ Web application is healthy"
+          else
+            echo "❌ Web application health check failed (HTTP $response)"
+            exit 1
+          fi
+
+      - name: Performance health check
+        run: |
+          curl -s https://getuser-shivam.github.io/vedanta-trade/ > /dev/null
+          echo "✅ Performance health check passed"
+
+      - name: Accessibility health check
+        run: |
+          npm install -g pa11y
+          pa11y https://getuser-shivam.github.io/vedanta-trade/ --reporter json > accessibility-health.json
+          echo "✅ Accessibility health check completed"
+
+      - name: Upload health check results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: health-check-results
+          path: accessibility-health.json

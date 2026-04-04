@@ -1,0 +1,582 @@
+name: Comprehensive Testing Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - unit
+        - widget
+        - integration
+        - performance
+        - accessibility
+        - e2e
+      platform:
+        description: 'Platform to test on'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - android
+        - ios
+        - web
+      run_performance:
+        description: 'Run performance tests'
+        required: false
+        default: false
+        type: boolean
+      run_accessibility:
+        description: 'Run accessibility tests'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+  JAVA_VERSION: '17'
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  # Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'unit'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run unit tests
+        run: |
+          flutter test --coverage --reporter=expanded \
+            --reporter=json > unit-test-results.json
+
+      - name: Generate coverage report
+        run: |
+          genhtml coverage/lcov.info -o coverage/unit-test-coverage
+
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: unit-test-results
+          path: |
+            unit-test-results.json
+            coverage/unit-test-coverage
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('unit-test-results.json', 'utf8'));
+            
+            const comment = `
+            ## Unit Test Results
+            
+            **Status**: ${results.status}
+            **Tests Run**: ${results.tests?.length || 0}
+            **Passed**: ${results.tests?.filter(t => t.result === 'success').length || 0}
+            **Failed**: ${results.tests?.filter(t => t.result === 'error' || t.result === 'failure').length || 0}
+            **Skipped**: ${results.tests?.filter(t => t.result === 'skipped').length || 0}
+            
+            **Coverage**: ${results.coverage?.linePercentage || 'N/A'}%
+            
+            ${results.tests?.filter(t => t.result === 'error' || t.result === 'failure').map(test => 
+              `**Failed**: ${test.name}\n\`\`\`${test.error}\`\`\``
+            ).join('\n\n') || ''}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Widget Tests
+  widget-tests:
+    name: Widget Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'widget'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run widget tests
+        run: |
+          flutter test test/widget/ --coverage --reporter=expanded \
+            --reporter=json > widget-test-results.json
+
+      - name: Generate widget coverage report
+        run: |
+          genhtml coverage/lcov.info -o coverage/widget-test-coverage
+
+      - name: Upload widget test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: widget-test-results
+          path: |
+            widget-test-results.json
+            coverage/widget-test-coverage
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'integration'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run integration tests
+        run: |
+          flutter test test/integration/ --coverage --reporter=expanded \
+            --reporter=json > integration-test-results.json
+
+      - name: Generate integration coverage report
+        run: |
+          genhtml coverage/lcov.info -o coverage/integration-test-coverage
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            integration-test-results.json
+            coverage/integration-test-coverage
+
+  # UI Components Validation
+  ui-components-validation:
+    name: UI Components Validation
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'widget'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run UI components validation
+        run: dart scripts/validate_ui_components.dart
+
+      - name: Upload validation results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ui-components-validation
+          path: docs/ui_components_validation_report.md
+
+  # Performance Tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.run_performance == 'true' || github.event.inputs.test_type == 'performance'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run performance tests
+        run: dart scripts/validate_performance_accessibility.dart
+
+      - name: Build for performance testing
+        run: flutter build web --release --no-tree-shake-icons
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.12.x
+
+      - name: Run Lighthouse CI
+        run: |
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-test-results
+          path: |
+            docs/performance_accessibility_validation_report.md
+            .lighthouseci
+
+  # Accessibility Tests
+  accessibility-tests:
+    name: Accessibility Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.run_accessibility == 'true' || github.event.inputs.test_type == 'accessibility'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run accessibility validation
+        run: dart scripts/validate_performance_accessibility.dart
+
+      - name: Install accessibility testing tools
+        run: |
+          npm install -g pa11y
+          npm install -g axe-cli
+
+      - name: Build for accessibility testing
+        run: flutter build web --release --no-tree-shake-icons
+
+      - name: Run accessibility tests
+        run: |
+          # Run axe accessibility tests
+          axe build/web --tags wcag2a,wcag2aa,wcag21aa --format json > axe-results.json
+          
+          # Run pa11y accessibility tests
+          pa11y build/web --reporter json > pa11y-results.json
+
+      - name: Upload accessibility results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: accessibility-test-results
+          path: |
+            docs/performance_accessibility_validation_report.md
+            axe-results.json
+            pa11y-results.json
+
+  # End-to-End Tests
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'e2e'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build for E2E testing
+        run: flutter build web --release --no-tree-shake-icons
+
+      - name: Setup Node.js for E2E testing
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install E2E testing tools
+        run: |
+          npm install -g playwright
+          npm install -g @playwright/test
+
+      - name: Run E2E tests
+        run: |
+          playwright test --project=chromium
+        env:
+          BASE_URL: http://localhost:8080
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            playwright-report
+            test-results
+
+  # Cross-Platform Testing
+  cross-platform-tests:
+    name: Cross-Platform Tests
+    runs-on: ${{ matrix.os }}
+    if: github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        platform: [android, web, ios]
+        exclude:
+          - os: ubuntu-latest
+            platform: ios
+          - os: windows-latest
+            platform: ios
+          - os: macos-latest
+            platform: android
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Xcode (iOS)
+        if: matrix.platform == 'ios'
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests on ${{ matrix.platform }}
+        run: |
+          if [ "${{ matrix.platform }}" = "android" ]; then
+            flutter test --platform=android
+          elif [ "${{ matrix.platform }}" = "web" ]; then
+            flutter test --platform=chrome
+          elif [ "${{ matrix.platform }}" = "ios" ]; then
+            flutter test --platform=ios
+          fi
+
+      - name: Upload cross-platform results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.os }}-test-results
+          path: test-results
+
+  # Test Results Summary
+  test-summary:
+    name: Test Results Summary
+    runs-on: ubuntu-latest
+    needs: [
+      unit-tests,
+      widget-tests,
+      integration-tests,
+      ui-components-validation,
+      performance-tests,
+      accessibility-tests,
+      e2e-tests,
+      cross-platform-tests
+    ]
+    if: always()
+    steps:
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Generate comprehensive test report
+        run: |
+          cat << EOF > comprehensive-test-report.md
+          # Comprehensive Test Report
+          
+          ## Test Suite Results
+          
+          ### Unit Tests
+          - Status: ${{ needs.unit-tests.result }}
+          - Results: Available in unit-test-results artifact
+          
+          ### Widget Tests
+          - Status: ${{ needs.widget-tests.result }}
+          - Results: Available in widget-test-results artifact
+          
+          ### Integration Tests
+          - Status: ${{ needs.integration-tests.result }}
+          - Results: Available in integration-test-results artifact
+          
+          ### UI Components Validation
+          - Status: ${{ needs.ui-components-validation.result }}
+          - Results: Available in ui-components-validation artifact
+          
+          ### Performance Tests
+          - Status: ${{ needs.performance-tests.result }}
+          - Results: Available in performance-test-results artifact
+          
+          ### Accessibility Tests
+          - Status: ${{ needs.accessibility-tests.result }}
+          - Results: Available in accessibility-test-results artifact
+          
+          ### End-to-End Tests
+          - Status: ${{ needs.e2e-tests.result }}
+          - Results: Available in e2e-test-results artifact
+          
+          ### Cross-Platform Tests
+          - Status: ${{ needs.cross-platform-tests.result }}
+          - Results: Available in cross-platform-* artifacts
+          
+          ## Overall Status
+          - **Passed**: ${{ needs.unit-tests.result == 'success' && needs.widget-tests.result == 'success' && needs.integration-tests.result == 'success' && '✅' : '❌' }}
+          - **Failed**: ${{ needs.unit-tests.result == 'failure' || needs.widget-tests.result == 'failure' || needs.integration-tests.result == 'failure' && '❌' : '✅' }}
+          
+          Generated at: $(date)
+          EOF
+
+      - name: Upload comprehensive test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: comprehensive-test-report
+          path: comprehensive-test-report.md
+
+      - name: Comment PR with comprehensive results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            
+            const results = {
+              'unit-tests': '${{ needs.unit-tests.result }}',
+              'widget-tests': '${{ needs.widget-tests.result }}',
+              'integration-tests': '${{ needs.integration-tests.result }}',
+              'ui-components-validation': '${{ needs.ui-components-validation.result }}',
+              'performance-tests': '${{ needs.performance-tests.result }}',
+              'accessibility-tests': '${{ needs.accessibility-tests.result }}',
+              'e2e-tests': '${{ needs.e2e-tests.result }}',
+              'cross-platform-tests': '${{ needs.cross-platform-tests.result }}'
+            };
+            
+            const passedCount = Object.values(results).filter(r => r === 'success').length;
+            const totalCount = Object.keys(results).length;
+            const status = passedCount === totalCount ? '✅ All tests passed' : '❌ Some tests failed';
+            
+            const comment = `
+            ## Comprehensive Test Results
+            
+            $status
+            
+            ### Test Suite Status
+            ${Object.entries(results).map(([test, result]) => 
+              `- **${test}**: ${result === 'success' ? '✅' : '❌'} ${result}`
+            ).join('\n')}
+            
+            ### Summary
+            - **Passed**: ${passedCount}/${totalCount}
+            - **Failed**: ${totalCount - passedCount}/${totalCount}
+            - **Success Rate**: ${Math.round((passedCount / totalCount) * 100)}%
+            
+            ### Artifacts
+            All test results are available in the workflow artifacts.
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
