@@ -200,14 +200,14 @@ class VedantaTradeGitHubIntegration {
       await runCommand('git', ['push', 'origin', tagName], projectRoot);
       
       // Create release data
-      Map<String, dynamic> releaseData = {
+      /* Map<String, dynamic> releaseData = {
         'tag_name': tagName,
         'name': releaseName,
         'body': description,
         'target_commitish': targetBranch,
         'prerelease': isPrerelease,
         'draft': false,
-      };
+      }; */
       
       // Save release info locally
       final releaseInfo = {
@@ -470,7 +470,7 @@ class VedantaTradeGitHubIntegration {
     }
     
     Map<String, int> commitTypes = {};
-    List<String> authors = [];
+    // List<String> authors = []; // Not used currently
     
     for (Map<String, dynamic> commit in _commitHistory) {
       String message = commit['message'] ?? '';
@@ -492,7 +492,7 @@ class VedantaTradeGitHubIntegration {
   }
   
   /// Generate release notes
-  String generateReleaseNotes(String fromTag, String toTag) async {
+  Future<String> generateReleaseNotes(String fromTag, String toTag) async {
     print('📝 Generating release notes...');
     
     try {

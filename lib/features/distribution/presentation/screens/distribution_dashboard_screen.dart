@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../shared/theme/app_theme.dart';
+import '../../../../shared/widgets/premium_glassmorphic_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/loading_widget.dart';
 import '../widgets/dashboard_stats_card.dart';
 import '../widgets/quick_action_button.dart';
 import '../widgets/recent_activity_widget.dart';
+import '../widgets/distribution_metrics_widget.dart';
+import '../widgets/inventory_status_widget.dart';
+import '../widgets/marketing_overview_widget.dart';
 import '../providers/distribution_provider.dart';
+import '../../data/services/distribution_management_service.dart';
+import '../../data/services/marketing_management_service.dart';
 import 'distribution_centers_screen.dart';
 import 'inventory_management_screen.dart';
 import 'marketing_campaigns_screen.dart';
@@ -49,10 +55,21 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
     ));
     _animationController.forward();
 
-    // Initialize data
+    // Initialize services
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<DistributionProvider>().loadDashboardData();
+      _initializeServices();
     });
+  }
+
+  void _initializeServices() {
+    // Initialize distribution management service
+    DistributionManagementService().initialize();
+    
+    // Initialize marketing management service
+    MarketingManagementService().initialize();
+    
+    // Load dashboard data
+    context.read<DistributionProvider>().loadDashboardData();
   }
 
   @override
@@ -582,71 +599,130 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Stats Overview
+              // Enhanced Stats Overview with Glassmorphic Design
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  gradient: LinearGradient(
+                    colors: [
+                      PremiumGlassmorphicTheme.primaryColor.withOpacity(0.1),
+                      PremiumGlassmorphicTheme.secondaryColor.withOpacity(0.1),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Distribution Overview',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: PremiumGlassmorphicTheme.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DashboardStatsCard(
+                            title: 'Total Centers',
+                            value: provider.totalCenters.toString(),
+                            icon: Icons.warehouse_outlined,
+                            color: PremiumGlassmorphicTheme.primaryColor,
+                            trend: '+12%',
+                            isPositive: true,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: DashboardStatsCard(
+                            title: 'Active Inventory',
+                            value: provider.activeInventory.toString(),
+                            icon: Icons.inventory_outlined,
+                            color: PremiumGlassmorphicTheme.successColor,
+                            trend: '+8%',
+                            isPositive: true,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: DashboardStatsCard(
+                            title: 'Active Campaigns',
+                            value: provider.activeCampaigns.toString(),
+                            icon: Icons.campaign_outlined,
+                            color: PremiumGlassmorphicTheme.secondaryColor,
+                            trend: '-2%',
+                            isPositive: false,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: DashboardStatsCard(
+                            title: 'Total Revenue',
+                            value: '\$${provider.totalRevenue.toString()}',
+                            icon: Icons.trending_up_outlined,
+                            color: PremiumGlassmorphicTheme.accentColor,
+                            trend: '+15%',
+                            isPositive: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Distribution Metrics and Marketing Overview
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: DashboardStatsCard(
-                      title: 'Total Centers',
-                      value: provider.totalCenters.toString(),
-                      icon: Icons.warehouse_outlined,
-                      color: AppTheme.primaryColor,
-                      trend: '+12%',
-                      isPositive: true,
-                    ),
+                    flex: 2,
+                    child: DistributionMetricsWidget(),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 24),
                   Expanded(
-                    child: DashboardStatsCard(
-                      title: 'Active Inventory',
-                      value: provider.activeInventory.toString(),
-                      icon: Icons.inventory_outlined,
-                      color: AppTheme.successColor,
-                      trend: '+8%',
-                      isPositive: true,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DashboardStatsCard(
-                      title: 'Active Campaigns',
-                      value: provider.activeCampaigns.toString(),
-                      icon: Icons.campaign_outlined,
-                      color: AppTheme.secondaryColor,
-                      trend: '-2%',
-                      isPositive: false,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: DashboardStatsCard(
-                      title: 'Total Revenue',
-                      value: '\$${provider.totalRevenue.toString()}',
-                      icon: Icons.trending_up_outlined,
-                      color: AppTheme.infoColor,
-                      trend: '+15%',
-                      isPositive: true,
-                    ),
+                    child: MarketingOverviewWidget(),
                   ),
                 ],
               ),
               
               const SizedBox(height: 24),
               
-              // Quick Actions and Recent Activity
+              // Inventory Status and Quick Actions
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    flex: 2,
-                    child: _buildQuickActionsSection(),
+                    flex: 3,
+                    child: InventoryStatusWidget(),
                   ),
                   const SizedBox(width: 24),
                   Expanded(
-                    child: RecentActivityWidget(),
+                    child: _buildQuickActionsSection(),
                   ),
                 ],
               ),
+              
+              const SizedBox(height: 24),
+              
+              // Recent Activity
+              RecentActivityWidget(),
             ],
           ),
         );
