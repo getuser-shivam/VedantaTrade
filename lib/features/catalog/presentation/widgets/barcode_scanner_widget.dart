@@ -17,9 +17,15 @@ class BarcodeScannerScreen extends StatefulWidget {
 }
 
 class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
-  final MobileScannerController _controller = MobileScannerController();
+  late MobileScannerController _controller;
   bool _isScanning = true;
   String? _lastScannedCode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = MobileScannerController();
+  }
 
   @override
   void dispose() {
@@ -137,33 +143,6 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
                       ),
                     ),
                   ),
-                  
-                  // Scanning line animation
-                  if (_isScanning)
-                    AnimatedPositioned(
-                      duration: const Duration(seconds: 2),
-                      curve: Curves.easeInOut,
-                      top: 0,
-                      bottom: null,
-                      child: Container(
-                        width: double.infinity,
-                        height: 2,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.transparent,
-                              AppTheme.primary,
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                      ),
-                      onEnd: () {
-                        setState(() {
-                          // Restart animation
-                        });
-                      },
-                    ),
                 ],
               ),
             ),
@@ -237,19 +216,6 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
               ),
             ),
           ),
-          
-          // Flash toggle
-          Positioned(
-            bottom: 200,
-            right: 20,
-            child: GlassmorphicCard(
-              padding: const EdgeInsets.all(12),
-              child: IconButton(
-                onPressed: () => _controller.toggleTorch(),
-                icon: const Icon(Icons.flash_on, color: Colors.white),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -259,9 +225,6 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
     setState(() {
       _isScanning = false;
     });
-
-    // Haptic feedback
-    // HapticFeedback.lightImpact();
 
     // Show success feedback
     ScaffoldMessenger.of(context).showSnackBar(

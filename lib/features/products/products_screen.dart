@@ -52,7 +52,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   },
                 ),
                 ...productProv.categories.map((c) => _CategoryChip(
-                  label: c,
+                  label: c.toString(),
                   isSelected: _selectedCategoryId == null,
                   onTap: () {
                     setState(() => _selectedCategoryId = null);
@@ -175,8 +175,8 @@ class _ProductCard extends StatelessWidget {
                 color: Colors.white.withOpacity(0.02),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
               ),
-              child: product.imageUrl.isNotEmpty
-                ? _buildProductImage(product.imageUrl)
+              child: (product.images?.isNotEmpty ?? false)
+                ? _buildProductImage(product.images!.first)
                 : const Icon(Icons.medication_rounded, size: 48, color: Colors.white12),
             ),
           ),
@@ -192,7 +192,7 @@ class _ProductCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('₹${product.mrp}', style: TextStyle(color: roleColor, fontWeight: FontWeight.w700, fontSize: 14)),
+                    Text('₹${product.price}', style: TextStyle(color: roleColor, fontWeight: FontWeight.w700, fontSize: 14)),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(

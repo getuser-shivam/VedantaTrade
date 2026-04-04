@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:geolocator_platform_interface/src/enums/location_accuracy.dart';
 
 /// Background GPS Service for continuous MR tracking
 /// Runs independently of UI - persists even when app is backgrounded
@@ -18,6 +17,7 @@ class BackgroundGpsService {
   bool _isTracking = false;
   DateTime? _trackingStartedAt;
   String? _currentMrId;
+  Position? _currentPosition;
   
   // Callbacks for UI updates
   final _trajectoryController = StreamController<List<LatLng>>.broadcast();
@@ -72,7 +72,7 @@ class BackgroundGpsService {
       _positionStream = Geolocator.getPositionStream(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
-          distanceFilter: 5.0, // Update every 5 meters
+          distanceFilter: 5, // Update every 5 meters
         ),
       ).listen(
         (Position position) {
@@ -193,7 +193,7 @@ class BackgroundGpsService {
   double getTotalDistance() {
     if (_trajectoryPoints.length < 2) return 0;
     
-    const Distance distance = Distance();
+    final Distance distance = Distance();
     double total = 0;
     
     for (int i = 1; i < _trajectoryPoints.length; i++) {

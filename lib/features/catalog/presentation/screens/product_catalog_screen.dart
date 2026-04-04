@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared/widgets/glassmorphic_widgets.dart';
 import '../providers/product_provider.dart';
-import '../../auth/presentation/providers/auth_provider.dart';
-import '../models/product.dart';
 import '../widgets/product_card.dart';
-import '../widgets/search_filter_sheet.dart';
-import '../widgets/product_comparison_sheet.dart';
 import '../widgets/barcode_scanner_widget.dart';
 import '../widgets/inventory_status_widget.dart';
 
@@ -27,7 +22,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
   bool _isSearching = false;
   int _selectedCategoryIndex = 0;
   String _searchQuery = '';
-  List<Product> _selectedProducts = [];
+  List<dynamic> _selectedProducts = [];
   Map<String, dynamic> _filters = {};
 
   @override
@@ -38,7 +33,6 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
     _searchFocusNode = FocusNode();
     
     _searchController.addListener(_onSearchChanged);
-    
     _loadData();
   }
 
@@ -67,7 +61,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
     ]);
   }
 
-  void _selectCategory(int index, List<Category> categories) {
+  void _selectCategory(int index, List<dynamic> categories) {
     setState(() {
       _selectedCategoryIndex = index;
     });
@@ -82,7 +76,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent, // Handled by theme background
+      backgroundColor: Colors.grey[100],
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -118,7 +112,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
               onPressed: _showComparisonSheet,
               label: Text('Compare (${_selectedProducts.length})'),
               icon: const Icon(Icons.compare),
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: Colors.blue,
             )
           : null,
     );
@@ -161,39 +155,54 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
   Widget _buildSearchBar() {
     if (!_isSearching) return const SizedBox.shrink();
     
-    return Padding(
+    return Container(
       padding: const EdgeInsets.all(16),
-      child: GlassmorphicTextField(
+      child: TextField(
         controller: _searchController,
         focusNode: _searchFocusNode,
-        hintText: 'Search products...',
-        prefixIcon: Icons.search,
-        onChanged: (value) => _onSearchChanged(),
+        autofocus: true,
+        decoration: InputDecoration(
+          hintText: 'Search products...',
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: IconButton(
+            onPressed: () {
+              _searchController.clear();
+              _searchFocusNode.unfocus();
+            },
+            icon: const Icon(Icons.clear),
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildCategoryTabs() {
     return Consumer<ProductProvider>(
-      builder: (context, provider, child) {
-        final categories = provider.categories;
+      builder: (context, productProvider, child) {
+        final categories = productProvider.categories;
+        final tabs = ['All', ...categories.map((c) => c.toString()).toList()];
+        
         return Container(
           height: 60,
-          padding: const EdgeInsets.symmetric(vertical: 8),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: categories.length + 1,
+            itemCount: tabs.length,
             itemBuilder: (context, index) {
               final isSelected = index == _selectedCategoryIndex;
-              final name = index == 0 ? 'All' : categories[index - 1].name;
-              
               return Container(
-                margin: const EdgeInsets.only(right: 8),
-                child: GlassmorphicChip(
-                  label: name,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                child: FilterChip(
+                  label: Text(tabs[index]),
                   selected: isSelected,
-                  onTap: () => _selectCategory(index, categories),
+                  onSelected: (selected) => _selectCategory(index, categories),
+                  backgroundColor: Colors.white,
+                  selectedColor: Colors.blue.withOpacity(0.2),
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.blue : Colors.black,
+                  ),
                 ),
               );
             },
@@ -203,7 +212,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
     );
   }
 
-  Widget _buildProductsGrid(List<Product> products) {
+  Widget _buildProductsGrid(List<dynamic> products) {
     return RefreshIndicator(
       onRefresh: () => Provider.of<ProductProvider>(context, listen: false).refresh(),
       child: Column(
@@ -254,7 +263,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
     );
   }
 
-  Widget _buildCategoriesGrid(List<Category> categories) {
+  Widget _buildCategoriesGrid(List<dynamic> categories) {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -266,15 +275,15 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
       itemCount: categories.length,
       itemBuilder: (context, index) {
         final category = categories[index];
-        return GlassmorphicCard(
+        return Card(
           child: InkWell(
             onTap: () => _selectCategory(index + 1, categories),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.category, size: 40, color: Colors.blue),
-                const SizedBox(height: 12),
-                Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Icon(Icons.category, size: 40, color: Colors.blue),
+                const SizedBox(height: 8),
+                Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
               ],
             ),
           ),
@@ -283,7 +292,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
     );
   }
 
-  Widget _buildManufacturersGrid(List<Manufacturer> manufacturers) {
+  Widget _buildManufacturersGrid(List<dynamic> manufacturers) {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -295,14 +304,19 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
       itemCount: manufacturers.length,
       itemBuilder: (context, index) {
         final manufacturer = manufacturers[index];
-        return GlassmorphicCard(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.business, size: 40, color: Colors.greenAccent),
-              const SizedBox(height: 12),
-              Text(manufacturer.name, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-            ],
+        return Card(
+          child: InkWell(
+            onTap: () {
+              // TODO: Filter by manufacturer
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.business, size: 40, color: Colors.greenAccent),
+                const SizedBox(height: 12),
+                Text(manufacturer.name, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+              ],
+            ),
           ),
         );
       },
@@ -319,15 +333,18 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
       itemCount: _selectedProducts.length,
       itemBuilder: (context, index) {
         final product = _selectedProducts[index];
-        return GlassmorphicListItem(
-          title: product.name,
-          subtitle: product.formattedPrice,
-          trailingIcon: Icons.remove_circle_outline,
-          onTap: () {
-            setState(() {
-              _selectedProducts.removeAt(index);
-            });
-          },
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            title: Text(product.name),
+            subtitle: Text(product.formattedPrice),
+            trailing: const Icon(Icons.remove_circle_outline),
+            onTap: () {
+              setState(() {
+                _selectedProducts.removeAt(index);
+              });
+            },
+          ),
         );
       },
     );
@@ -338,14 +355,17 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.inventory_2_outlined, size: 64, color: Colors.white24),
+          const Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          const Text('No products found', style: TextStyle(color: Colors.white54)),
+          const Text('No products found', style: TextStyle(color: Colors.grey)),
           const SizedBox(height: 16),
-          GlassmorphicButton(
+          ElevatedButton(
             onPressed: _clearFilters,
-            text: 'Clear Filters',
-            width: 150,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Clear Filters'),
           ),
         ],
       ),
@@ -370,7 +390,7 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Searching for product with barcode: $barcode'),
-        backgroundColor: AppTheme.primary,
+        backgroundColor: Colors.blue,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -396,44 +416,25 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
   }
 
   void _showFilterSheet() {
-    final provider = Provider.of<ProductProvider>(context, listen: false);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => SearchFilterSheet(
-        categories: provider.categories,
-        manufacturers: provider.manufacturers,
-        currentFilters: _filters,
-        onFiltersChanged: (filters) {
-          setState(() => _filters = filters);
-          provider.applyFilters(filters);
-        },
-      ),
+    // TODO: Implement filter sheet
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Filter functionality coming soon')),
     );
   }
 
   void _showComparisonSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => ProductComparisonSheet(
-        products: _selectedProducts,
-        onProductRemoved: (product) {
-          setState(() {
-            _selectedProducts.removeWhere((p) => p.id == product.id);
-          });
-        },
-      ),
+    // TODO: Implement comparison sheet
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Comparison functionality coming soon')),
     );
   }
 
-  void _navigateToProductDetails(Product product) {
+  void _navigateToProductDetails(dynamic product) {
     context.push('/product/${product.id}');
   }
 
   void _handleLogout() {
-    context.read<AuthProvider>().logout();
+    // TODO: Implement logout functionality
+    Navigator.of(context).pushReplacementNamed('/login');
   }
 }

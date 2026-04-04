@@ -2,9 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:vedanta_trade/core/api_config.dart';
 
 class AuthService {
-  final Dio _dio = Dio();
+  late final Dio _dio;
   
   AuthService() {
+    _dio = Dio();
     _dio.options.baseUrl = ApiConfig.baseUrl;
     _dio.options.connectTimeout = const Duration(seconds: 10);
     _dio.options.receiveTimeout = const Duration(seconds: 10);
@@ -46,86 +47,15 @@ class AuthService {
       );
       
       return response.data;
-    } on DioException catch (e) {
-      return {
-        'success': false,
-        'message': _getErrorMessage(e),
-      };
     } catch (e) {
       return {
         'success': false,
-        'message': 'An unexpected error occurred',
+        'message': _getErrorMessage(e),
       };
     }
   }
 
-  Future<Map<String, dynamic>> resetPassword(String email) async {
-    try {
-      final response = await _dio.post(
-        '/auth/reset-password',
-        data: {
-          'email': email.trim(),
-          'app_name': 'VedantaTrade',
-        },
-      );
-      
-      return response.data;
-    } on DioException catch (e) {
-      return {
-        'success': false,
-        'message': _getErrorMessage(e),
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Password reset failed. Please try again.',
-      };
-    }
-  }
-
-  Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
-    try {
-      final response = await _dio.post(
-        '/auth/refresh',
-        data: {'refresh_token': refreshToken},
-      );
-      
-      return response.data;
-    } on DioException catch (e) {
-      return {
-        'success': false,
-        'message': _getErrorMessage(e),
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Token refresh failed',
-      };
-    }
-  }
-
-  Future<Map<String, dynamic>> verifyToken(String token) async {
-    try {
-      final response = await _dio.get(
-        '/auth/verify',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
-      );
-      
-      return response.data;
-    } on DioException catch (e) {
-      return {
-        'success': false,
-        'message': _getErrorMessage(e),
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Token verification failed',
-      };
-    }
-  }
+  Future<Map<String, dynamic>> register(String name, String email, String password, String phone) async {
     try {
       final response = await _dio.post(
         '/auth/register',
@@ -146,65 +76,10 @@ class AuthService {
       );
       
       return response.data;
-    } on DioException catch (e) {
-      return {
-        'success': false,
-        'message': _getErrorMessage(e),
-      };
     } catch (e) {
       return {
         'success': false,
-        'message': 'Registration failed. Please try again.',
-      };
-    }
-  }
-
-  Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
-    try {
-      final response = await _dio.post(
-        '/auth/refresh',
-        data: {
-          'refresh_token': refreshToken,
-        },
-        options: Options(
-          validateStatus: (status) => status != null && status < 500,
-        ),
-      );
-      
-      return response.data;
-    } on DioException catch (e) {
-      return {
-        'success': false,
         'message': _getErrorMessage(e),
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Token refresh failed',
-      };
-    }
-  }
-
-  Future<Map<String, dynamic>> logout(String token) async {
-    try {
-      final response = await _dio.post(
-        '/auth/logout',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-          validateStatus: (status) => status != null && status < 500,
-        ),
-      );
-      
-      return response.data;
-    } on DioException catch (e) {
-      return {
-        'success': false,
-        'message': _getErrorMessage(e),
-      };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Logout failed',
       };
     }
   }
@@ -215,22 +90,67 @@ class AuthService {
         '/auth/reset-password',
         data: {
           'email': email.trim(),
+          'app_name': 'VedantaTrade',
         },
-        options: Options(
-          validateStatus: (status) => status != null && status < 500,
-        ),
       );
       
       return response.data;
-    } on DioException catch (e) {
+    } catch (e) {
       return {
         'success': false,
         'message': _getErrorMessage(e),
       };
+    }
+  }
+
+  Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
+    try {
+      final response = await _dio.post(
+        '/auth/refresh',
+        data: {'refresh_token': refreshToken},
+      );
+      
+      return response.data;
     } catch (e) {
       return {
         'success': false,
-        'message': 'Password reset failed',
+        'message': _getErrorMessage(e),
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyToken(String token) async {
+    try {
+      final response = await _dio.get(
+        '/auth/verify',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+      
+      return response.data;
+    } catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> logout(String token) async {
+    try {
+      final response = await _dio.post(
+        '/auth/logout',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+      
+      return response.data;
+    } catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
       };
     }
   }
@@ -241,46 +161,22 @@ class AuthService {
         '/auth/validate',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
-          validateStatus: (status) => status != null && status < 500,
         ),
       );
       
       return response.data;
-    } on DioException catch (e) {
+    } catch (e) {
       return {
         'success': false,
         'message': _getErrorMessage(e),
       };
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Token validation failed',
-      };
     }
   }
 
-  String _getErrorMessage(DioException error) {
-    switch (error.type) {
-      case DioExceptionType.connectionTimeout:
-        return 'Connection timeout. Please check your internet connection.';
-      case DioExceptionType.sendTimeout:
-        return 'Request timeout. Please try again.';
-      case DioExceptionType.receiveTimeout:
-        return 'Server response timeout. Please try again.';
-      case DioExceptionType.badResponse:
-        if (error.response?.data is Map<String, dynamic>) {
-          return error.response?.data['message'] ?? 'Server error occurred';
-        }
-        return 'Server error: ${error.response?.statusCode}';
-      case DioExceptionType.cancel:
-        return 'Request was cancelled';
-      case DioExceptionType.unknown:
-        if (error.error?.toString().contains('SocketException') ?? false) {
-          return 'No internet connection. Please check your network.';
-        }
-        return 'Network error. Please check your connection.';
-      default:
-        return 'An unexpected error occurred';
+  String _getErrorMessage(dynamic e) {
+    if (e is DioException) {
+      return e.response?.data?['message'] ?? e.message ?? 'Network error occurred';
     }
+    return 'An unexpected error occurred';
   }
 }

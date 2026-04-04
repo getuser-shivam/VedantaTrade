@@ -404,23 +404,12 @@ class _LottieAnimationWidgetState extends State<LottieAnimationWidget>
       height: widget.height,
       controller: _lottieController,
       repeat: widget.repeat,
-      autoPlay: widget.autoPlay,
       onLoaded: (composition) {
         _lottieController.duration = composition.duration;
         if (widget.autoPlay) {
           _lottieController.forward();
         }
       },
-      onComplete: widget.onComplete != null
-          ? () {
-              if (widget.onComplete != null) {
-                widget.onComplete!();
-              }
-              if (!widget.repeat) {
-                _lottieController.stop();
-              }
-            }
-          : null,
     );
   }
 }

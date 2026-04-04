@@ -269,8 +269,9 @@ class VatPdfGenerator {
       await file.writeAsBytes(pdfBytes);
 
       // Share file
-      await Share.shareFiles(
-        [file.path],
+      final xFile = XFile(file.path);
+      await Share.shareXFiles(
+        [xFile],
         subject: 'VAT Return Report - ${_getMonthName(month)} $year',
         text: 'IRDN-compliant VAT Return Report for ${_getMonthName(month)} $year',
       );

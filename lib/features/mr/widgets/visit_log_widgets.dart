@@ -10,7 +10,7 @@ class GpsLoadingDialog extends StatefulWidget {
   const GpsLoadingDialog({Key? key}) : super(key: key);
 
   @override
-  State<GpsLoadingDialog> createState() => _GpsLoadingDialogState();
+  GpsLoadingDialogState createState() => GpsLoadingDialogState();
 }
 
 class GpsLoadingDialogState extends State<GpsLoadingDialog> with SingleTickerProviderStateMixin {
