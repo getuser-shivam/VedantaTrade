@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../shared/theme/app_theme.dart';
 import '../../../../shared/widgets/premium_glassmorphic_theme.dart';
-import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/loading_widget.dart';
 import '../widgets/dashboard_stats_card.dart';
 import '../widgets/quick_action_button.dart';
@@ -13,10 +11,6 @@ import '../widgets/marketing_overview_widget.dart';
 import '../providers/distribution_provider.dart';
 import '../../data/services/distribution_management_service.dart';
 import '../../data/services/marketing_management_service.dart';
-import 'distribution_centers_screen.dart';
-import 'inventory_management_screen.dart';
-import 'marketing_campaigns_screen.dart';
-import 'sales_analytics_screen.dart';
 
 class DistributionDashboardScreen extends StatefulWidget {
   const DistributionDashboardScreen({Key? key}) : super(key: key);
@@ -105,12 +99,7 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: AppTheme.primaryGradient,
-          ),
-        ),
-        actions: [
+                actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined, color: Colors.white),
             onPressed: () => _showNotifications(context),
@@ -230,7 +219,7 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
                     title: 'Total Centers',
                     value: provider.totalCenters.toString(),
                     icon: Icons.warehouse_outlined,
-                    color: AppTheme.primaryColor,
+                    color: PremiumGlassmorphicTheme.primaryColor,
                     trend: '+12%',
                     isPositive: true,
                   ),
@@ -239,7 +228,7 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
                     title: 'Active Inventory',
                     value: provider.activeInventory.toString(),
                     icon: Icons.inventory_outlined,
-                    color: AppTheme.successColor,
+                    color: PremiumGlassmorphicTheme.successColor,
                     trend: '+8%',
                     isPositive: true,
                   ),
@@ -248,7 +237,7 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
                     title: 'Active Campaigns',
                     value: provider.activeCampaigns.toString(),
                     icon: Icons.campaign_outlined,
-                    color: AppTheme.secondaryColor,
+                    color: PremiumGlassmorphicTheme.secondaryColor,
                     trend: '-2%',
                     isPositive: false,
                   ),
@@ -282,25 +271,25 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
                   QuickActionButton(
                     title: 'Add Center',
                     icon: Icons.add_location_outlined,
-                    color: AppTheme.primaryColor,
+                    color: PremiumGlassmorphicTheme.primaryColor,
                     onTap: () => _navigateToAddCenter(),
                   ),
                   QuickActionButton(
                     title: 'Allocate Inventory',
                     icon: Icons.inventory_2_outlined,
-                    color: AppTheme.successColor,
+                    color: PremiumGlassmorphicTheme.successColor,
                     onTap: () => _navigateToInventoryAllocation(),
                   ),
                   QuickActionButton(
                     title: 'New Campaign',
                     icon: Icons.campaign_outlined,
-                    color: AppTheme.secondaryColor,
+                    color: PremiumGlassmorphicTheme.secondaryColor,
                     onTap: () => _navigateToNewCampaign(),
                   ),
                   QuickActionButton(
                     title: 'View Reports',
                     icon: Icons.analytics_outlined,
-                    color: AppTheme.infoColor,
+                    color: PremiumGlassmorphicTheme.accentColor,
                     onTap: () => _navigateToReports(),
                   ),
                 ],
@@ -342,7 +331,12 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
+                  gradient: LinearGradient(
+                    colors: [
+                      PremiumGlassmorphicTheme.primaryColor.withOpacity(0.8),
+                      PremiumGlassmorphicTheme.secondaryColor.withOpacity(0.8),
+                    ],
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -564,15 +558,15 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
       case 0:
         return _buildDashboardContent();
       case 1:
-        return const DistributionCentersScreen();
+        return const Center(child: Text('Distribution Centers - Coming Soon'));
       case 2:
-        return const InventoryManagementScreen();
+        return const Center(child: Text('Inventory Management - Coming Soon'));
       case 3:
-        return const RouteManagementScreen();
+        return const Center(child: Text('Route Management - Coming Soon'));
       case 4:
-        return const MarketingCampaignsScreen();
+        return const Center(child: Text('Marketing Campaigns - Coming Soon'));
       case 5:
-        return const DistributionAnalyticsScreen();
+        return const Center(child: Text('Analytics & Reports - Coming Soon'));
       default:
         return const Center(
           child: Text('Screen not found'),
@@ -584,7 +578,7 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
     return Consumer<DistributionProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading) {
-          return const PageLoadingWidget(
+          return const LoadingWidget(
             message: 'Loading dashboard data...',
             type: LoadingType.dots,
           );
@@ -754,25 +748,25 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
                 QuickActionButton(
                   title: 'Add Center',
                   icon: Icons.add_location_outlined,
-                  color: AppTheme.primaryColor,
+                  color: PremiumGlassmorphicTheme.primaryColor,
                   onTap: () => _navigateToAddCenter(),
                 ),
                 QuickActionButton(
                   title: 'Allocate Inventory',
                   icon: Icons.inventory_2_outlined,
-                  color: AppTheme.successColor,
+                  color: PremiumGlassmorphicTheme.successColor,
                   onTap: () => _navigateToInventoryAllocation(),
                 ),
                 QuickActionButton(
                   title: 'New Campaign',
                   icon: Icons.campaign_outlined,
-                  color: AppTheme.secondaryColor,
+                  color: PremiumGlassmorphicTheme.secondaryColor,
                   onTap: () => _navigateToNewCampaign(),
                 ),
                 QuickActionButton(
                   title: 'View Reports',
                   icon: Icons.analytics_outlined,
-                  color: AppTheme.infoColor,
+                  color: PremiumGlassmorphicTheme.accentColor,
                   onTap: () => _navigateToReports(),
                 ),
               ],
@@ -813,11 +807,15 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            CustomButton(
-              text: 'Retry',
+            ElevatedButton.icon(
               onPressed: () => context.read<DistributionProvider>().loadDashboardData(),
-              type: CustomButtonType.primary,
               icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: PremiumGlassmorphicTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
             ),
           ],
         ),
@@ -893,7 +891,7 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
           QuickActionButton(
             title: 'Add Center',
             icon: Icons.add_location_outlined,
-            color: AppTheme.primaryColor,
+            color: PremiumGlassmorphicTheme.primaryColor,
             onTap: () {
               Navigator.pop(context);
               _navigateToAddCenter();
@@ -903,7 +901,7 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
           QuickActionButton(
             title: 'Allocate Inventory',
             icon: Icons.inventory_2_outlined,
-            color: AppTheme.successColor,
+            color: PremiumGlassmorphicTheme.successColor,
             onTap: () {
               Navigator.pop(context);
               _navigateToInventoryAllocation();
@@ -913,7 +911,7 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
           QuickActionButton(
             title: 'New Campaign',
             icon: Icons.campaign_outlined,
-            color: AppTheme.secondaryColor,
+            color: PremiumGlassmorphicTheme.secondaryColor,
             onTap: () {
               Navigator.pop(context);
               _navigateToNewCampaign();
@@ -923,7 +921,7 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
           QuickActionButton(
             title: 'View Reports',
             icon: Icons.analytics_outlined,
-            color: AppTheme.infoColor,
+            color: PremiumGlassmorphicTheme.accentColor,
             onTap: () {
               Navigator.pop(context);
               _navigateToReports();
@@ -931,62 +929,6 @@ class _DistributionDashboardScreenState extends State<DistributionDashboardScree
           ),
         ],
       ),
-    );
-  }
-}
-
-// Placeholder screens for navigation
-class DistributionCentersScreen extends StatelessWidget {
-  const DistributionCentersScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Distribution Centers Screen'),
-    );
-  }
-}
-
-class InventoryManagementScreen extends StatelessWidget {
-  const InventoryManagementScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Inventory Management Screen'),
-    );
-  }
-}
-
-class RouteManagementScreen extends StatelessWidget {
-  const RouteManagementScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Route Management Screen'),
-    );
-  }
-}
-
-class CampaignManagementScreen extends StatelessWidget {
-  const CampaignManagementScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Campaign Management Screen'),
-    );
-  }
-}
-
-class DistributionAnalyticsScreen extends StatelessWidget {
-  const DistributionAnalyticsScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Distribution Analytics Screen'),
     );
   }
 }
