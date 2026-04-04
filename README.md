@@ -807,6 +807,26 @@ The repository includes automated workflows:
 - Update documentation
 - Ensure code quality standards
 
+## 🌐 Live Demo & Deployment
+
+### 🚀 GitHub Pages Deployment
+- **Live URL**: [https://getuser-shivam.github.io/VedantaTrade/](https://getuser-shivam.github.io/VedantaTrade/)
+- **Status**: ✅ Production Ready
+- **SEO Optimized**: Search engine indexing enabled
+- **Analytics**: Google Analytics integration ready
+- **Sitemap**: XML sitemap for better crawling
+
+### 📱 Mobile Deployment
+- **Wireless Debugging**: Automated wireless debugging setup
+- **Android APK**: Debug builds via wireless connection
+- **Hot Reload**: Real-time code changes during development
+
+### 🔄 CI/CD Pipeline
+- **Multi-Environment**: Production, staging, and test deployments
+- **Automated Testing**: Comprehensive test suite execution
+- **Security Scanning**: Vulnerability assessment and dependency checks
+- **Performance Monitoring**: Real-time performance metrics
+
 ## 📝 Documentation
 
 - **[API Documentation](./docs/API.md)**: Backend API reference
