@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
-import 'package:vedanta_trade/app/theme/app_theme.dart';
+import 'package:vedanta_trade/shared/theme/enhanced_theme.dart';
+import 'package:vedanta_trade/shared/widgets/performance/performance_optimizer.dart';
 // Screens
 import 'package:vedanta_trade/features/auth/presentation/screens/login_screen.dart';
 import 'package:vedanta_trade/features/auth/presentation/screens/password_reset_screen.dart';
@@ -39,14 +40,16 @@ class VedantaTradeApp extends StatelessWidget {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
         return Consumer(
-          builder: (context, _, __) => MaterialApp.router(
-            title: 'VedantaTrade',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: ThemeMode.dark,
-            routerConfig: _buildRouter(auth),
-          ),
+          builder: (context, _, __) {
+            return MaterialApp.router(
+              title: 'VedantaTrade',
+              debugShowCheckedModeBanner: false,
+              theme: EnhancedTheme.lightTheme,
+              darkTheme: EnhancedTheme.darkTheme,
+              themeMode: ThemeMode.system,
+              routerConfig: _buildRouter(auth),
+            );
+          },
         );
       },
     );
