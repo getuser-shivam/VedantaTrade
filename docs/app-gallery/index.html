@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VedantaTrade - App Gallery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">
+                <i class="bi bi-capsule"></i> VedantaTrade
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">App Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../CHANGELOG.md">Changelog</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://github.com/getuser-shivam/VedantaTrade" target="_blank">
+                            <i class="bi bi-github"></i> GitHub
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h1 class="display-4 fw-bold text-white mb-4">VedantaTrade App Gallery</h1>
+                    <p class="lead text-white mb-4">Explore the evolution of our enterprise pharmaceutical distribution platform through different versions and UI enhancements.</p>
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-light btn-lg" onclick="scrollToGallery()">
+                            <i class="bi bi-images"></i> View Gallery
+                        </button>
+                        <button class="btn btn-outline-light btn-lg" onclick="downloadApp()">
+                            <i class="bi bi-download"></i> Download
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="hero-phone-mockup">
+                        <div class="phone-frame">
+                            <div class="phone-screen">
+                                <img src="assets/images/hero-screenshot.png" alt="VedantaTrade App" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Version Selector -->
+    <section class="version-selector py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-4" data-aos="fade-up">
+                <h2 class="display-5 fw-bold">Select Version</h2>
+                <p class="lead text-muted">Choose a version to explore its UI changes and features</p>
+            </div>
+            <div class="row justify-content-center" data-aos="fade-up" data-aos-delay="100">
+                <div class="col-md-8">
+                    <div class="version-tabs">
+                        <ul class="nav nav-pills justify-content-center" id="versionTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="v34-tab" data-bs-toggle="tab" data-bs-target="#v34" type="button" role="tab">
+                                    v3.4.0 <span class="badge bg-success ms-1">Latest</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="v33-tab" data-bs-toggle="tab" data-bs-target="#v33" type="button" role="tab">
+                                    v3.3.0
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="v32-tab" data-bs-toggle="tab" data-bs-target="#v32" type="button" role="tab">
+                                    v3.2.0
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="v31-tab" data-bs-toggle="tab" data-bs-target="#v31" type="button" role="tab">
+                                    v3.1.0
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="v30-tab" data-bs-toggle="tab" data-bs-target="#v30" type="button" role="tab">
+                                    v3.0.0
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Content -->
+    <section id="gallery" class="gallery-section py-5">
+        <div class="container">
+            <div class="tab-content" id="versionTabContent">
+                <!-- Version 3.4.0 -->
+                <div class="tab-pane fade show active" id="v34" role="tabpanel">
+                    <div class="text-center mb-5" data-aos="fade-up">
+                        <h2 class="display-5 fw-bold">Version 3.4.0</h2>
+                        <p class="lead text-muted">Comprehensive Testing Suite & Enhanced CI/CD Pipeline</p>
+                        <div class="d-flex justify-content-center gap-2 mb-4">
+                            <span class="badge bg-primary">Testing Suite</span>
+                            <span class="badge bg-success">CI/CD Pipeline</span>
+                            <span class="badge bg-info">Accounting System</span>
+                            <span class="badge bg-warning">Premium UI</span>
+                        </div>
+                    </div>
+
+                    <!-- Feature Highlights -->
+                    <div class="row mb-5">
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-virus"></i>
+                                </div>
+                                <h5>Comprehensive Testing</h5>
+                                <p>Unit, widget, integration, performance, security, accessibility, and E2E tests with automated reporting.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-currency-dollar"></i>
+                                </div>
+                                <h5>Complete Accounting</h5>
+                                <p>IRDN-compliant VAT returns and multi-photo expense reconciliation with OCR processing.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-palette"></i>
+                                </div>
+                                <h5>Premium Glassmorphic UI</h5>
+                                <p>Modern glassmorphic design with smooth animations and comprehensive accessibility.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screenshot Carousel -->
+                    <div class="carousel-container" data-aos="fade-up" data-aos-delay="400">
+                        <h3 class="text-center mb-4">UI Screenshots</h3>
+                        <div id="v34Carousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-indicators">
+                                <button type="button" data-bs-target="#v34Carousel" data-bs-slide-to="0" class="active"></button>
+                                <button type="button" data-bs-target="#v34Carousel" data-bs-slide-to="1"></button>
+                                <button type="button" data-bs-target="#v34Carousel" data-bs-slide-to="2"></button>
+                                <button type="button" data-bs-target="#v34Carousel" data-bs-slide-to="3"></button>
+                                <button type="button" data-bs-target="#v34Carousel" data-bs-slide-to="4"></button>
+                            </div>
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v34/dashboard.png" alt="Dashboard" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Enhanced Dashboard</h5>
+                                            <p>Real-time analytics with glassmorphic design</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v34/vat-returns.png" alt="VAT Returns" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>IRDN-Compliant VAT Returns</h5>
+                                            <p>Complete Nepal tax authority compliance</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v34/expense-reconciliation.png" alt="Expense Reconciliation" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Multi-Photo Expense Reconciliation</h5>
+                                            <p>OCR-powered receipt processing</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v34/inventory-management.png" alt="Inventory Management" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Real-time Inventory Management</h5>
+                                            <p>Stock alerts and automated reordering</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v34/checkout-system.png" alt="Checkout System" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Complete Checkout System</h5>
+                                            <p>Multi-payment method support</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#v34Carousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#v34Carousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- UI Changes Grid -->
+                    <div class="ui-changes-grid mt-5">
+                        <h3 class="text-center mb-4" data-aos="fade-up">UI Changes & Enhancements</h3>
+                        <div class="row g-4">
+                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+                                <div class="ui-change-card">
+                                    <div class="ui-change-header">
+                                        <h5>Navigation System</h5>
+                                        <span class="badge bg-success">Enhanced</span>
+                                    </div>
+                                    <div class="ui-change-content">
+                                        <p>Advanced navigation with Hero animations and smooth transitions</p>
+                                        <div class="before-after">
+                                            <div class="before">
+                                                <small>Before</small>
+                                                <img src="assets/images/v34/nav-before.png" alt="Navigation Before" class="img-fluid">
+                                            </div>
+                                            <div class="after">
+                                                <small>After</small>
+                                                <img src="assets/images/v34/nav-after.png" alt="Navigation After" class="img-fluid">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="200">
+                                <div class="ui-change-card">
+                                    <div class="ui-change-header">
+                                        <h5>Product Cards</h5>
+                                        <span class="badge bg-info">Redesigned</span>
+                                    </div>
+                                    <div class="ui-change-content">
+                                        <p>Interactive cards with hover effects and stock status indicators</p>
+                                        <div class="before-after">
+                                            <div class="before">
+                                                <small>Before</small>
+                                                <img src="assets/images/v34/cards-before.png" alt="Cards Before" class="img-fluid">
+                                            </div>
+                                            <div class="after">
+                                                <small>After</small>
+                                                <img src="assets/images/v34/cards-after.png" alt="Cards After" class="img-fluid">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="300">
+                                <div class="ui-change-card">
+                                    <div class="ui-change-header">
+                                        <h5>Loading States</h5>
+                                        <span class="badge bg-warning">Improved</span>
+                                    </div>
+                                    <div class="ui-change-content">
+                                        <p>Multiple skeleton loading styles with adaptive layouts</p>
+                                        <div class="before-after">
+                                            <div class="before">
+                                                <small>Before</small>
+                                                <img src="assets/images/v34/loading-before.png" alt="Loading Before" class="img-fluid">
+                                            </div>
+                                            <div class="after">
+                                                <small>After</small>
+                                                <img src="assets/images/v34/loading-after.png" alt="Loading After" class="img-fluid">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6" data-aos="fade-up" data-aos-delay="400">
+                                <div class="ui-change-card">
+                                    <div class="ui-change-header">
+                                        <h5>Error Handling</h5>
+                                        <span class="badge bg-danger">New</span>
+                                    </div>
+                                    <div class="ui-change-content">
+                                        <p>Comprehensive error states with user-friendly messages</p>
+                                        <div class="before-after">
+                                            <div class="before">
+                                                <small>Before</small>
+                                                <img src="assets/images/v34/error-before.png" alt="Error Before" class="img-fluid">
+                                            </div>
+                                            <div class="after">
+                                                <small>After</small>
+                                                <img src="assets/images/v34/error-after.png" alt="Error After" class="img-fluid">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Version 3.3.0 -->
+                <div class="tab-pane fade" id="v33" role="tabpanel">
+                    <div class="text-center mb-5" data-aos="fade-up">
+                        <h2 class="display-5 fw-bold">Version 3.3.0</h2>
+                        <p class="lead text-muted">Comprehensive CI/CD Pipeline Implementation</p>
+                        <div class="d-flex justify-content-center gap-2 mb-4">
+                            <span class="badge bg-primary">CI/CD Pipeline</span>
+                            <span class="badge bg-success">Container Deployment</span>
+                            <span class="badge bg-info">Advanced Monitoring</span>
+                        </div>
+                    </div>
+
+                    <!-- Feature Highlights -->
+                    <div class="row mb-5">
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-gear"></i>
+                                </div>
+                                <h5>Enhanced CI/CD Pipeline</h5>
+                                <p>Comprehensive automation with quality gates and security scanning.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-box"></i>
+                                </div>
+                                <h5>Container Deployment</h5>
+                                <p>Multi-architecture Docker builds with Kubernetes deployment.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-graph-up"></i>
+                                </div>
+                                <h5>Advanced Monitoring</h5>
+                                <p>Real-time monitoring with alerting and reporting.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screenshot Carousel -->
+                    <div class="carousel-container" data-aos="fade-up" data-aos-delay="400">
+                        <h3 class="text-center mb-4">UI Screenshots</h3>
+                        <div id="v33Carousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-indicators">
+                                <button type="button" data-bs-target="#v33Carousel" data-bs-slide-to="0" class="active"></button>
+                                <button type="button" data-bs-target="#v33Carousel" data-bs-slide-to="1"></button>
+                                <button type="button" data-bs-target="#v33Carousel" data-bs-slide-to="2"></button>
+                                <button type="button" data-bs-target="#v33Carousel" data-bs-slide-to="3"></button>
+                            </div>
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v33/dashboard.png" alt="Dashboard" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Enhanced Dashboard</h5>
+                                            <p>Improved analytics and monitoring</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v33/ci-cd.png" alt="CI/CD" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>CI/CD Pipeline</h5>
+                                            <p>Automated deployment and testing</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v33/monitoring.png" alt="Monitoring" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Advanced Monitoring</h5>
+                                            <p>Real-time health and performance</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v33/container.png" alt="Container" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Container Deployment</h5>
+                                            <p>Multi-architecture Docker builds</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#v33Carousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#v33Carousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Version 3.2.0 -->
+                <div class="tab-pane fade" id="v32" role="tabpanel">
+                    <div class="text-center mb-5" data-aos="fade-up">
+                        <h2 class="display-5 fw-bold">Version 3.2.0</h2>
+                        <p class="lead text-muted">Complete UI/UX Enhancement Suite</p>
+                        <div class="d-flex justify-content-center gap-2 mb-4">
+                            <span class="badge bg-primary">Glassmorphic UI</span>
+                            <span class="badge bg-success">Animations</span>
+                            <span class="badge bg-info">Responsive Design</span>
+                        </div>
+                    </div>
+
+                    <!-- Feature Highlights -->
+                    <div class="row mb-5">
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-palette"></i>
+                                </div>
+                                <h5>Glassmorphic Design</h5>
+                                <p>Premium glassmorphic components with shimmer effects.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-magic"></i>
+                                </div>
+                                <h5>Micro-interactions</h5>
+                                <p>Smooth animations and contextual visual feedback.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-phone"></i>
+                                </div>
+                                <h5>Responsive Layout</h5>
+                                <p>Mobile, tablet, and desktop optimized designs.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screenshot Carousel -->
+                    <div class="carousel-container" data-aos="fade-up" data-aos-delay="400">
+                        <h3 class="text-center mb-4">UI Screenshots</h3>
+                        <div id="v32Carousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-indicators">
+                                <button type="button" data-bs-target="#v32Carousel" data-bs-slide-to="0" class="active"></button>
+                                <button type="button" data-bs-target="#v32Carousel" data-bs-slide-to="1"></button>
+                                <button type="button" data-bs-target="#v32Carousel" data-bs-slide-to="2"></button>
+                                <button type="button" data-bs-target="#v32Carousel" data-bs-slide-to="3"></button>
+                            </div>
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v32/glassmorphic.png" alt="Glassmorphic UI" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Glassmorphic Components</h5>
+                                            <p>Premium glassmorphic design system</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v32/animations.png" alt="Animations" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Smooth Animations</h5>
+                                            <p>Hero animations and transitions</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v32/responsive.png" alt="Responsive" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Responsive Design</h5>
+                                            <p>Multi-device compatibility</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v32/loading.png" alt="Loading" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Skeleton Loading</h5>
+                                            <p>Multiple loading styles</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#v32Carousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#v32Carousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Version 3.1.0 -->
+                <div class="tab-pane fade" id="v31" role="tabpanel">
+                    <div class="text-center mb-5" data-aos="fade-up">
+                        <h2 class="display-5 fw-bold">Version 3.1.0</h2>
+                        <p class="lead text-muted">Advanced Features & Performance Optimization</p>
+                        <div class="d-flex justify-content-center gap-2 mb-4">
+                            <span class="badge bg-primary">Performance</span>
+                            <span class="badge bg-success">Security</span>
+                            <span class="badge bg-info">Authentication</span>
+                        </div>
+                    </div>
+
+                    <!-- Feature Highlights -->
+                    <div class="row mb-5">
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-speedometer2"></i>
+                                </div>
+                                <h5>Performance Optimization</h5>
+                                <p>Advanced caching mechanisms and monitoring.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <h5>Security Enhancements</h5>
+                                <p>Data protection and security compliance.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-fingerprint"></i>
+                                </div>
+                                <h5>User Authentication</h5>
+                                <p>Multi-factor authentication with biometric support.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screenshot Carousel -->
+                    <div class="carousel-container" data-aos="fade-up" data-aos-delay="400">
+                        <h3 class="text-center mb-4">UI Screenshots</h3>
+                        <div id="v31Carousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-indicators">
+                                <button type="button" data-bs-target="#v31Carousel" data-bs-slide-to="0" class="active"></button>
+                                <button type="button" data-bs-target="#v31Carousel" data-bs-slide-to="1"></button>
+                                <button type="button" data-bs-target="#v31Carousel" data-bs-slide-to="2"></button>
+                                <button type="button" data-bs-target="#v31Carousel" data-bs-slide-to="3"></button>
+                            </div>
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v31/performance.png" alt="Performance" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Performance Monitoring</h5>
+                                            <p>Real-time performance tracking</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v31/security.png" alt="Security" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Security Features</h5>
+                                            <p>Enhanced security controls</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v31/auth.png" alt="Authentication" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Authentication System</h5>
+                                            <p>Multi-factor authentication</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v31/optimization.png" alt="Optimization" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>System Optimization</h5>
+                                            <p>Performance improvements</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#v31Carousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#v31Carousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Version 3.0.0 -->
+                <div class="tab-pane fade" id="v30" role="tabpanel">
+                    <div class="text-center mb-5" data-aos="fade-up">
+                        <h2 class="display-5 fw-bold">Version 3.0.0</h2>
+                        <p class="lead text-muted">Complete System Redesign & Nepal Localization</p>
+                        <div class="d-flex justify-content-center gap-2 mb-4">
+                            <span class="badge bg-primary">Nepal Localization</span>
+                            <span class="badge bg-success">System Redesign</span>
+                            <span class="badge bg-info">Distribution Management</span>
+                        </div>
+                    </div>
+
+                    <!-- Feature Highlights -->
+                    <div class="row mb-5">
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-globe"></i>
+                                </div>
+                                <h5>Nepal Localization</h5>
+                                <p>Complete localization with NPR currency and VAT support.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-diagram-3"></i>
+                                </div>
+                                <h5>System Redesign</h5>
+                                <p>Complete architecture overhaul with modern design.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+                                <h5>Distribution Management</h5>
+                                <p>Comprehensive distribution and marketing system.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screenshot Carousel -->
+                    <div class="carousel-container" data-aos="fade-up" data-aos-delay="400">
+                        <h3 class="text-center mb-4">UI Screenshots</h3>
+                        <div id="v30Carousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-indicators">
+                                <button type="button" data-bs-target="#v30Carousel" data-bs-slide-to="0" class="active"></button>
+                                <button type="button" data-bs-target="#v30Carousel" data-bs-slide-to="1"></button>
+                                <button type="button" data-bs-target="#v30Carousel" data-bs-slide-to="2"></button>
+                                <button type="button" data-bs-target="#v30Carousel" data-bs-slide-to="3"></button>
+                            </div>
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v30/localization.png" alt="Localization" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Nepal Localization</h5>
+                                            <p>NPR currency and VAT support</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v30/redesign.png" alt="Redesign" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>System Redesign</h5>
+                                            <p>Modern architecture and UI</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v30/distribution.png" alt="Distribution" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Distribution Management</h5>
+                                            <p>Marketing and distribution tools</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="carousel-item">
+                                    <div class="screenshot-container">
+                                        <img src="assets/images/v30/checkout.png" alt="Checkout" class="img-fluid">
+                                        <div class="screenshot-overlay">
+                                            <h5>Checkout System</h5>
+                                            <p>Payment processing integration</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#v30Carousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#v30Carousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="download-section py-5 bg-primary text-white">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h2 class="display-5 fw-bold mb-4">Download VedantaTrade</h2>
+                    <p class="lead mb-4">Experience the latest version of our enterprise pharmaceutical distribution platform.</p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <button class="btn btn-light btn-lg" onclick="downloadApp()">
+                            <i class="bi bi-google-play"></i> Google Play
+                        </button>
+                        <button class="btn btn-light btn-lg" onclick="downloadApp()">
+                            <i class="bi bi-apple"></i> App Store
+                        </button>
+                        <button class="btn btn-outline-light btn-lg" onclick="downloadApp()">
+                            <i class="bi bi-globe"></i> Web App
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="download-features">
+                        <div class="feature-item">
+                            <i class="bi bi-check-circle"></i>
+                            <span>Free to download and use</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="bi bi-check-circle"></i>
+                            <span>Regular updates and improvements</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="bi bi-check-circle"></i>
+                            <span>24/7 customer support</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="bi bi-check-circle"></i>
+                            <span>Enterprise-grade security</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer py-4 bg-dark text-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2024 VedantaTrade. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="../index.html" class="text-white me-3">Home</a>
+                    <a href="index.html" class="text-white me-3">Gallery</a>
+                    <a href="../CHANGELOG.md" class="text-white me-3">Changelog</a>
+                    <a href="https://github.com/getuser-shivam/VedantaTrade" class="text-white" target="_blank">
+                        <i class="bi bi-github"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
