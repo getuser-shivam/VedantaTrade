@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:vedanta_trade/app/theme/enhanced_app_theme.dart';
+import 'package:vedanta_trade/shared/widgets/enhanced_ui_components.dart';
+import 'package:vedanta_trade/features/gallery/widgets/version_carousel.dart';
+import 'package:vedanta_trade/features/gallery/data/version_data.dart';
+import 'package:vedanta_trade/features/gallery/screens/version_detail_screen.dart';
 
 class AppGalleryScreen extends StatefulWidget {
-  const AppGalleryScreen({Key? key}) : super(key: key);
+  const AppGalleryScreen({super.key});
 
   @override
   State<AppGalleryScreen> createState() => _AppGalleryScreenState();
@@ -13,44 +15,293 @@ class AppGalleryScreen extends StatefulWidget {
 
 class _AppGalleryScreenState extends State<AppGalleryScreen>
     with TickerProviderStateMixin {
-  late TabController _tabController;
-  late PageController _pageController;
-  late AnimationController _animationController;
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _slideAnimation;
+  late Animation<Offset> _slideAnimation;
   
-  final List<VersionInfo> _versions = [
-    VersionInfo(
-      version: '3.2.1-alpha',
-      date: '2026-04-03',
-      title: 'Comprehensive CI/CD Pipeline',
-      description: 'Enterprise-grade automation with quality gates and security scanning',
-      features: [
-        'Complete CI/CD workflow with quality gates',
-        'Automated testing suite with coverage reporting',
-        'Multi-platform deployment automation',
-        'Security vulnerability scanning',
-        'Performance monitoring and optimization',
-        'Release management with semantic versioning',
-      ],
-      screenshot: 'assets/screenshots/v3.2.1-alpha.png',
-      isNew: true,
-    ),
-    VersionInfo(
-      version: '3.2.0-alpha',
-      date: '2026-04-03',
-      title: 'Production Hardening',
-      description: 'Production-ready infrastructure with enhanced monitoring',
-      features: [
-        'Production deployment automation',
-        'Health checks and monitoring',
-        'Performance optimization',
-        'Security enhancements',
-        'Documentation updates',
-      ],
-      screenshot: 'assets/screenshots/v3.2.0-alpha.png',
-      isNew: false,
-    ),
+  int _selectedVersionIndex = 0;
+  final PageController _pageController = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnimations();
+  }
+
+  void _initializeAnimations() {
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _fadeController.forward();
+    _slideController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _slideController.dispose();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: EnhancedAppTheme.backgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: _buildGalleryContent(),
+            ),
+            _buildBottomNavigation(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return FadeTransition(
+          opacity: _fadeAnimation,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'App Gallery',
+                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                          color: EnhancedAppTheme.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Explore the evolution of VedantaTrade through versions',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: EnhancedAppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                EnhancedUIComponents.enhancedButton(
+                  child: const Text('View All'),
+                  onPressed: _showAllVersions,
+                  withLottieIcon: true,
+                  lottieAsset: 'assets/lottie/gallery.json',
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGalleryContent() {
+    return AnimatedBuilder(
+      animation: _slideAnimation,
+      builder: (context, child) {
+        return SlideTransition(
+          position: _slideAnimation,
+          child: Column(
+            children: [
+              _buildVersionCarousel(),
+              const SizedBox(height: 24),
+              _buildVersionDetails(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildVersionCarousel() {
+    return VersionCarousel(
+      versions: VersionData.versions,
+      selectedIndex: _selectedVersionIndex,
+      onVersionSelected: (index) {
+        setState(() {
+          _selectedVersionIndex = index;
+        });
+      },
+    );
+  }
+
+  Widget _buildVersionDetails() {
+    final selectedVersion = VersionData.versions[_selectedVersionIndex];
+    
+    return Expanded(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: VersionDetailCard(
+          version: selectedVersion,
+          onScreenshotTap: (screenshotIndex) {
+            _showScreenshotViewer(selectedVersion, screenshotIndex);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigation() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: EnhancedAppTheme.surfaceColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ...List.generate(VersionData.versions.length, (index) {
+            final isSelected = index == _selectedVersionIndex;
+            return GestureDetector(
+              onTap: () {
+                _pageController.animateToPage(
+                  index,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: isSelected ? 24 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? EnhancedAppTheme.primaryColor
+                      : EnhancedAppTheme.textSecondary.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  void _showAllVersions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: EnhancedAppTheme.surfaceColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: EnhancedAppTheme.textSecondary.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: VersionData.versions.length,
+                itemBuilder: (context, index) {
+                  final version = VersionData.versions[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: version.primaryColor.withOpacity(0.1),
+                      child: Icon(
+                        Icons.apps,
+                        color: version.primaryColor,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      version.version,
+                      style: TextStyle(
+                        color: EnhancedAppTheme.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      version.releaseDate,
+                      style: TextStyle(
+                        color: EnhancedAppTheme.textSecondary,
+                      ),
+                    ),
+                    trailing: Icon(
+                      Icons.arrow_forward_ios,
+                      color: EnhancedAppTheme.textSecondary,
+                      size: 16,
+                    ),
+                    onTap: () {
+                      Navigator.pop(context);
+                      setState(() {
+                        _selectedVersionIndex = index;
+                      });
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showScreenshotViewer(VersionInfo version, int screenshotIndex) {
+    Navigator.of(context).push(
+      EnhancedUIComponents.smoothPageTransition(
+        child: VersionDetailScreen(
+          version: version,
+        ),
+      ),
+    );
+  }
+}
     VersionInfo(
       version: '3.1.0-alpha',
       date: '2026-04-02',

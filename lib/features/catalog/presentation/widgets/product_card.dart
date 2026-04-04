@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../shared/widgets/glassmorphic_widgets.dart';
-import '../../domain/models/product.dart';
+import '../../domain/entities/product_entity.dart';
 
 class ProductCard extends StatelessWidget {
-  final Product product;
+  final ProductEntity product;
   final VoidCallback onTap;
   final bool isSelected;
   final ValueChanged<bool>? onSelectionChanged;

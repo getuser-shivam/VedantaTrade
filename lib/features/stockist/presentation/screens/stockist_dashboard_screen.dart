@@ -4,9 +4,11 @@ import 'package:vedanta_trade/app/theme/app_theme.dart';
 import 'package:vedanta_trade/shared/app_scaffold.dart';
 import 'package:vedanta_trade/shared/widgets/glassmorphic_widgets.dart';
 import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/stockist/presentation/providers/order_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:vedanta_trade/core/api_config.dart';
 import 'package:intl/intl.dart';
+import 'package:vedanta_trade/features/stockist/presentation/screens/order_management_screen.dart';
 
 class StockistDashboard extends StatefulWidget {
   const StockistDashboard({super.key});
@@ -457,9 +459,11 @@ class _StockistDashboardState extends State<StockistDashboard>
   }
 
   void _createNewOrder() {
-    // TODO: Navigate to order creation screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Create new order functionality')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const OrderManagementScreen(),
+      ),
     );
   }
 

@@ -1,4 +1,7 @@
-class Product {
+import 'package:equatable/equatable.dart';
+
+/// Product Entity - Domain layer entity for product data
+class ProductEntity extends Equatable {
   final String id;
   final String name;
   final String category;
@@ -18,8 +21,10 @@ class Product {
   final String manufacturer;
   final String? genericName;
   final bool isActive;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
-  Product({
+  const ProductEntity({
     required this.id,
     required this.name,
     required this.category,
@@ -34,14 +39,107 @@ class Product {
     this.stockQuantity = 0,
     this.ptr,
     this.pts,
-    this.manufacturer = 'Vedanta TradeLink',
+    this.manufacturer = '',
     this.genericName,
     this.isActive = true,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
-  factory Product.fromJson(Map<String, dynamic> json) {
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        category,
+        description,
+        images,
+        price,
+        form,
+        ingredients,
+        dosage,
+        packaging,
+        featured,
+        stockQuantity,
+        ptr,
+        pts,
+        manufacturer,
+        genericName,
+        isActive,
+        createdAt,
+        updatedAt,
+      ];
+
+  ProductEntity copyWith({
+    String? id,
+    String? name,
+    String? category,
+    String? description,
+    List<String>? images,
+    double? price,
+    String? form,
+    List<String>? ingredients,
+    String? dosage,
+    String? packaging,
+    bool? featured,
+    int? stockQuantity,
+    double? ptr,
+    double? pts,
+    String? manufacturer,
+    String? genericName,
+    bool? isActive,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return ProductEntity(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      description: description ?? this.description,
+      images: images ?? this.images,
+      price: price ?? this.price,
+      form: form ?? this.form,
+      ingredients: ingredients ?? this.ingredients,
+      dosage: dosage ?? this.dosage,
+      packaging: packaging ?? this.packaging,
+      featured: featured ?? this.featured,
+      stockQuantity: stockQuantity ?? this.stockQuantity,
+      ptr: ptr ?? this.ptr,
+      pts: pts ?? this.pts,
+      manufacturer: manufacturer ?? this.manufacturer,
+      genericName: genericName ?? this.genericName,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'ProductEntity(id: $id, name: $name, category: $category, manufacturer: $manufacturer)';
+  }
+
+  /// Get formatted price
+  String get formattedPrice => '₹${price.toStringAsFixed(2)}';
+
+  /// Get formatted PTR
+  String get formattedPtr => ptr != null ? '₹${ptr!.toStringAsFixed(2)}' : 'N/A';
+
+  /// Get formatted PTS
+  String get formattedPts => pts != null ? '₹${pts!.toStringAsFixed(2)}' : 'N/A';
+
+  /// Check if product is in stock
+  bool get isInStock => stockQuantity > 0;
+
+  /// Check if product has low stock
+  bool get hasLowStock => stockQuantity > 0 && stockQuantity <= 10;
+
+  /// Check if product is out of stock
+  bool get isOutOfStock => stockQuantity <= 0;
+} 
+
+  factory ProductEntity.fromJson(Map<String, dynamic> json) {
     // Handling both products.json format and potential API format
-    return Product(
+    return ProductEntity(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? json['item_name'] ?? '',
       category: json['category']?.toString() ?? 'Uncategorized',
@@ -49,18 +147,24 @@ class Product {
       images: json['images'] != null 
           ? List<String>.from(json['images']) 
           : (json['imageUrl'] != null ? [json['imageUrl']] : (json['image_url'] != null ? [json['image_url']] : [])),
-      price: (json['price'] ?? json['mrp'] ?? json['unit_price'] ?? 0.0).toDouble(),
+      price: (json['price']?.toDouble() ?? 0.0),
       form: json['form']?.toString() ?? '',
       ingredients: json['ingredients'] != null ? List<String>.from(json['ingredients']) : [],
       dosage: json['dosage']?.toString() ?? '',
-      packaging: json['packaging']?.toString() ?? '',
+      packaging: json['packaging']?.toString() ?? json['packaging']?.toString() ?? '',
       featured: json['featured'] ?? false,
-      stockQuantity: (json['stockQuantity'] ?? json['stock'] ?? json['current_stock'] ?? 0).toInt(),
-      ptr: (json['ptr'] as num?)?.toDouble(),
-      pts: (json['pts'] as num?)?.toDouble(),
+      stockQuantity: json['stock_quantity']?.toInt() ?? 0,
+      ptr: json['ptr']?.toDouble(),
+      pts: json['pts']?.toDouble(),
       manufacturer: json['manufacturer']?.toString() ?? 'Vedanta TradeLink',
-      genericName: json['genericName']?.toString() ?? json['generic_name'],
-      isActive: json['isActive'] ?? true,
+      genericName: json['generic_name']?.toString(),
+      isActive: json['is_active'] ?? true,
+      createdAt: json['created_at'] != null 
+          ? DateTime.parse(json['created_at']) 
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null 
+          ? DateTime.parse(json['updated_at']) 
+          : DateTime.now(),
     );
   }
 
@@ -83,6 +187,8 @@ class Product {
       'manufacturer': manufacturer,
       'genericName': genericName,
       'isActive': isActive,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
     };
   }
 

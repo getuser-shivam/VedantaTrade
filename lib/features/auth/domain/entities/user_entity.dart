@@ -1,4 +1,7 @@
-class User {
+import 'package:equatable/equatable.dart';
+
+/// User Entity - Domain layer entity for user data
+class UserEntity extends Equatable {
   final String id;
   final String name;
   final String email;
@@ -7,8 +10,11 @@ class User {
   final List<String> addresses;
   final DateTime createdAt;
   final DateTime lastLogin;
+  final String role;
+  final bool isActive;
+  final Map<String, dynamic> preferences;
 
-  User({
+  const UserEntity({
     required this.id,
     required this.name,
     required this.email,
@@ -17,7 +23,59 @@ class User {
     this.addresses = const [],
     required this.createdAt,
     required this.lastLogin,
+    this.role = 'user',
+    this.isActive = true,
+    this.preferences = const {},
   });
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        email,
+        phone,
+        avatar,
+        addresses,
+        createdAt,
+        lastLogin,
+        role,
+        isActive,
+        preferences,
+      ];
+
+  UserEntity copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? phone,
+    String? avatar,
+    List<String>? addresses,
+    DateTime? createdAt,
+    DateTime? lastLogin,
+    String? role,
+    bool? isActive,
+    Map<String, dynamic>? preferences,
+  }) {
+    return UserEntity(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      avatar: avatar ?? this.avatar,
+      addresses: addresses ?? this.addresses,
+      createdAt: createdAt ?? this.createdAt,
+      lastLogin: lastLogin ?? this.lastLogin,
+      role: role ?? this.role,
+      isActive: isActive ?? this.isActive,
+      preferences: preferences ?? this.preferences,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'UserEntity(id: $id, name: $name, email: $email, role: $role)';
+  }
+}
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
