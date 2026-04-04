@@ -1,0 +1,637 @@
+name: Comprehensive Testing Suite
+
+on:
+  push:
+    branches: [ main, develop, test/* ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run comprehensive tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - unit
+        - widget
+        - integration
+        - performance
+        - security
+        - accessibility
+        - localization
+      environment:
+        description: 'Test environment'
+        required: false
+        default: 'test'
+        type: choice
+        options:
+        - test
+        - staging
+        - production
+      run_benchmarks:
+        description: 'Run performance benchmarks'
+        required: false
+        default: false
+        type: boolean
+      generate_reports:
+        description: 'Generate detailed test reports'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  FLUTTER_VERSION: '3.19.0'
+  NODE_VERSION: '20.x'
+  JAVA_VERSION: '17'
+  PYTHON_VERSION: '3.11'
+
+permissions:
+  contents: read
+  packages: read
+  pull-requests: write
+  checks: write
+  actions: read
+
+jobs:
+  # Test Environment Setup
+  setup:
+    name: Test Environment Setup
+    runs-on: ubuntu-latest
+    outputs:
+      flutter-version: ${{ steps.version.outputs.flutter }}
+      test-environment: ${{ steps.env.outputs.environment }}
+      should-run-all: ${{ steps.check.outputs.run-all }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine Flutter version
+        id: version
+        run: |
+          if [ -f ".flutter-version" ]; then
+            FLUTTER_VER=$(cat .flutter-version)
+          else
+            FLUTTER_VER="${{ env.FLUTTER_VERSION }}"
+          fi
+          echo "flutter=$FLUTTER_VER" >> $GITHUB_OUTPUT
+
+      - name: Determine test environment
+        id: env
+        run: |
+          ENV="${{ github.event.inputs.environment || 'test' }}"
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+
+      - name: Check if all tests should run
+        id: check
+        run: |
+          if [ "${{ github.event.inputs.test_type }}" = "all" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "run-all=true" >> $GITHUB_OUTPUT
+          else
+            echo "run-all=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Unit Tests with Coverage
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.should-run-all == 'true' || github.event.inputs.test_type == 'unit' || github.event.inputs.test_type == 'all'
+    strategy:
+      matrix:
+        test-suite: [core, features, shared, integration]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub global activate coverage
+
+      - name: Run unit tests for ${{ matrix.test-suite }}
+        run: |
+          echo "Running unit tests for ${{ matrix.test-suite }} module..."
+          flutter test test/${{ matrix.test-suite }}/unit/ \
+            --coverage \
+            --reporter=expanded \
+            --reporter=json:test-results-${{ matrix.test-suite }}.json \
+            --timeout=30s
+
+      - name: Generate coverage report
+        run: |
+          genhtml coverage/lcov.info -o coverage/html-${{ matrix.test-suite }}
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage/lcov.info
+          flags: unit-${{ matrix.test-suite }}
+          name: codecov-umbrella
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: unit-test-results-${{ matrix.test-suite }}
+          path: |
+            test-results-${{ matrix.test-suite }}.json
+            coverage/html-${{ matrix.test-suite }}/
+          retention-days: 7
+
+  # Widget Tests
+  widget-tests:
+    name: Widget Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.should-run-all == 'true' || github.event.inputs.test_type == 'widget' || github.event.inputs.test_type == 'all'
+    strategy:
+      matrix:
+        test-suite: [ui, components, screens, forms]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run widget tests for ${{ matrix.test-suite }}
+        run: |
+          echo "Running widget tests for ${{ matrix.test-suite }}..."
+          flutter test test/widget/${{ matrix.test-suite }}/ \
+            --coverage \
+            --reporter=expanded \
+            --reporter=json:widget-test-results-${{ matrix.test-suite }}.json \
+            --timeout=30s
+
+      - name: Upload widget test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: widget-test-results-${{ matrix.test-suite }}
+          path: |
+            widget-test-results-${{ matrix.test-suite }}.json
+            coverage/
+          retention-days: 7
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.should-run-all == 'true' || github.event.inputs.test_type == 'integration' || github.event.inputs.test_type == 'all'
+    strategy:
+      matrix:
+        device:
+          - name: 'Android API 29'
+            api-level: 29
+            target: google_apis
+            arch: x86_64
+            profile: Nexus 5X
+          - name: 'Android API 30'
+            api-level: 30
+            target: google_apis
+            arch: x86_64
+            profile: Pixel 4
+          - name: 'Android API 31'
+            api-level: 31
+            target: google_apis
+            arch: x86_64
+            profile: Pixel 6
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Setup Android emulator (${{ matrix.device.name }})
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.device.api-level }}
+          target: ${{ matrix.device.target }}
+          arch: ${{ matrix.device.arch }}
+          profile: ${{ matrix.device.profile }}
+          emulator-options: -no-audio -no-boot-anim -no-window
+
+      - name: Run integration tests on ${{ matrix.device.name }}
+        run: |
+          echo "Running integration tests on ${{ matrix.device.name }}..."
+          flutter test integration_test/ \
+            --reporter=expanded \
+            --reporter=json:integration-test-results-${{ matrix.device.name }}.json \
+            --timeout=60s
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-results-${{ matrix.device.name }}
+          path: |
+            integration-test-results-${{ matrix.device.name }}.json
+            test_results/
+          retention-days: 7
+
+  # Performance Tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: (needs.setup.outputs.should-run-all == 'true' || github.event.inputs.test_type == 'performance' || github.event.inputs.test_type == 'all') && (github.event.inputs.run_benchmarks == 'true' || github.ref == 'refs/heads/main')
+    strategy:
+      matrix:
+        test-type: [memory, cpu, network, ui]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Setup performance testing tools
+        run: |
+          flutter pub global activate devtools
+          flutter pub global activate benchmark
+          flutter pub global activate memory_profiler
+
+      - name: Run ${{ matrix.test-type }} performance tests
+        run: |
+          echo "Running ${{ matrix.test-type }} performance tests..."
+          flutter test test/performance/${{ matrix.test-type }}/ \
+            --reporter=expanded \
+            --timeout=120s
+
+      - name: Generate performance report
+        run: |
+          flutter pub global run benchmark:report \
+            --output=performance-report-${{ matrix.test-type }}.json
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-test-results-${{ matrix.test-type }}
+          path: |
+            performance-report-${{ matrix.test-type }}.json
+            performance_results/
+          retention-days: 7
+
+  # Security Tests
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.should-run-all == 'true' || github.event.inputs.test_type == 'security' || github.event.inputs.test_type == 'all'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run security tests
+        run: |
+          echo "Running security tests..."
+          flutter test test/security/ \
+            --reporter=expanded \
+            --timeout=60s
+
+      - name: Static security analysis
+        run: |
+          flutter pub global activate secure
+          flutter pub global run secure:analyze
+
+      - name: Dependency security scan
+        run: |
+          flutter pub global activate safety
+          flutter pub global run safety check
+
+      - name: OWASP security scan
+        run: |
+          docker run --rm -v $(pwd):/app owasp/zap2docker-stable zap-baseline.py -t /app
+
+      - name: Upload security results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-test-results
+          path: |
+            security_results/
+            zap_report.html
+          retention-days: 7
+
+  # Accessibility Tests
+  accessibility-tests:
+    name: Accessibility Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.should-run-all == 'true' || github.event.inputs.test_type == 'accessibility' || github.event.inputs.test_type == 'all'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run accessibility tests
+        run: |
+          echo "Running accessibility tests..."
+          flutter test test/accessibility/ \
+            --reporter=expanded \
+            --timeout=60s
+
+      - name: Setup accessibility testing tools
+        run: |
+          npm install -g axe-cli
+          npm install -g lighthouse
+
+      - name: Run automated accessibility tests
+        run: |
+          flutter build web --release
+          axe-cli build/web/
+          lighthouse --chrome-flags="--headless" --output=json --output-path=lighthouse-accessibility.json build/web/
+
+      - name: Upload accessibility results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: accessibility-test-results
+          path: |
+            accessibility_results/
+            lighthouse-accessibility.json
+          retention-days: 7
+
+  # Localization Tests
+  localization-tests:
+    name: Localization Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.should-run-all == 'true' || github.event.inputs.test_type == 'localization' || github.event.inputs.test_type == 'all'
+    strategy:
+      matrix:
+        locale: [en_US, ne_NP, hi_IN, zh_CN, ar_SA]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run localization tests for ${{ matrix.locale }}
+        run: |
+          echo "Running localization tests for ${{ matrix.locale }}..."
+          flutter test test/localization/ \
+            --dart-define=LOCALE=${{ matrix.locale }} \
+            --reporter=expanded \
+            --timeout=60s
+
+      - name: Test Nepal-specific formatting
+        if: matrix.locale == 'ne_NP'
+        run: |
+          flutter test test/localization/nepal_specific/ \
+            --dart-define=LOCALE=${{ matrix.locale }} \
+            --reporter=expanded
+
+      - name: Upload localization results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: localization-test-results-${{ matrix.locale }}
+          path: localization_results/
+          retention-days: 7
+
+  # End-to-End Tests
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    needs: setup
+    if: needs.setup.outputs.should-run-all == 'true' || github.event.inputs.test_type == 'all'
+    strategy:
+      matrix:
+        browser: [chrome, firefox, safari]
+        platform: [android, ios, web]
+        exclude:
+          - browser: safari
+            platform: android
+          - browser: safari
+            platform: web
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ needs.setup.outputs.flutter-version }}
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install E2E testing tools
+        run: |
+          npm install -g webdriver-manager
+          npm install -g protractor
+          webdriver-manager update
+
+      - name: Build application for testing
+        run: |
+          flutter build web --release
+          flutter build apk --release
+
+      - name: Run E2E tests on ${{ matrix.platform }} with ${{ matrix.browser }}
+        run: |
+          echo "Running E2E tests on ${{ matrix.platform }} with ${{ matrix.browser }}..."
+          protractor e2e-tests/config/${{ matrix.platform }}.${{ matrix.browser }}.conf.js
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results-${{ matrix.platform }}-${{ matrix.browser }}
+          path: e2e-test-results/
+          retention-days: 7
+
+  # Test Report Generation
+  generate-reports:
+    name: Generate Test Reports
+    runs-on: ubuntu-latest
+    needs: [unit-tests, widget-tests, integration-tests, performance-tests, security-tests, accessibility-tests, localization-tests, e2e-tests]
+    if: always() && (github.event.inputs.generate_reports == 'true' || github.ref == 'refs/heads/main')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all test artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Setup Python for report generation
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install report generation tools
+        run: |
+          pip install jinja2 pytest-html-reporter
+          npm install -g mochawesome
+
+      - name: Generate comprehensive test report
+        run: |
+          python scripts/generate_test_report.py \
+            --output-dir test-reports \
+            --format html,json,pdf
+
+      - name: Generate test coverage report
+        run: |
+          python scripts/generate_coverage_report.py \
+            --output-dir coverage-reports \
+            --format html,json
+
+      - name: Generate performance benchmark report
+        run: |
+          python scripts/generate_performance_report.py \
+            --output-dir performance-reports \
+            --format html,json
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: comprehensive-test-reports
+          path: |
+            test-reports/
+            coverage-reports/
+            performance-reports/
+          retention-days: 30
+
+      - name: Publish test reports to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: test-reports/
+          destination_dir: test-reports
+
+  # Test Notifications
+  notify:
+    name: Test Notifications
+    runs-on: ubuntu-latest
+    needs: [generate-reports]
+    if: always()
+    steps:
+      - name: Send test results to Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#testing'
+          text: |
+            Test Suite Results:
+            - Unit Tests: ${{ needs.unit-tests.result }}
+            - Widget Tests: ${{ needs.widget-tests.result }}
+            - Integration Tests: ${{ needs.integration-tests.result }}
+            - Performance Tests: ${{ needs.performance-tests.result }}
+            - Security Tests: ${{ needs.security-tests.result }}
+            - Accessibility Tests: ${{ needs.accessibility-tests.result }}
+            - Localization Tests: ${{ needs.localization-tests.result }}
+            - E2E Tests: ${{ needs.e2e-tests.result }}
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+      - name: Send test results to email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "VedantaTrade Test Suite Results - ${{ job.status }}"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: "VedantaTrade CI/CD"
+          body: |
+            Test suite completed with status: ${{ job.status }}
+            
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            
+            View detailed reports: https://getuser-shivam.github.io/VedantaTrade/test-reports/
+
+      - name: Update GitHub status
+        uses: actions/github-script@v6
+        if: failure()
+        with:
+          script: |
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: context.ref,
+              state: 'open'
+            });
+            
+            if (pulls.data.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pulls.data[0].number,
+                body: '❌ Test suite failed. Please check the [test reports](https://getuser-shivam.github.io/VedantaTrade/test-reports/) for details.'
+              });
+            }
