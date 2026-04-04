@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter/services.dart';
 import '../providers/product_provider.dart';
 import '../widgets/product_card.dart';
-import '../widgets/barcode_scanner_widget.dart';
-import '../widgets/inventory_status_widget.dart';
+import '../widgets/product_comparison_sheet.dart';
+import '../widgets/category_filter_chip.dart';
+import '../widgets/search_bar_widget.dart';
+import '../widgets/sort_options_widget.dart';
+import '../../../shared/widgets/enhanced_glassmorphic_button.dart';
+import '../../../shared/widgets/enhanced_navigation.dart';
+import '../../../shared/widgets/skeleton_loading.dart';
+import '../../../shared/widgets/responsive_layout.dart';
+import '../../../shared/widgets/empty_state_widget.dart';
+import '../../../shared/widgets/error_state_widget.dart';
+import '../../../app/theme/app_theme.dart';
 
 class ProductCatalogScreen extends StatefulWidget {
   const ProductCatalogScreen({Key? key}) : super(key: key);
@@ -75,80 +86,194 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildSearchBar(),
-          _buildCategoryTabs(),
-          Expanded(
-            child: Consumer<ProductProvider>(
-              builder: (context, productProvider, child) {
-                if (productProvider.isLoading && productProvider.products.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                
-                if (productProvider.products.isEmpty) {
-                  return _buildEmptyState();
-                }
-
-                return TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildProductsGrid(productProvider.products),
-                    _buildCategoriesGrid(productProvider.categories),
-                    _buildManufacturersGrid(productProvider.manufacturers),
-                    _buildComparisonView(),
-                  ],
-                );
-              },
-            ),
+    return ResponsiveScaffold(
+      appBar: ResponsiveAppBar(
+        title: 'Product Catalog',
+        actions: [
+          IconButton(
+            onPressed: _showBarcodeScanner,
+            icon: const Icon(Icons.qr_code_scanner),
+            tooltip: 'Scan Product Barcode',
+          ),
+          IconButton(
+            onPressed: _toggleSearch,
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+          ),
+          IconButton(
+            onPressed: _showFilterSheet,
+            icon: const Icon(Icons.filter_list),
+          ),
+          IconButton(
+            onPressed: _handleLogout,
+            icon: const Icon(Icons.logout, color: Colors.redAccent),
           ),
         ],
+        onBackPressed: () => Navigator.pop(context),
       ),
-      floatingActionButton: _selectedProducts.isNotEmpty
-          ? FloatingActionButton.extended(
-              onPressed: _showComparisonSheet,
-              label: Text('Compare (${_selectedProducts.length})'),
-              icon: const Icon(Icons.compare),
-              backgroundColor: Colors.blue,
+      body: ResponsiveLayoutBuilder(
+        mobile: _buildMobileLayout(),
+        tablet: _buildTabletLayout(),
+        desktop: _buildDesktopLayout(),
+      ),
+      bottomNavigationBar: _selectedProducts.isNotEmpty
+          ? ResponsiveNavigation(
+              currentIndex: 3,
+              onTap: (index) {
+                if (index == 3) {
+                  _showComparisonSheet();
+                }
+              },
+              items: [
+                const EnhancedBottomNavItem(icon: Icons.inventory_2, label: 'Products'),
+                const EnhancedBottomNavItem(icon: Icons.category, label: 'Categories'),
+                const EnhancedBottomNavItem(icon: Icons.business, label: 'Manufacturers'),
+                EnhancedBottomNavItem(
+                  icon: Icons.compare,
+                  label: 'Compare (${_selectedProducts.length})',
+                  color: AppTheme.primary,
+                ),
+              ],
             )
           : null,
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      title: const Text('Product Catalog'),
-      actions: [
-        IconButton(
-          onPressed: _showBarcodeScanner,
-          icon: const Icon(Icons.qr_code_scanner),
-          tooltip: 'Scan Product Barcode',
-        ),
-        IconButton(
-          onPressed: _toggleSearch,
-          icon: Icon(_isSearching ? Icons.close : Icons.search),
-        ),
-        IconButton(
-          onPressed: _showFilterSheet,
-          icon: const Icon(Icons.filter_list),
-        ),
-        IconButton(
-          onPressed: _handleLogout,
-          icon: const Icon(Icons.logout, color: Colors.redAccent),
+  Widget _buildMobileLayout() {
+    return Column(
+      children: [
+        _buildSearchBar(),
+        _buildCategoryTabs(),
+        Expanded(
+          child: _buildTabContent(),
         ),
       ],
-      bottom: TabBar(
-        controller: _tabController,
-        tabs: const [
-          Tab(text: 'Products', icon: Icon(Icons.inventory_2)),
-          Tab(text: 'Categories', icon: Icon(Icons.category)),
-          Tab(text: 'Manufacturers', icon: Icon(Icons.business)),
-          Tab(text: 'Compare', icon: Icon(Icons.compare)),
-        ],
-      ),
+    );
+  }
+
+  Widget _buildTabletLayout() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Column(
+            children: [
+              _buildSearchBar(),
+              _buildCategoryTabs(),
+              Expanded(
+                child: _buildTabContent(),
+              ),
+            ],
+          ),
+        ),
+        if (_selectedProducts.isNotEmpty)
+          Container(
+            width: 300,
+            color: AppTheme.surfaceDark,
+            child: _buildComparisonPanel(),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 3,
+          child: Column(
+            children: [
+              _buildSearchBar(),
+              _buildCategoryTabs(),
+              Expanded(
+                child: _buildTabContent(),
+              ),
+            ],
+          ),
+        ),
+        if (_selectedProducts.isNotEmpty)
+          Container(
+            width: 400,
+            color: AppTheme.surfaceDark,
+            child: _buildComparisonPanel(),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTabContent() {
+    return Consumer<ProductProvider>(
+      builder: (context, productProvider, child) {
+        if (productProvider.isLoading && productProvider.products.isEmpty) {
+          return _buildLoadingState();
+        }
+        
+        if (productProvider.products.isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return TabBarView(
+          controller: _tabController,
+          children: [
+            _buildProductsGrid(productProvider.products),
+            _buildCategoriesGrid(productProvider.categories),
+            _buildManufacturersGrid(productProvider.manufacturers),
+            _buildComparisonView(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Column(
+      children: [
+        Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.grey[300],
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          height: 60,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 5,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Container(
+                  width: 80,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 20),
+        Expanded(
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.72,
+            ),
+            itemCount: 6,
+            itemBuilder: (context, index) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

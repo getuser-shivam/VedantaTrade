@@ -1,8 +1,28 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
+import 'dart:math';
 import 'package:vedanta_trade/core/api_config.dart';
+import 'package:vedanta_trade/features/auth/domain/entities/user_entity.dart';
 
 class AuthService {
   late final Dio _dio;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  final LocalAuthentication _localAuth = LocalAuthentication();
+  
+  // Token management
+  static const String _accessTokenKey = 'access_token';
+  static const String _refreshTokenKey = 'refresh_token';
+  static const String _userKey = 'user_data';
+  static const String _biometricEnabledKey = 'biometric_enabled';
+  static const String _deviceIdKey = 'device_id';
+  
+  // Rate limiting
+  final Map<String, DateTime> _loginAttempts = {};
+  final int _maxAttempts = 5;
+  final Duration _lockoutDuration = const Duration(minutes: 15);
   
   AuthService() {
     _dio = Dio();

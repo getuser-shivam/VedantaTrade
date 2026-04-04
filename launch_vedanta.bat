@@ -14,6 +14,10 @@ echo.
 echo Starting app on connected USB device...
 call flutter run
 
+
+
+
+
 echo.
 echo =========================================
 echo Session ended. Press any key to close.

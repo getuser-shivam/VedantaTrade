@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared/widgets/premium_glassmorphic_theme.dart';
-import '../providers/auth_provider.dart';
+import '../providers/enhanced_auth_provider.dart';
 import '../widgets/enhanced_login_form.dart';
 import '../widgets/enhanced_register_form.dart';
 import '../widgets/enhanced_password_reset_form.dart';
+import '../widgets/security_status_widget.dart';
+import '../widgets/biometric_auth_widget.dart';
 
 class EnhancedAuthScreen extends StatefulWidget {
   const EnhancedAuthScreen({Key? key}) : super(key: key);
@@ -17,18 +20,47 @@ class EnhancedAuthScreen extends StatefulWidget {
 class _EnhancedAuthScreenState extends State<EnhancedAuthScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  bool _isLoading = false;
-  String? _errorMessage;
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  
+  bool _showSecurityInfo = false;
+  bool _enableBiometric = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+    );
+    
+    _fadeController.forward();
+    _slideController.forward();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _fadeController.dispose();
+    _slideController.dispose();
     super.dispose();
   }
 

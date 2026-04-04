@@ -76,10 +76,24 @@ class ProductCatalogService {
     }
   }
 
-  Future<List<Manufacturer>> loadManufacturers({String? token}) async {
+  Future<List<Product>> loadMoreProducts({
+    String? category,
+    String? searchQuery,
+    String? sortOption,
+    int startIndex = 0,
+    int limit = 20,
+    String? token,
+  }) async {
     try {
       final response = await _dio.get(
-        '/api/manufacturers', // Assuming this endpoint or similar exists in ApiConfig
+        ApiConfig.products,
+        queryParameters: {
+          if (category != null && category != 'All') 'category': category,
+          if (searchQuery != null && searchQuery.isNotEmpty) 'search': searchQuery,
+          if (sortOption != null) 'sort': sortOption,
+          'start': startIndex.toString(),
+          'limit': limit.toString(),
+        },
         options: Options(
           headers: token != null ? {'Authorization': 'Bearer $token'} : {},
         ),
@@ -87,20 +101,12 @@ class ProductCatalogService {
       
       if (response.data['success'] == true) {
         final List<dynamic> data = response.data['data'];
-        return data.map((json) => Manufacturer.fromJson(json)).toList();
+        return data.map((json) => Product.fromJson(json)).toList();
       }
       return [];
     } catch (e) {
-      debugPrint('Failed to load manufacturers: $e');
-      // Fallback to local
-      try {
-        final String response = await rootBundle.loadString('assets/data/products.json');
-        final List<dynamic> data = json.decode(response);
-        final Set<String> mfgNames = data.map((j) => (j['manufacturer'] ?? 'Vedanta TradeLink') as String).toSet();
-        return mfgNames.map((name) => Manufacturer(name: name)).toList();
-      } catch (_) {
-        return [];
-      }
+      debugPrint('Failed to load more products: $e');
+      return [];
     }
   }
 }

@@ -1,35 +1,196 @@
 {
-    "name": "VedantaTrade",
+    "name": "VedantaTrade - Pharmaceutical Distribution Platform Nepal",
     "short_name": "VedantaTrade",
-    "description": "Enterprise Pharmaceutical Distribution Platform for Nepal with geospatial tracking, inventory management, and VAT compliance.",
-    "start_url": "/",
+    "description": "Enterprise-grade pharmaceutical distribution platform for Nepal with real-time inventory, 13% VAT compliance, and geospatial tracking for medical representatives in Janakpur.",
+    "start_url": "/VedantaTrade/",
     "display": "standalone",
-    "background_color": "#0F172A",
-    "theme_color": "#3B82F6",
+    "background_color": "#1a1a2e",
+    "theme_color": "#4a69bd",
     "orientation": "portrait-primary",
-    "scope": "/",
+    "scope": "/VedantaTrade/",
+    "lang": "en",
+    "dir": "ltr",
+    "categories": ["business", "productivity", "medical", "health", "pharmaceutical"],
     "icons": [
         {
-            "src": "icons/Icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-maskable-192.png",
+            "src": "/VedantaTrade/icons/Icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
-            "purpose": "maskable"
+            "purpose": "maskable any"
         },
         {
-            "src": "icons/Icon-maskable-512.png",
+            "src": "/VedantaTrade/icons/Icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "maskable"
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/VedantaTrade/assets/icons/icon-72x72.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/VedantaTrade/assets/icons/icon-96x96.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/VedantaTrade/assets/icons/icon-128x128.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/VedantaTrade/assets/icons/icon-144x144.png",
+            "sizes": "144x144",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/VedantaTrade/assets/icons/icon-152x152.png",
+            "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "/VedantaTrade/assets/icons/icon-384x384.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "maskable any"
         }
-    ]
+    ],
+    "shortcuts": [
+        {
+            "name": "Product Catalog",
+            "short_name": "Catalog",
+            "description": "Browse pharmaceutical products",
+            "url": "/VedantaTrade/#/catalog",
+            "icons": [
+                {
+                    "src": "/VedantaTrade/assets/icons/catalog-96x96.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "description": "View main dashboard",
+            "url": "/VedantaTrade/#/dashboard",
+            "icons": [
+                {
+                    "src": "/VedantaTrade/assets/icons/dashboard-96x96.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Orders",
+            "short_name": "Orders",
+            "description": "Manage orders",
+            "url": "/VedantaTrade/#/orders",
+            "icons": [
+                {
+                    "src": "/VedantaTrade/assets/icons/orders-96x96.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Gallery",
+            "short_name": "Gallery",
+            "description": "View app gallery",
+            "url": "/VedantaTrade/#/gallery",
+            "icons": [
+                {
+                    "src": "/VedantaTrade/assets/icons/gallery-96x96.png",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/VedantaTrade/assets/screenshots/desktop-1.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Dashboard view on desktop"
+        },
+        {
+            "src": "/VedantaTrade/assets/screenshots/mobile-1.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Dashboard view on mobile"
+        },
+        {
+            "src": "/VedantaTrade/assets/screenshots/desktop-2.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Product catalog on desktop"
+        },
+        {
+            "src": "/VedantaTrade/assets/screenshots/mobile-2.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Product catalog on mobile"
+        }
+    ],
+    "related_applications": [
+        {
+            "platform": "play",
+            "url": "https://play.google.com/store/apps/details?id=com.vedantatrade.app",
+            "id": "com.vedantatrade.app"
+        },
+        {
+            "platform": "itunes",
+            "url": "https://apps.apple.com/app/vedantatrade/id1234567890"
+        }
+    ],
+    "prefer_related_applications": false,
+    "edge_side_panel": {
+        "preferred_width": 400
+    },
+    "launch_handler": {
+        "client_mode": "focus-existing"
+    },
+    "protocol_handlers": [
+        {
+            "protocol": "web+vedantatrade",
+            "url": "/VedantaTrade/%s"
+        }
+    ],
+    "file_handlers": [
+        {
+            "action": "/VedantaTrade/#/upload",
+            "accept": {
+                "application/pdf": [".pdf"],
+                "image/jpeg": [".jpg", ".jpeg"],
+                "image/png": [".png"],
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+                "text/csv": [".csv"]
+            }
+        }
+    ],
+    "share_target": {
+        "action": "/VedantaTrade/#/share",
+        "method": "POST",
+        "enctype": "multipart/form-data",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url",
+            "files": [
+                {
+                    "name": "receipts",
+                    "accept": ["image/jpeg", "image/png", "application/pdf"]
+                }
+            ]
+        }
+    }
 }

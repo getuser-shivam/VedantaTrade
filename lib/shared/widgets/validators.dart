@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class Validators {
@@ -181,6 +180,7 @@ class Validators {
     LowerCaseTextFormatter(),
   ];
 }
+}
 
 // Custom text input formatter for lowercase
 class LowerCaseTextFormatter extends TextInputFormatter {
@@ -192,4 +192,3 @@ class LowerCaseTextFormatter extends TextInputFormatter {
     );
   }
 }
-\n\n// Custom text input formatter for lowercase\nclass LowerCaseTextFormatter extends TextInputFormatter {\n  @override\n  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {\n    return TextEditingValue(\n      text: newValue.text.toLowerCase(),\n      selection: newValue.selection,\n    );\n  }\n}

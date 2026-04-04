@@ -12,6 +12,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:vedanta_trade/features/accountant/widgets/accountant_widgets.dart';
+import 'package:vedanta_trade/core/utils/nepal_vat_expense_generator.dart';
 
 /// Accountant Dashboard with VAT Returns and Expense Reconciliation
 class AccountantDashboard extends StatefulWidget {
@@ -588,51 +589,63 @@ class _AccountantDashboardState extends State<AccountantDashboard>
 
   void _generateVatReport() async {
     try {
-      // Generate comprehensive VAT report
-      final pdf = await _createVatReportPdf();
+      // Generate comprehensive Nepal-compliant VAT report
+      final pdf = await NepalVatReportGenerator.generateVatReturnReport(
+        period: _stats?['currentQuarter'] ?? 'Q1 2026',
+        sales: _getMockSalesData(),
+        purchases: _getMockPurchaseData(),
+        vatReturns: _vatReturns,
+      );
       
       await Printing.sharePdf(
         bytes: await pdf.save(),
-        filename: 'VAT_Report_${DateTime.now().millisecondsSinceEpoch}.pdf',
+        filename: 'Nepal_VAT_Return_${_stats?['currentQuarter'] ?? 'Q1_2026'}_${DateTime.now().millisecondsSinceEpoch}.pdf',
       );
     } catch (e) {
       _showErrorSnackBar('Failed to generate VAT report: $e');
     }
   }
 
-  Future<pw.Document> _createVatReportPdf() async {
-    final pdf = pw.Document();
-    
-    pdf.addPage(
-      pw.Page(
-        pageFormat: pw.PdfPageFormat.a4,
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Header(
-                level: 0,
-                child: pw.Text('VAT Report - ${_stats?['currentQuarter'] ?? 'Q1 2026'}'),
-              ),
-              pw.SizedBox(height: 20),
-              pw.Text('Total VAT Collected: NPR ${_stats?['totalVatCollected'] ?? 0}'),
-              pw.Text('Generated on: ${DateFormat('yyyy-MM-dd').format(DateTime.now())'),
-              pw.SizedBox(height: 20),
-              pw.Table.fromTextArray(
-                context: context,
-                data: <List<String>>[
-                  ['Period', 'Sales', 'VAT (13%)', 'Status'],
-                  ['Q1 2026', '2,500,000', '325,000', 'Filed'],
-                  ['Q4 2025', '2,100,000', '273,000', 'Pending'],
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
-    
-    return pdf;
+  /// Mock sales data for development
+  List<Map<String, dynamic>> _getMockSalesData() {
+    return [
+      {
+        'date': DateTime.now().subtract(const Duration(days: 90)),
+        'customer': 'Janakpur Pharmacy',
+        'invoiceNo': 'INV001',
+        'amount': 250000.0,
+      },
+      {
+        'date': DateTime.now().subtract(const Duration(days: 75)),
+        'customer': 'City Medical Store',
+        'invoiceNo': 'INV002',
+        'amount': 180000.0,
+      },
+      {
+        'date': DateTime.now().subtract(const Duration(days: 60)),
+        'customer': 'Shree Medical Hall',
+        'invoiceNo': 'INV003',
+        'amount': 320000.0,
+      },
+    ];
+  }
+
+  /// Mock purchase data for development
+  List<Map<String, dynamic>> _getMockPurchaseData() {
+    return [
+      {
+        'date': DateTime.now().subtract(const Duration(days: 85)),
+        'supplier': 'Pharma Corp',
+        'billNo': 'BILL001',
+        'amount': 150000.0,
+      },
+      {
+        'date': DateTime.now().subtract(const Duration(days: 70)),
+        'supplier': 'MediTech Ltd',
+        'billNo': 'BILL002',
+        'amount': 120000.0,
+      },
+    ];
   }
 
   void _showVatReturnDetails(Map<String, dynamic> vatReturn) {
@@ -755,10 +768,36 @@ class _AccountantDashboardState extends State<AccountantDashboard>
   }
 
   void _viewExpenseReceipts(Map<String, dynamic> expense) {
-    // TODO: Implement receipt viewing
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('View ${expense['receiptCount']} receipts')),
-    );
+    // Generate expense reconciliation report with receipts
+    _generateExpenseReconciliationReport(expense);
+  }
+
+  /// Generate expense reconciliation report
+  Future<void> _generateExpenseReconciliationReport(Map<String, dynamic> expense) async {
+    try {
+      final pdf = await MrExpenseReconciliation.generateExpenseReconciliationReport(
+        period: 'March 2026',
+        mrName: expense['mrName'],
+        expenses: [expense, ..._getOtherMrExpenses(expense['mrName'])],
+        totalBudget: 50000.0,
+        approvedAmount: 35000.0,
+      );
+      
+      await Printing.sharePdf(
+        bytes: await pdf.save(),
+        filename: 'MR_Expense_Reconciliation_${expense['mrName']}_${DateTime.now().millisecondsSinceEpoch}.pdf',
+      );
+    } catch (e) {
+      _showErrorSnackBar('Failed to generate expense reconciliation report: $e');
+    }
+  }
+
+  /// Get other expenses for the same MR
+  List<Map<String, dynamic>> _getOtherMrExpenses(String mrName) {
+    return _expenses
+        .where((e) => e['mrName'] == mrName && e['id'] != _expenses.firstWhere((e) => e['mrName'] == mrName)['id'])
+        .cast<Map<String, dynamic>>()
+        .toList();
   }
 
   void _showReconciliationDetails(Map<String, dynamic> reconciliation) {
