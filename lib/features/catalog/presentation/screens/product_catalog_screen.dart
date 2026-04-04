@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+import '../../../../shared/widgets/premium_glassmorphic_theme.dart';
+import '../../../../shared/widgets/enhanced_animations.dart';
+import '../../../../shared/utils/nepal_localization_utils.dart';
 import '../providers/product_provider.dart';
 import '../widgets/product_card.dart';
-import '../widgets/product_comparison_sheet.dart';
-import '../widgets/category_filter_chip.dart';
-import '../widgets/search_bar_widget.dart';
-import '../widgets/sort_options_widget.dart';
-import '../../../shared/widgets/enhanced_glassmorphic_button.dart';
-import '../../../shared/widgets/enhanced_navigation.dart';
-import '../../../shared/widgets/skeleton_loading.dart';
-import '../../../shared/widgets/responsive_layout.dart';
-import '../../../shared/widgets/empty_state_widget.dart';
-import '../../../shared/widgets/error_state_widget.dart';
-import '../../../app/theme/app_theme.dart';
+import '../widgets/product_filter_widget.dart';
+import '../widgets/product_search_widget.dart';
 
+/// Product Catalog Screen
 class ProductCatalogScreen extends StatefulWidget {
   const ProductCatalogScreen({Key? key}) : super(key: key);
 
@@ -27,24 +21,50 @@ class ProductCatalogScreen extends StatefulWidget {
 class _ProductCatalogScreenState extends State<ProductCatalogScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  late TextEditingController _searchController;
-  late FocusNode _searchFocusNode;
-
-  bool _isSearching = false;
-  int _selectedCategoryIndex = 0;
-  String _searchQuery = '';
-  List<dynamic> _selectedProducts = [];
-  Map<String, dynamic> _filters = {};
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-    _searchController = TextEditingController();
-    _searchFocusNode = FocusNode();
     
-    _searchController.addListener(_onSearchChanged);
-    _loadData();
+    _tabController = TabController(length: 4, vsync: this);
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutBack,
+    ));
+    
+    // Initialize provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ProductProvider>(context, listen: false).initialize();
+    });
+    
+    // Start animation
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        _animationController.forward();
+      }
+    });
+    
+    // Setup scroll listener for infinite loading
+    _scrollController.addListener(_onScroll);
   }
 
   @override
