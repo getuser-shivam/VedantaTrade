@@ -1,0 +1,134 @@
+# VedantaTrade Kubernetes Namespace Configuration
+# Creates dedicated namespaces for different environments
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vedantatrade-staging
+  labels:
+    app: vedantatrade
+    environment: staging
+    project: vedantatrade
+  annotations:
+    description: "VedantaTrade staging environment"
+    created-by: "vedantatrade-deployment"
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vedantatrade-production
+  labels:
+    app: vedantatrade
+    environment: production
+    project: vedantatrade
+  annotations:
+    description: "VedantaTrade production environment"
+    created-by: "vedantatrade-deployment"
+
+---
+# Resource quotas for staging
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: vedantatrade-staging-quota
+  namespace: vedantatrade-staging
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: "4Gi"
+    limits.cpu: "4"
+    limits.memory: "8Gi"
+    persistentvolumeclaims: "2"
+    pods: "10"
+    services: "5"
+    secrets: "10"
+    configmaps: "10"
+
+---
+# Resource quotas for production
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: vedantatrade-production-quota
+  namespace: vedantatrade-production
+spec:
+  hard:
+    requests.cpu: "8"
+    requests.memory: "16Gi"
+    limits.cpu: "16"
+    limits.memory: "32Gi"
+    persistentvolumeclaims: "5"
+    pods: "20"
+    services: "10"
+    secrets: "20"
+    configmaps: "20"
+
+---
+# Network policies for staging
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vedantatrade-staging-netpol
+  namespace: vedantatrade-staging
+spec:
+  podSelector:
+    matchLabels:
+      app: vedantatrade
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# Network policies for production
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vedantatrade-production-netpol
+  namespace: vedantatrade-production
+spec:
+  podSelector:
+    matchLabels:
+      app: vedantatrade
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53

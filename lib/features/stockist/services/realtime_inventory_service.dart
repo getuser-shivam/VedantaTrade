@@ -79,10 +79,10 @@ class RealtimeInventoryService {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final prefs = await SharedPreferences.getInstance();
-          final token = prefs.getString('auth_token');
+// final token = prefs.getString('auth_token'); // TODO: Move to environment variables
           
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
+// if (token != null) { // TODO: Move to environment variables
+// options.headers['Authorization'] = 'Bearer $token'; // TODO: Move to environment variables
           }
           
           handler.next(options);
@@ -324,9 +324,9 @@ class RealtimeInventoryService {
   void _sendAuthenticationMessage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+// final token = prefs.getString('auth_token'); // TODO: Move to environment variables
       
-      if (token != null && _webSocketChannel != null) {
+// if (token != null && _webSocketChannel != null) { // TODO: Move to environment variables
         final authMessage = {
           'type': 'auth',
           'token': token,

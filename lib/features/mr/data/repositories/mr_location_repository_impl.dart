@@ -16,7 +16,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
   @override
   Future<Either<Failure, void>> saveLocation(MRLocation location) async {
     try {
-      print('💾 Saving MR location: ${location.id}');
+// print('💾 Saving MR location: ${location.id}'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -26,10 +26,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
       
-      print('✅ MR location saved successfully');
+// print('✅ MR location saved successfully'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to save MR location: $e');
+// print('❌ Failed to save MR location: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to save location',
         code: 'SAVE_ERROR',
@@ -41,7 +41,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
   @override
   Future<Either<Failure, MRLocation?>> getLocationById(String id) async {
     try {
-      print('🔍 Getting MR location by ID: $id');
+// print('🔍 Getting MR location by ID: $id'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -53,15 +53,15 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       );
       
       if (maps.isEmpty) {
-        print('⚠️ MR location not found: $id');
+// print('⚠️ MR location not found: $id'); // Removed for production
         return const Right(null);
       }
       
       final location = MRLocation.fromMap(maps.first);
-      print('✅ MR location retrieved: ${location.id}');
+// print('✅ MR location retrieved: ${location.id}'); // Removed for production
       return Right(location);
     } catch (e) {
-      print('❌ Failed to get MR location: $e');
+// print('❌ Failed to get MR location: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to retrieve location',
         code: 'RETRIEVE_ERROR',
@@ -78,7 +78,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting locations for MR: $mrId');
+// print('🔍 Getting locations for MR: $mrId'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -104,10 +104,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       );
       
       final locations = maps.map((map) => MRLocation.fromMap(map)).toList();
-      print('✅ Retrieved ${locations.length} locations for MR: $mrId');
+// print('✅ Retrieved ${locations.length} locations for MR: $mrId'); // Removed for production
       return Right(locations);
     } catch (e) {
-      print('❌ Failed to get MR locations: $e');
+// print('❌ Failed to get MR locations: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to retrieve locations',
         code: 'RETRIEVE_ERROR',
@@ -123,7 +123,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
     String? mrId,
   }) async {
     try {
-      print('🔍 Getting locations by date range: $startDate to $endDate');
+// print('🔍 Getting locations by date range: $startDate to $endDate'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -143,10 +143,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       );
       
       final locations = maps.map((map) => MRLocation.fromMap(map)).toList();
-      print('✅ Retrieved ${locations.length} locations for date range');
+// print('✅ Retrieved ${locations.length} locations for date range'); // Removed for production
       return Right(locations);
     } catch (e) {
-      print('❌ Failed to get locations by date range: $e');
+// print('❌ Failed to get locations by date range: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to retrieve locations by date range',
         code: 'RETRIEVE_ERROR',
@@ -163,7 +163,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
     required double southWestLng,
   }) async {
     try {
-      print('🔍 Getting locations by bounds: NE($northEastLat, $northEastLng) SW($southWestLat, $southWestLng)');
+// print('🔍 Getting locations by bounds: NE($northEastLat, $northEastLng) SW($southWestLat, $southWestLng)'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -175,10 +175,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       );
       
       final locations = maps.map((map) => MRLocation.fromMap(map)).toList();
-      print('✅ Retrieved ${locations.length} locations within bounds');
+// print('✅ Retrieved ${locations.length} locations within bounds'); // Removed for production
       return Right(locations);
     } catch (e) {
-      print('❌ Failed to get locations by bounds: $e');
+// print('❌ Failed to get locations by bounds: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to retrieve locations by bounds',
         code: 'RETRIEVE_ERROR',
@@ -194,7 +194,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
     DateTime? endDate,
   }) async {
     try {
-      print('🔍 Getting high accuracy locations...');
+// print('🔍 Getting high accuracy locations...'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -224,10 +224,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       );
       
       final locations = maps.map((map) => MRLocation.fromMap(map)).toList();
-      print('✅ Retrieved ${locations.length} high accuracy locations');
+// print('✅ Retrieved ${locations.length} high accuracy locations'); // Removed for production
       return Right(locations);
     } catch (e) {
-      print('❌ Failed to get high accuracy locations: $e');
+// print('❌ Failed to get high accuracy locations: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to retrieve high accuracy locations',
         code: 'RETRIEVE_ERROR',
@@ -242,7 +242,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
     required DateTime date,
   }) async {
     try {
-      print('🔍 Getting trajectory locations for MR: $mrId on date: $date');
+// print('🔍 Getting trajectory locations for MR: $mrId on date: $date'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -257,10 +257,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       );
       
       final locations = maps.map((map) => MRLocation.fromMap(map)).toList();
-      print('✅ Retrieved ${locations.length} trajectory locations');
+// print('✅ Retrieved ${locations.length} trajectory locations'); // Removed for production
       return Right(locations);
     } catch (e) {
-      print('❌ Failed to get trajectory locations: $e');
+// print('❌ Failed to get trajectory locations: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to retrieve trajectory locations',
         code: 'RETRIEVE_ERROR',
@@ -272,7 +272,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
   @override
   Future<Either<Failure, MRLocation?>> getLatestLocation(String mrId) async {
     try {
-      print('🔍 Getting latest location for MR: $mrId');
+// print('🔍 Getting latest location for MR: $mrId'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -285,15 +285,15 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       );
       
       if (maps.isEmpty) {
-        print('⚠️ No locations found for MR: $mrId');
+// print('⚠️ No locations found for MR: $mrId'); // Removed for production
         return const Right(null);
       }
       
       final location = MRLocation.fromMap(maps.first);
-      print('✅ Latest location retrieved: ${location.id}');
+// print('✅ Latest location retrieved: ${location.id}'); // Removed for production
       return Right(location);
     } catch (e) {
-      print('❌ Failed to get latest location: $e');
+// print('❌ Failed to get latest location: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to retrieve latest location',
         code: 'RETRIEVE_ERROR',
@@ -305,7 +305,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
   @override
   Future<Either<Failure, void>> updateLocation(MRLocation location) async {
     try {
-      print('📝 Updating MR location: ${location.id}');
+// print('📝 Updating MR location: ${location.id}'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -316,10 +316,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
         whereArgs: [location.id],
       );
       
-      print('✅ MR location updated successfully');
+// print('✅ MR location updated successfully'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to update MR location: $e');
+// print('❌ Failed to update MR location: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to update location',
         code: 'UPDATE_ERROR',
@@ -331,7 +331,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
   @override
   Future<Either<Failure, void>> deleteLocation(String id) async {
     try {
-      print('🗑️ Deleting MR location: $id');
+// print('🗑️ Deleting MR location: $id'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -341,10 +341,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
         whereArgs: [id],
       );
       
-      print('✅ MR location deleted successfully');
+// print('✅ MR location deleted successfully'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to delete MR location: $e');
+// print('❌ Failed to delete MR location: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to delete location',
         code: 'DELETE_ERROR',
@@ -360,7 +360,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
     DateTime? endDate,
   }) async {
     try {
-      print('📈 Getting location statistics for MR: $mrId');
+// print('📈 Getting location statistics for MR: $mrId'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -429,10 +429,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
                          averageAccuracy <= 20.0 ? 'Fair' : 'Poor',
       };
       
-      print('✅ Location statistics calculated');
+// print('✅ Location statistics calculated'); // Removed for production
       return Right(statistics);
     } catch (e) {
-      print('❌ Failed to calculate location statistics: $e');
+// print('❌ Failed to calculate location statistics: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to calculate location statistics',
         code: 'STATISTICS_ERROR',
@@ -447,7 +447,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
     int? limit = 10,
   }) async {
     try {
-      print('📊 Getting dashboard locations...');
+// print('📊 Getting dashboard locations...'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -468,10 +468,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       );
       
       final locations = maps.map((map) => MRLocation.fromMap(map)).toList();
-      print('✅ Retrieved ${locations.length} dashboard locations');
+// print('✅ Retrieved ${locations.length} dashboard locations'); // Removed for production
       return Right(locations);
     } catch (e) {
-      print('❌ Failed to get dashboard locations: $e');
+// print('❌ Failed to get dashboard locations: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to retrieve dashboard locations',
         code: 'RETRIEVE_ERROR',
@@ -483,7 +483,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
   @override
   Future<Either<Failure, void>> syncOfflineLocations(List<MRLocation> locations) async {
     try {
-      print('🔄 Syncing ${locations.length} offline locations...');
+// print('🔄 Syncing ${locations.length} offline locations...'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -504,10 +504,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       
       await batch.commit(noResult: true);
       
-      print('✅ Offline locations synced successfully');
+// print('✅ Offline locations synced successfully'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to sync offline locations: $e');
+// print('❌ Failed to sync offline locations: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to sync offline locations',
         code: 'SYNC_ERROR',
@@ -519,7 +519,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
   @override
   Future<Either<Failure, List<MRLocation>>> getLocationsNeedingAttention() async {
     try {
-      print('⚠️ Getting locations needing attention...');
+// print('⚠️ Getting locations needing attention...'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -531,10 +531,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       );
       
       final locations = maps.map((map) => MRLocation.fromMap(map)).toList();
-      print('✅ Retrieved ${locations.length} locations needing attention');
+// print('✅ Retrieved ${locations.length} locations needing attention'); // Removed for production
       return Right(locations);
     } catch (e) {
-      print('❌ Failed to get locations needing attention: $e');
+// print('❌ Failed to get locations needing attention: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to retrieve locations needing attention',
         code: 'RETRIEVE_ERROR',
@@ -546,7 +546,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
   @override
   Future<Either<Failure, void>> bulkSaveLocations(List<MRLocation> locations) async {
     try {
-      print('💾 Bulk saving ${locations.length} locations...');
+// print('💾 Bulk saving ${locations.length} locations...'); // Removed for production
       
       final db = await _databaseHelper.database;
       
@@ -562,10 +562,10 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
       
       await batch.commit(noResult: true);
       
-      print('✅ Bulk save completed successfully');
+// print('✅ Bulk save completed successfully'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to bulk save locations: $e');
+// print('❌ Failed to bulk save locations: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to bulk save locations',
         code: 'BULK_SAVE_ERROR',
@@ -581,7 +581,7 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
     required DateTime endDate,
   }) async {
     try {
-      print('📈 Getting location analytics for MR: $mrId');
+// print('📈 Getting location analytics for MR: $mrId'); // Removed for production
       
       final locationsResult = await getLocationsByMrId(
         mrId: mrId,
@@ -652,12 +652,12 @@ class MRLocationRepositoryImpl implements MRLocationRepository {
             ),
           };
           
-          print('✅ Location analytics calculated');
+// print('✅ Location analytics calculated'); // Removed for production
           return Right(analytics);
         },
       );
     } catch (e) {
-      print('❌ Failed to get location analytics: $e');
+// print('❌ Failed to get location analytics: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to calculate location analytics',
         code: 'ANALYTICS_ERROR',
@@ -707,10 +707,10 @@ class DatabaseHelper {
         onUpgrade: _onUpgrade,
       );
       
-      print('✅ Database initialized: $path');
+// print('✅ Database initialized: $path'); // Removed for production
       return database;
     } catch (e) {
-      print('❌ Failed to initialize database: $e');
+// print('❌ Failed to initialize database: $e'); // Removed for production
       rethrow;
     }
   }
@@ -744,11 +744,11 @@ class DatabaseHelper {
     await db.execute('CREATE INDEX idx_mr_timestamp ON mr_locations (mr_id, timestamp)');
     await db.execute('CREATE INDEX idx_high_accuracy ON mr_locations (is_high_accuracy)');
     
-    print('✅ Database tables created successfully');
+// print('✅ Database tables created successfully'); // Removed for production
   }
   
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // Handle database upgrades here
-    print('🔄 Upgrading database from version $oldVersion to $newVersion');
+// print('🔄 Upgrading database from version $oldVersion to $newVersion'); // Removed for production
   }
 }

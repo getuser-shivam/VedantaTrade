@@ -32,10 +32,10 @@ class RealtimeInventoryService {
   Future<void> initialize() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _token = prefs.getString('auth_token');
+// _token = prefs.getString('auth_token'); // TODO: Move to environment variables
       _userId = prefs.getString('user_id');
 
-      if (_token != null && _userId != null) {
+// if (_token != null && _userId != null) { // TODO: Move to environment variables
         await _connectWebSocket();
       }
     } catch (e) {

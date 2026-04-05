@@ -30,7 +30,7 @@ class HierarchyOptimizer {
     final report = OptimizationReport(startTime: DateTime.now());
 
     try {
-      print('🚀 Starting hierarchy optimization...');
+// print('🚀 Starting hierarchy optimization...'); // Removed for production
 
       // Phase 1: Remove unused components
       await _removeUnusedComponents(report);
@@ -53,12 +53,12 @@ class HierarchyOptimizer {
       report.endTime = DateTime.now();
       report.success = true;
 
-      print('✅ Hierarchy optimization completed successfully');
+// print('✅ Hierarchy optimization completed successfully'); // Removed for production
     } catch (e) {
       report.endTime = DateTime.now();
       report.success = false;
       report.error = e.toString();
-      print('❌ Hierarchy optimization failed: $e');
+// print('❌ Hierarchy optimization failed: $e'); // Removed for production
     } finally {
       _isOptimizing = false;
     }
@@ -68,7 +68,7 @@ class HierarchyOptimizer {
 
   /// Remove unused components
   Future<void> _removeUnusedComponents(OptimizationReport report) async {
-    print('🗑️ Phase 1: Removing unused components...');
+// print('🗑️ Phase 1: Removing unused components...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     final dependencyGraph = _hierarchyManager.getDependencyGraph();
@@ -108,12 +108,12 @@ class HierarchyOptimizer {
     }
 
     report.unusedComponentsRemoved = unused.length;
-    print('✅ Phase 1 completed: ${unused.length} unused components identified');
+// print('✅ Phase 1 completed: ${unused.length} unused components identified'); // Removed for production
   }
 
   /// Merge duplicate components
   Future<void> _mergeDuplicateComponents(OptimizationReport report) async {
-    print('🔀 Phase 2: Merging duplicate components...');
+// print('🔀 Phase 2: Merging duplicate components...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     final duplicates = <List<String>>[];
@@ -157,12 +157,12 @@ class HierarchyOptimizer {
     }
 
     report.duplicateComponentsMerged = duplicates.length;
-    print('✅ Phase 2 completed: ${duplicates.length} duplicate groups identified');
+// print('✅ Phase 2 completed: ${duplicates.length} duplicate groups identified'); // Removed for production
   }
 
   /// Optimize dependencies
   Future<void> _optimizeDependencies(OptimizationReport report) async {
-    print('🔗 Phase 3: Optimizing dependencies...');
+// print('🔗 Phase 3: Optimizing dependencies...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     final dependencyGraph = _hierarchyManager.getDependencyGraph();
@@ -202,12 +202,12 @@ class HierarchyOptimizer {
     }
 
     report.dependenciesOptimized = optimized.length;
-    print('✅ Phase 3 completed: ${optimized.length} dependency optimizations identified');
+// print('✅ Phase 3 completed: ${optimized.length} dependency optimizations identified'); // Removed for production
   }
 
   /// Restructure layers
   Future<void> _restructureLayers(OptimizationReport report) async {
-    print('🏗️ Phase 4: Restructuring layers...');
+// print('🏗️ Phase 4: Restructuring layers...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     final restructured = <String>[];
@@ -243,12 +243,12 @@ class HierarchyOptimizer {
     }
 
     report.layersRestructured = restructured.length;
-    print('✅ Phase 4 completed: ${restructured.length} layer restructures identified');
+// print('✅ Phase 4 completed: ${restructured.length} layer restructures identified'); // Removed for production
   }
 
   /// Improve reusability
   Future<void> _improveReusability(OptimizationReport report) async {
-    print('♻️ Phase 5: Improving reusability...');
+// print('♻️ Phase 5: Improving reusability...'); // Removed for production
 
     final metrics = _hierarchyManager.getMetrics();
     final improved = <String>[];
@@ -282,12 +282,12 @@ class HierarchyOptimizer {
     }
 
     report.reusabilityImproved = improved.length;
-    print('✅ Phase 5 completed: ${improved.length} reusability improvements identified');
+// print('✅ Phase 5 completed: ${improved.length} reusability improvements identified'); // Removed for production
   }
 
   /// Reduce complexity
   Future<void> _reduceComplexity(OptimizationReport report) async {
-    print('⚡ Phase 6: Reducing complexity...');
+// print('⚡ Phase 6: Reducing complexity...'); // Removed for production
 
     final metrics = _hierarchyManager.getMetrics();
     final reduced = <String>[];
@@ -322,7 +322,7 @@ class HierarchyOptimizer {
     }
 
     report.complexityReduced = reduced.length;
-    print('✅ Phase 6 completed: ${reduced.length} complexity reductions identified');
+// print('✅ Phase 6 completed: ${reduced.length} complexity reductions identified'); // Removed for production
   }
 
   /// Find similar components
@@ -481,12 +481,12 @@ class HierarchyOptimizer {
   Future<bool> applySuggestion(String componentId) async {
     final suggestion = _suggestions[componentId];
     if (suggestion == null) {
-      print('❌ No suggestion found for component: $componentId');
+// print('❌ No suggestion found for component: $componentId'); // Removed for production
       return false;
     }
 
     try {
-      print('🔧 Applying optimization suggestion for $componentId...');
+// print('🔧 Applying optimization suggestion for $componentId...'); // Removed for production
 
       switch (suggestion.type) {
         case OptimizationType.removeUnused:
@@ -517,47 +517,47 @@ class HierarchyOptimizer {
         timestamp: DateTime.now(),
       ));
 
-      print('✅ Optimization suggestion applied successfully');
+// print('✅ Optimization suggestion applied successfully'); // Removed for production
       return true;
     } catch (e) {
-      print('❌ Failed to apply optimization suggestion: $e');
+// print('❌ Failed to apply optimization suggestion: $e'); // Removed for production
       return false;
     }
   }
 
   Future<void> _applyRemoveUnused(OptimizationSuggestion suggestion) async {
     // Implementation would remove the unused component
-    print('🗑️ Removing unused component: ${suggestion.componentId}');
+// print('🗑️ Removing unused component: ${suggestion.componentId}'); // Removed for production
   }
 
   Future<void> _applyMergeDuplicate(OptimizationSuggestion suggestion) async {
     final primary = suggestion.metadata['primary'] as String;
     final secondary = List<String>.from(suggestion.metadata['secondary'] as List);
-    print('🔀 Merging components: $primary with ${secondary.join(', ')}');
+// print('🔀 Merging components: $primary with ${secondary.join(', ')}'); // Removed for production
   }
 
   Future<void> _applyOptimizeDependency(OptimizationSuggestion suggestion) async {
     final optimized = List<String>.from(suggestion.metadata['optimized'] as List);
-    print('🔗 Optimizing dependencies for ${suggestion.componentId}: ${optimized.join(', ')}');
+// print('🔗 Optimizing dependencies for ${suggestion.componentId}: ${optimized.join(', ')}'); // Removed for production
   }
 
   Future<void> _applyRestructureLayer(OptimizationSuggestion suggestion) async {
     final targetLayer = Layer.values.firstWhere((l) => l.name == suggestion.metadata['targetLayer']);
-    print('🏗️ Restructuring layer for ${suggestion.componentId} to ${targetLayer.name}');
+// print('🏗️ Restructuring layer for ${suggestion.componentId} to ${targetLayer.name}'); // Removed for production
   }
 
   Future<void> _applyImproveReusability(OptimizationSuggestion suggestion) async {
-    print('♻️ Improving reusability for ${suggestion.componentId}');
+// print('♻️ Improving reusability for ${suggestion.componentId}'); // Removed for production
   }
 
   Future<void> _applyReduceComplexity(OptimizationSuggestion suggestion) async {
-    print('⚡ Reducing complexity for ${suggestion.componentId}');
+// print('⚡ Reducing complexity for ${suggestion.componentId}'); // Removed for production
   }
 
   /// Clear all suggestions
   void clearSuggestions() {
     _suggestions.clear();
-    print('🗑️ All optimization suggestions cleared');
+// print('🗑️ All optimization suggestions cleared'); // Removed for production
   }
 
   /// Emit optimization event
@@ -567,9 +567,9 @@ class HierarchyOptimizer {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Hierarchy Optimizer...');
+// print('🗑️ Disposing Hierarchy Optimizer...'); // Removed for production
     _eventController.close();
-    print('✅ Hierarchy Optimizer disposed');
+// print('✅ Hierarchy Optimizer disposed'); // Removed for production
   }
 }
 

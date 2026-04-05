@@ -22,7 +22,7 @@ class WirelessDebugConfig {
     if (_isInitialized) return;
     
     try {
-      print('🔧 Initializing Wireless Debug Configuration...');
+// print('🔧 Initializing Wireless Debug Configuration...'); // Removed for production
       
       _prefs = await SharedPreferences.getInstance();
       await _loadConfiguration();
@@ -31,9 +31,9 @@ class WirelessDebugConfig {
       
       _isInitialized = true;
       
-      print('✅ Wireless Debug Configuration initialized');
+// print('✅ Wireless Debug Configuration initialized'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize debug configuration: $e');
+// print('❌ Failed to initialize debug configuration: $e'); // Removed for production
       rethrow;
     }
   }
@@ -66,9 +66,9 @@ class WirelessDebugConfig {
       await _saveConfiguration();
       await _validateConfiguration();
       
-      print('✅ Debug configuration updated');
+// print('✅ Debug configuration updated'); // Removed for production
     } catch (e) {
-      print('❌ Failed to update debug configuration: $e');
+// print('❌ Failed to update debug configuration: $e'); // Removed for production
     }
   }
 
@@ -78,9 +78,9 @@ class WirelessDebugConfig {
       _config = _getDefaultConfiguration();
       await _saveConfiguration();
       
-      print('✅ Debug configuration reset to defaults');
+// print('✅ Debug configuration reset to defaults'); // Removed for production
     } catch (e) {
-      print('❌ Failed to reset debug configuration: $e');
+// print('❌ Failed to reset debug configuration: $e'); // Removed for production
     }
   }
 
@@ -93,7 +93,7 @@ class WirelessDebugConfig {
         'config': _config,
       };
     } catch (e) {
-      print('❌ Failed to export debug configuration: $e');
+// print('❌ Failed to export debug configuration: $e'); // Removed for production
       return {};
     }
   }
@@ -110,10 +110,10 @@ class WirelessDebugConfig {
       await _saveConfiguration();
       await _validateConfiguration();
       
-      print('✅ Debug configuration imported successfully');
+// print('✅ Debug configuration imported successfully'); // Removed for production
       return true;
     } catch (e) {
-      print('❌ Failed to import debug configuration: $e');
+// print('❌ Failed to import debug configuration: $e'); // Removed for production
       return false;
     }
   }
@@ -125,14 +125,14 @@ class WirelessDebugConfig {
       
       if (configString != null) {
         _config = jsonDecode(configString);
-        print('✅ Debug configuration loaded from storage');
+// print('✅ Debug configuration loaded from storage'); // Removed for production
       } else {
         _config = _getDefaultConfiguration();
         await _saveConfiguration();
-        print('✅ Default debug configuration created');
+// print('✅ Default debug configuration created'); // Removed for production
       }
     } catch (e) {
-      print('❌ Failed to load debug configuration: $e');
+// print('❌ Failed to load debug configuration: $e'); // Removed for production
       _config = _getDefaultConfiguration();
     }
   }
@@ -143,7 +143,7 @@ class WirelessDebugConfig {
       final configString = jsonEncode(_config);
       await _prefs.setString(_configKey, configString);
     } catch (e) {
-      print('❌ Failed to save debug configuration: $e');
+// print('❌ Failed to save debug configuration: $e'); // Removed for production
     }
   }
 
@@ -152,27 +152,27 @@ class WirelessDebugConfig {
     try {
       // Validate debug server configuration
       if (!_validateDebugServerConfig()) {
-        print('⚠️ Debug server configuration validation failed');
+// print('⚠️ Debug server configuration validation failed'); // Removed for production
       }
       
       // Validate network configuration
       if (!_validateNetworkConfig()) {
-        print('⚠️ Network configuration validation failed');
+// print('⚠️ Network configuration validation failed'); // Removed for production
       }
       
       // Validate performance configuration
       if (!_validatePerformanceConfig()) {
-        print('⚠️ Performance configuration validation failed');
+// print('⚠️ Performance configuration validation failed'); // Removed for production
       }
       
       // Validate security configuration
       if (!_validateSecurityConfig()) {
-        print('⚠️ Security configuration validation failed');
+// print('⚠️ Security configuration validation failed'); // Removed for production
       }
       
-      print('✅ Debug configuration validation completed');
+// print('✅ Debug configuration validation completed'); // Removed for production
     } catch (e) {
-      print('❌ Failed to validate debug configuration: $e');
+// print('❌ Failed to validate debug configuration: $e'); // Removed for production
     }
   }
 
@@ -189,9 +189,9 @@ class WirelessDebugConfig {
         await _setupProductionEnvironment();
       }
       
-      print('✅ Environment setup completed');
+// print('✅ Environment setup completed'); // Removed for production
     } catch (e) {
-      print('❌ Failed to setup environment: $e');
+// print('❌ Failed to setup environment: $e'); // Removed for production
     }
   }
 
@@ -269,7 +269,7 @@ class WirelessDebugConfig {
   /// Setup debug environment
   Future<void> _setupDebugEnvironment() async {
     try {
-      print('🐛 Setting up debug environment...');
+// print('🐛 Setting up debug environment...'); // Removed for production
       
       // Enable debug logging
       await _enableDebugLogging();
@@ -283,16 +283,16 @@ class WirelessDebugConfig {
       // Setup debug UI
       await _setupDebugUI();
       
-      print('✅ Debug environment setup completed');
+// print('✅ Debug environment setup completed'); // Removed for production
     } catch (e) {
-      print('❌ Failed to setup debug environment: $e');
+// print('❌ Failed to setup debug environment: $e'); // Removed for production
     }
   }
 
   /// Setup production environment
   Future<void> _setupProductionEnvironment() async {
     try {
-      print('🏭 Setting up production environment...');
+// print('🏭 Setting up production environment...'); // Removed for production
       
       // Disable debug logging
       await _disableDebugLogging();
@@ -306,22 +306,22 @@ class WirelessDebugConfig {
       // Setup production optimizations
       await _setupProductionOptimizations();
       
-      print('✅ Production environment setup completed');
+// print('✅ Production environment setup completed'); // Removed for production
     } catch (e) {
-      print('❌ Failed to setup production environment: $e');
+// print('❌ Failed to setup production environment: $e'); // Removed for production
     }
   }
 
   /// Enable debug logging
   Future<void> _enableDebugLogging() async {
     // This would enable debug logging throughout the app
-    print('📝 Debug logging enabled');
+// print('📝 Debug logging enabled'); // Removed for production
   }
 
   /// Disable debug logging
   Future<void> _disableDebugLogging() async {
     // This would disable debug logging throughout the app
-    print('📝 Debug logging disabled');
+// print('📝 Debug logging disabled'); // Removed for production
   }
 
   /// Setup debug server connection
@@ -329,28 +329,28 @@ class WirelessDebugConfig {
     try {
       final serverConfig = debugServer;
       
-      print('🌐 Setting up debug server: ${serverConfig.host}:${serverConfig.port}');
+// print('🌐 Setting up debug server: ${serverConfig.host}:${serverConfig.port}'); // Removed for production
       
       // This would establish WebSocket connection to debug server
       // Implementation would depend on the WebSocket package
       
-      print('✅ Debug server setup completed');
+// print('✅ Debug server setup completed'); // Removed for production
     } catch (e) {
-      print('❌ Failed to setup debug server: $e');
+// print('❌ Failed to setup debug server: $e'); // Removed for production
     }
   }
 
   /// Disable debug server connection
   Future<void> _disableDebugServer() async {
     try {
-      print('🌐 Disabling debug server connection...');
+// print('🌐 Disabling debug server connection...'); // Removed for production
       
       // This would close WebSocket connection to debug server
       // Implementation would depend on the WebSocket package
       
-      print('✅ Debug server disabled');
+// print('✅ Debug server disabled'); // Removed for production
     } catch (e) {
-      print('❌ Failed to disable debug server: $e');
+// print('❌ Failed to disable debug server: $e'); // Removed for production
     }
   }
 
@@ -359,66 +359,66 @@ class WirelessDebugConfig {
     try {
       final performanceConfig = performance;
       
-      print('⚡ Enabling performance monitoring...');
+// print('⚡ Enabling performance monitoring...'); // Removed for production
       
       // This would enable performance monitoring throughout the app
       // Implementation would depend on the performance monitoring service
       
-      print('✅ Performance monitoring enabled');
+// print('✅ Performance monitoring enabled'); // Removed for production
     } catch (e) {
-      print('❌ Failed to enable performance monitoring: $e');
+// print('❌ Failed to enable performance monitoring: $e'); // Removed for production
     }
   }
 
   /// Disable performance monitoring
   Future<void> _disablePerformanceMonitoring() async {
     try {
-      print('⚡ Disabling performance monitoring...');
+// print('⚡ Disabling performance monitoring...'); // Removed for production
       
       // This would disable performance monitoring throughout the app
       // Implementation would depend on the performance monitoring service
       
-      print('✅ Performance monitoring disabled');
+// print('✅ Performance monitoring disabled'); // Removed for production
     } catch (e) {
-      print('❌ Failed to disable performance monitoring: $e');
+// print('❌ Failed to disable performance monitoring: $e'); // Removed for production
     }
   }
 
   /// Setup debug UI
   Future<void> _setupDebugUI() async {
     try {
-      print('🎨 Setting up debug UI...');
+// print('🎨 Setting up debug UI...'); // Removed for production
       
       // This would enable debug UI elements throughout the app
       // Implementation would depend on the debug UI service
       
-      print('✅ Debug UI setup completed');
+// print('✅ Debug UI setup completed'); // Removed for production
     } catch (e) {
-      print('❌ Failed to setup debug UI: $e');
+// print('❌ Failed to setup debug UI: $e'); // Removed for production
     }
   }
 
   /// Setup production optimizations
   Future<void> _setupProductionOptimizations() async {
     try {
-      print('⚡ Setting up production optimizations...');
+// print('⚡ Setting up production optimizations...'); // Removed for production
       
       // This would enable production optimizations throughout the app
       // Implementation would depend on the optimization service
       
-      print('✅ Production optimizations setup completed');
+// print('✅ Production optimizations setup completed'); // Removed for production
     } catch (e) {
-      print('❌ Failed to setup production optimizations: $e');
+// print('❌ Failed to setup production optimizations: $e'); // Removed for production
     }
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Wireless Debug Configuration...');
+// print('🗑️ Disposing Wireless Debug Configuration...'); // Removed for production
     
     _isInitialized = false;
     
-    print('✅ Wireless Debug Configuration disposed');
+// print('✅ Wireless Debug Configuration disposed'); // Removed for production
   }
 }
 

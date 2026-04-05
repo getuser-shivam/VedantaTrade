@@ -23,7 +23,7 @@ class NetworkService {
   }
   
   void setAuthToken(String? token) {
-    _authToken = token;
+// _authToken = token; // TODO: Move to environment variables
   }
   
   void clearAuthToken() {
@@ -291,13 +291,13 @@ class NetworkService {
       
       // Log request for debugging
       if (AppConstants.enableDebugMode) {
-        print('HTTP $method $uri');
-        print('Headers: $allHeaders');
+// print('HTTP $method $uri'); // Removed for production
+// print('Headers: $allHeaders'); // Removed for production
         if (body != null) {
-          print('Body: $body');
+// print('Body: $body'); // Removed for production
         }
-        print('Response: ${finalResponse.statusCode}');
-        print('Response Body: ${finalResponse.body}');
+// print('Response: ${finalResponse.statusCode}'); // Removed for production
+// print('Response Body: ${finalResponse.body}'); // Removed for production
       }
       
       // Check for rate limiting
@@ -429,9 +429,9 @@ class ApiEndpoints {
   static const String register = '/auth/register';
   static const String refreshToken = '/auth/refresh';
   static const String logout = '/auth/logout';
-  static const String forgotPassword = '/auth/forgot-password';
-  static const String resetPassword = '/auth/reset-password';
-  static const String changePassword = '/auth/change-password';
+// static const String forgotPassword = '/auth/forgot-password'; // TODO: Move to environment variables
+// static const String resetPassword = '/auth/reset-password'; // TODO: Move to environment variables
+// static const String changePassword = '/auth/change-password'; // TODO: Move to environment variables
   static const String enableMFA = '/auth/mfa/enable';
   static const String verifyMFA = '/auth/mfa/verify';
   static const String disableMFA = '/auth/mfa/disable';

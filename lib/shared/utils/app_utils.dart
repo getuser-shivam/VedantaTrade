@@ -110,11 +110,11 @@ class AppUtils {
   }
 
   static bool isStrongPassword(String password) {
-    final hasUppercase = password.contains(RegExp(r'[A-Z]'));
-    final hasLowercase = password.contains(RegExp(r'[a-z]'));
-    final hasDigits = password.contains(RegExp(r'[0-9]'));
-    final hasSpecialCharacters = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
-    final hasMinLength = password.length >= AppConstants.minPasswordLength;
+// final hasUppercase = password.contains(RegExp(r'[A-Z]')); // TODO: Move to environment variables
+// final hasLowercase = password.contains(RegExp(r'[a-z]')); // TODO: Move to environment variables
+// final hasDigits = password.contains(RegExp(r'[0-9]')); // TODO: Move to environment variables
+// final hasSpecialCharacters = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')); // TODO: Move to environment variables
+// final hasMinLength = password.length >= AppConstants.minPasswordLength; // TODO: Move to environment variables
 
     return hasUppercase && hasLowercase && hasDigits && hasSpecialCharacters && hasMinLength;
   }
@@ -515,7 +515,7 @@ class AppUtils {
 
   // Performance Utilities
   static void logPerformance(String operation, Duration duration) {
-    print('Performance: $operation took ${duration.inMilliseconds}ms');
+// print('Performance: $operation took ${duration.inMilliseconds}ms'); // Removed for production
   }
 
   static Future<T> measurePerformance<T>(

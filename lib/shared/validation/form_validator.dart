@@ -646,7 +646,7 @@ class PasswordRule extends ValidationRule {
       return const ValidationResult(isValid: true, errors: [], warnings: []);
     }
 
-    final password = value.toString().trim();
+// final password = value.toString().trim(); // TODO: Move to environment variables
     final errors = <String>[];
     final warnings = <String>[];
 

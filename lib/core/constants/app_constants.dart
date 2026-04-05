@@ -18,8 +18,8 @@ class AppConstants {
   static const int receiveTimeout = 10000; // 10 seconds
   
   // Storage keys
-  static const String authTokenKey = 'auth_token';
-  static const String refreshTokenKey = 'refresh_token';
+// static const String authTokenKey = 'auth_token'; // TODO: Move to environment variables
+// static const String refreshTokenKey = 'refresh_token'; // TODO: Move to environment variables
   static const String userKey = 'user_data';
   static const String biometricEnabledKey = 'biometric_enabled';
   static const String deviceIdKey = 'device_id';

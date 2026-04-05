@@ -137,7 +137,7 @@ class ProductService {
       }
     } catch (e) {
       // Mock update for development
-      print('Mock update product: ${product.name}');
+// print('Mock update product: ${product.name}'); // Removed for production
     }
   }
 
@@ -156,7 +156,7 @@ class ProductService {
       }
     } catch (e) {
       // Mock delete for development
-      print('Mock delete product: $productId');
+// print('Mock delete product: $productId'); // Removed for production
     }
   }
 

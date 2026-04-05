@@ -459,11 +459,11 @@ class AuthenticationProvider extends ChangeNotifier {
   /// Check password strength
   Future<void> checkPasswordStrength(String password) async {
     try {
-      final result = await _repository.checkPasswordStrength(password);
+// final result = await _repository.checkPasswordStrength(password); // TODO: Move to environment variables
       
       if (result.isLeft()) {
         _emitState(AuthenticationState.error(
-          message: result.fold((l) => l, (r) => 'Failed to check password strength'),
+// message: result.fold((l) => l, (r) => 'Failed to check password strength'), // TODO: Move to environment variables
         ));
         return;
       }

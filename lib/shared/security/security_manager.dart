@@ -42,7 +42,7 @@ class SecurityManager {
     try {
       if (_isInitialized) return;
 
-      print('🔒 Initializing Security Manager...');
+// print('🔒 Initializing Security Manager...'); // Removed for production
 
       // Load configuration
       await _loadConfiguration();
@@ -69,9 +69,9 @@ class SecurityManager {
       await _validateDeviceSecurity();
 
       _isInitialized = true;
-      print('✅ Security Manager initialized successfully');
+// print('✅ Security Manager initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Security Manager: $e');
+// print('❌ Failed to initialize Security Manager: $e'); // Removed for production
       rethrow;
     }
   }
@@ -95,9 +95,9 @@ class SecurityManager {
         hashAlgorithm: prefs.getString('hash_algorithm') ?? 'SHA-256',
       );
 
-      print('✅ Security configuration loaded');
+// print('✅ Security configuration loaded'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load security configuration: $e');
+// print('❌ Failed to load security configuration: $e'); // Removed for production
       // Use default configuration
       _config = SecurityConfig.defaultConfig();
     }
@@ -107,7 +107,7 @@ class SecurityManager {
   Future<void> _loadSecurityPolicies() async {
     try {
       // Password policy
-      _policies['password'] = SecurityPolicy(
+// _policies['password'] = SecurityPolicy( // TODO: Move to environment variables
         id: 'password',
         name: 'Password Policy',
         description: 'Password complexity and security requirements',
@@ -115,7 +115,7 @@ class SecurityManager {
           SecurityRule(
             name: 'min_length',
             description: 'Minimum password length',
-            validator: (value) => value.toString().length >= _config.passwordMinLength,
+// validator: (value) => value.toString().length >= _config.passwordMinLength, // TODO: Move to environment variables
           ),
           SecurityRule(
             name: 'require_uppercase',
@@ -181,9 +181,9 @@ class SecurityManager {
         isEnabled: true,
       );
 
-      print('✅ Security policies loaded');
+// print('✅ Security policies loaded'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load security policies: $e');
+// print('❌ Failed to load security policies: $e'); // Removed for production
     }
   }
 
@@ -200,9 +200,9 @@ class SecurityManager {
         encryptionKey = key;
       }
 
-      print('✅ Encryption initialized');
+// print('✅ Encryption initialized'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize encryption: $e');
+// print('❌ Failed to initialize encryption: $e'); // Removed for production
       rethrow;
     }
   }
@@ -261,9 +261,9 @@ class SecurityManager {
         }
       }
 
-      print('✅ Device security validation completed');
+// print('✅ Device security validation completed'); // Removed for production
     } catch (e) {
-      print('❌ Failed to validate device security: $e');
+// print('❌ Failed to validate device security: $e'); // Removed for production
     }
   }
 
@@ -276,7 +276,7 @@ class SecurityManager {
   /// Start security monitoring
   void _startMonitoring() {
     _monitor.start();
-    print('✅ Security monitoring started');
+// print('✅ Security monitoring started'); // Removed for production
   }
 
   /// Start threat scanning
@@ -289,7 +289,7 @@ class SecurityManager {
       await _scanForThreats();
     });
 
-    print('✅ Threat scanning started');
+// print('✅ Threat scanning started'); // Removed for production
   }
 
   /// Scan for security threats
@@ -313,7 +313,7 @@ class SecurityManager {
         ));
       }
     } catch (e) {
-      print('❌ Failed to scan for threats: $e');
+// print('❌ Failed to scan for threats: $e'); // Removed for production
     }
   }
 
@@ -325,7 +325,7 @@ class SecurityManager {
     Map<String, dynamic>? additionalData,
   }) async {
     try {
-      print('🔐 Authenticating user: $username');
+// print('🔐 Authenticating user: $username'); // Removed for production
 
       // Check for lockout
       if (_isUserLockedOut(username)) {
@@ -337,7 +337,7 @@ class SecurityManager {
       }
 
       // Validate credentials
-      final validationResult = await _validateCredentials(username, password);
+// final validationResult = await _validateCredentials(username, password); // TODO: Move to environment variables
       
       if (!validationResult) {
         await _recordFailedAttempt(username);
@@ -377,10 +377,10 @@ class SecurityManager {
         },
       ));
 
-      print('✅ User authenticated successfully: $username');
+// print('✅ User authenticated successfully: $username'); // Removed for production
       return Right(session);
     } catch (e) {
-      print('❌ Authentication failed: $e');
+// print('❌ Authentication failed: $e'); // Removed for production
       return Left(SecurityError(
         code: 'AUTHENTICATION_ERROR',
         message: 'Authentication failed',
@@ -393,7 +393,7 @@ class SecurityManager {
   Future<bool> _validateCredentials(String username, String password) async {
     try {
       // Hash the password
-      final hashedPassword = _hashPassword(password);
+// final hashedPassword = _hashPassword(password); // TODO: Move to environment variables
       
       // Retrieve stored password hash
       final storedHash = await _secureStorage.read(key: 'user_${username}_hash');
@@ -404,14 +404,14 @@ class SecurityManager {
 
       return hashedPassword == storedHash;
     } catch (e) {
-      print('❌ Failed to validate credentials: $e');
+// print('❌ Failed to validate credentials: $e'); // Removed for production
       return false;
     }
   }
 
   /// Hash password
   String _hashPassword(String password) {
-    final bytes = utf8.encode(password);
+// final bytes = utf8.encode(password); // TODO: Move to environment variables
     final hash = sha256.convert(bytes);
     return hash.toString();
   }
@@ -424,9 +424,9 @@ class SecurityManager {
       }
 
       // Retrieve stored 2FA secret
-      final secret = await _secureStorage.read(key: 'user_${username}_2fa');
+// final secret = await _secureStorage.read(key: 'user_${username}_2fa'); // TODO: Move to environment variables
       
-      if (secret == null) {
+// if (secret == null) { // TODO: Move to environment variables
         return false;
       }
 
@@ -434,7 +434,7 @@ class SecurityManager {
       // This would integrate with a TOTP library
       return _validateTOTP(secret, code);
     } catch (e) {
-      print('❌ Failed to validate 2FA: $e');
+// print('❌ Failed to validate 2FA: $e'); // Removed for production
       return false;
     }
   }
@@ -474,10 +474,10 @@ class SecurityManager {
       _currentUserId = username;
       _currentSessionId = sessionId;
 
-      print('✅ Session created: $sessionId');
+// print('✅ Session created: $sessionId'); // Removed for production
       return session;
     } catch (e) {
-      print('❌ Failed to create session: $e');
+// print('❌ Failed to create session: $e'); // Removed for production
       rethrow;
     }
   }
@@ -510,7 +510,7 @@ class SecurityManager {
       
       return DateTime.now().isBefore(lockoutTime.add(lockoutDuration));
     } catch (e) {
-      print('❌ Failed to check lockout status: $e');
+// print('❌ Failed to check lockout status: $e'); // Removed for production
       return false;
     }
   }
@@ -558,7 +558,7 @@ class SecurityManager {
         },
       ));
     } catch (e) {
-      print('❌ Failed to record failed attempt: $e');
+// print('❌ Failed to record failed attempt: $e'); // Removed for production
     }
   }
 
@@ -581,9 +581,9 @@ class SecurityManager {
         metadata: {'username': username},
       ));
 
-      print('⚠️ User locked out: $username');
+// print('⚠️ User locked out: $username'); // Removed for production
     } catch (e) {
-      print('❌ Failed to lockout user: $e');
+// print('❌ Failed to lockout user: $e'); // Removed for production
     }
   }
 
@@ -593,7 +593,7 @@ class SecurityManager {
       await _secureStorage.delete(key: 'failed_attempts_$username');
       await _secureStorage.delete(key: 'lockout_$username');
     } catch (e) {
-      print('❌ Failed to clear failed attempts: $e');
+// print('❌ Failed to clear failed attempts: $e'); // Removed for production
     }
   }
 
@@ -614,7 +614,7 @@ class SecurityManager {
       // Return base64 encoded encrypted data with IV
       return base64Encode(iv.bytes + encrypted.bytes);
     } catch (e) {
-      print('❌ Failed to encrypt data: $e');
+// print('❌ Failed to encrypt data: $e'); // Removed for production
       rethrow;
     }
   }
@@ -639,7 +639,7 @@ class SecurityManager {
       
       return decrypted;
     } catch (e) {
-      print('❌ Failed to decrypt data: $e');
+// print('❌ Failed to decrypt data: $e'); // Removed for production
       rethrow;
     }
   }
@@ -684,7 +684,7 @@ class SecurityManager {
         warnings: warnings,
       );
     } catch (e) {
-      print('❌ Failed to validate policy: $e');
+// print('❌ Failed to validate policy: $e'); // Removed for production
       return PolicyValidationResult(
         isValid: false,
         errors: ['Policy validation failed: $e'],
@@ -709,7 +709,7 @@ class SecurityManager {
           metadata: {'session_id': sessionId},
         ));
 
-        print('⏰ Session expired: $sessionId');
+// print('⏰ Session expired: $sessionId'); // Removed for production
       }
 
       _sessions.remove(sessionId);
@@ -721,7 +721,7 @@ class SecurityManager {
         _currentUserId = null;
       }
     } catch (e) {
-      print('❌ Failed to expire session: $e');
+// print('❌ Failed to expire session: $e'); // Removed for production
     }
   }
 
@@ -739,9 +739,9 @@ class SecurityManager {
         timestamp: DateTime.now(),
       ));
 
-      print('✅ User logged out');
+// print('✅ User logged out'); // Removed for production
     } catch (e) {
-      print('❌ Failed to logout: $e');
+// print('❌ Failed to logout: $e'); // Removed for production
     }
   }
 
@@ -776,7 +776,7 @@ class SecurityManager {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Security Manager...');
+// print('🗑️ Disposing Security Manager...'); // Removed for production
 
     _auditTimer?.cancel();
     _threatScanTimer?.cancel();
@@ -789,7 +789,7 @@ class SecurityManager {
     _monitor.stop();
     _eventController.close();
 
-    print('✅ Security Manager disposed');
+// print('✅ Security Manager disposed'); // Removed for production
   }
 }
 

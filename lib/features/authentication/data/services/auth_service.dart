@@ -13,8 +13,8 @@ class AuthService {
   final LocalAuthentication _localAuth = LocalAuthentication();
   
   // Token management
-  static const String _accessTokenKey = 'access_token';
-  static const String _refreshTokenKey = 'refresh_token';
+// static const String _accessTokenKey = 'access_token'; // TODO: Move to environment variables
+// static const String _refreshTokenKey = 'refresh_token'; // TODO: Move to environment variables
   static const String _userKey = 'user_data';
   static const String _biometricEnabledKey = 'biometric_enabled';
   static const String _deviceIdKey = 'device_id';

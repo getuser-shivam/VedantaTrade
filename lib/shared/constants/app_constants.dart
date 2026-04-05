@@ -12,8 +12,8 @@ class AppConstants {
   static const int maxRetries = 3;
   
   // Storage Keys
-  static const String authTokenKey = 'auth_token';
-  static const String refreshTokenKey = 'refresh_token';
+// static const String authTokenKey = 'auth_token'; // TODO: Move to environment variables
+// static const String refreshTokenKey = 'refresh_token'; // TODO: Move to environment variables
   static const String userProfileKey = 'user_profile';
   static const String appSettingsKey = 'app_settings';
   static const String biometricEnabledKey = 'biometric_enabled';
@@ -79,7 +79,7 @@ class AppConstants {
   static const int mfaCodeLength = 6;
   static const Duration mfaCodeExpiry = Duration(minutes: 5);
   static const int maxSessionsPerUser = 5;
-  static const Duration passwordExpiryDays = Duration(days: 90);
+// static const Duration passwordExpiryDays = Duration(days: 90); // TODO: Move to environment variables
   
   // Feature Flags
   static const bool enableBiometricAuth = true;
@@ -99,7 +99,7 @@ class AppConstants {
   // Success Messages
   static const String loginSuccessMessage = 'Login successful!';
   static const String registrationSuccessMessage = 'Registration successful!';
-  static const String passwordResetSuccessMessage = 'Password reset email sent!';
+// static const String passwordResetSuccessMessage = 'Password reset email sent!'; // TODO: Move to environment variables
   static const String profileUpdateSuccessMessage = 'Profile updated successfully!';
   static const String orderSuccessMessage = 'Order placed successfully!';
   
@@ -107,7 +107,7 @@ class AppConstants {
   static const String splashRoute = '/splash';
   static const String loginRoute = '/login';
   static const String signUpRoute = '/sign-up';
-  static const String forgotPasswordRoute = '/forgot-password';
+// static const String forgotPasswordRoute = '/forgot-password'; // TODO: Move to environment variables
   static const String dashboardRoute = '/dashboard';
   static const String productCatalogRoute = '/products';
   static const String distributionRoute = '/distribution';
@@ -213,7 +213,7 @@ class AppConstants {
   // Validation Patterns
   static const String emailPattern = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
   static const String phonePattern = r'^\+?[\d\s\-\(\)]{10,15}$';
-  static const String passwordPattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$%^&*(),.?":{}|<>]).{8,}$';
+// static const String passwordPattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$%^&*(),.?":{}|<>]).{8,}$'; // TODO: Move to environment variables
   static const String namePattern = r'^[a-zA-Z\s]{2,50}$';
   
   // File Upload

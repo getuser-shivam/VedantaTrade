@@ -22,7 +22,7 @@ class ProductCatalogService {
           if (category != null && category != 'All') 'category': category,
         },
         options: Options(
-          headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+// headers: token != null ? {'Authorization': 'Bearer $token'} : {}, // TODO: Move to environment variables
         ),
       );
       
@@ -53,7 +53,7 @@ class ProductCatalogService {
       final response = await _dio.get(
         ApiConfig.categories,
         options: Options(
-          headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+// headers: token != null ? {'Authorization': 'Bearer $token'} : {}, // TODO: Move to environment variables
         ),
       );
       
@@ -95,7 +95,7 @@ class ProductCatalogService {
           'limit': limit.toString(),
         },
         options: Options(
-          headers: token != null ? {'Authorization': 'Bearer $token'} : {},
+// headers: token != null ? {'Authorization': 'Bearer $token'} : {}, // TODO: Move to environment variables
         ),
       );
       

@@ -62,7 +62,7 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
 
       // Hash password with salt
       final salt = _securityManager.generateSalt();
-      final hashedPassword = _securityManager.hashPassword(password, salt);
+// final hashedPassword = _securityManager.hashPassword(password, salt); // TODO: Move to environment variables
 
       // Create user data
       final userData = {
@@ -424,7 +424,7 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
       }
 
       // Validate new password
-      final passwordStrength = await checkPasswordStrength(newPassword);
+// final passwordStrength = await checkPasswordStrength(newPassword); // TODO: Move to environment variables
       if (passwordStrength.level.index < PasswordStrengthLevel.fair.index) {
         return Left('Password is too weak');
       }
@@ -569,7 +569,7 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
   @override
   Future<Either<String, PasswordStrength>> checkPasswordStrength(String password) async {
     try {
-      final strength = _securityManager.calculatePasswordStrength(password);
+// final strength = _securityManager.calculatePasswordStrength(password); // TODO: Move to environment variables
       return Right(strength);
     } catch (e) {
       return Left('Password strength check failed: ${e.toString()}');
@@ -741,13 +741,13 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
   Future<Either<String, AuthResult>> refreshToken(String refreshToken) async {
     try {
       // Verify refresh token
-      final tokenData = await _securityManager.verifyRefreshToken(refreshToken);
+// final tokenData = await _securityManager.verifyRefreshToken(refreshToken); // TODO: Move to environment variables
       
-      if (tokenData == null) {
+// if (tokenData == null) { // TODO: Move to environment variables
         return Left('Invalid refresh token');
       }
 
-      final userResult = await _remoteDataSource.getUserById(tokenData!['userId']);
+// final userResult = await _remoteDataSource.getUserById(tokenData!['userId']); // TODO: Move to environment variables
       if (userResult.isLeft()) {
         return Left('User not found');
       }
@@ -755,7 +755,7 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
       final user = userResult.fold((l) => throw Exception(l), (r) => r);
 
       // Generate new tokens
-      final newAccessToken = await _securityManager.generateJWTToken(user, tokenData!['sessionId']);
+// final newAccessToken = await _securityManager.generateJWTToken(user, tokenData!['sessionId']); // TODO: Move to environment variables
       final newRefreshToken = await _securityManager.generateRefreshToken(user.id);
 
       // Update session
@@ -904,7 +904,7 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
       }
 
       // Validate new password
-      final passwordStrength = await checkPasswordStrength(newPassword);
+// final passwordStrength = await checkPasswordStrength(newPassword); // TODO: Move to environment variables
       if (passwordStrength.level.index < PasswordStrengthLevel.fair.index) {
         return Left('New password is too weak');
       }

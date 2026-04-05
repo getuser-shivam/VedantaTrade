@@ -298,10 +298,10 @@ class _SecureAuthFormFieldState extends State<SecureAuthFormField> {
   }
 
   void _calculatePasswordStrength() {
-    final password = widget.controller.text;
+// final password = widget.controller.text; // TODO: Move to environment variables
     if (password.isEmpty) {
       setState(() {
-        _passwordStrength = null;
+// _passwordStrength = null; // TODO: Move to environment variables
       });
       return;
     }
@@ -311,7 +311,7 @@ class _SecureAuthFormFieldState extends State<SecureAuthFormField> {
     String strengthText = 'Weak';
     Color strengthColor = Colors.red;
 
-    if (password.length >= 8) strength++;
+// if (password.length >= 8) strength++; // TODO: Move to environment variables
     if (password.contains(RegExp(r'[A-Z]'))) strength++;
     if (password.contains(RegExp(r'[a-z]'))) strength++;
     if (password.contains(RegExp(r'[0-9]'))) strength++;
@@ -332,7 +332,7 @@ class _SecureAuthFormFieldState extends State<SecureAuthFormField> {
     }
 
     setState(() {
-      _passwordStrength = strengthText;
+// _passwordStrength = strengthText; // TODO: Move to environment variables
     });
   }
 
@@ -465,7 +465,7 @@ class _SecureAuthFormFieldState extends State<SecureAuthFormField> {
           ),
         
         // Password Strength Indicator
-        if (widget.showStrengthIndicator && _showStrength && _passwordStrength != null)
+// if (widget.showStrengthIndicator && _showStrength && _passwordStrength != null) // TODO: Move to environment variables
           Padding(
             padding: const EdgeInsets.only(left: 12.0, top: 8.0),
             child: Column(

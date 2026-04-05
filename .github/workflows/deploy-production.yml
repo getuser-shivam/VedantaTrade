@@ -1,0 +1,467 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+      version:
+        description: 'Version to deploy'
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Security and Quality Checks
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    outputs:
+      security-passed: ${{ steps.security.outputs.passed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Security check
+        id: security
+        run: |
+          echo "passed=true" >> $GITHUB_OUTPUT
+
+  # Build and Test
+  build-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: security-scan
+    outputs:
+      build-passed: ${{ steps.build.outputs.passed }}
+      version: ${{ steps.build.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: |
+          dart test/test_runner.dart --all --coverage
+
+      - name: Build Flutter web
+        run: |
+          flutter build web --release --web-renderer canvaskit
+
+      - name: Build Flutter APK
+        run: |
+          flutter build apk --release
+
+      - name: Build Flutter iOS
+        run: |
+          flutter build ios --release --no-codesign
+
+      - name: Generate build info
+        id: build
+        run: |
+          VERSION=$(echo ${{ github.ref }} | sed 's/refs\/tags\///' || echo "latest")
+          echo "passed=true" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            build/web/
+            build/app/outputs/flutter-apk/app-release.apk
+            build/ios/build/Release-iphoneos/
+          retention-days: 7
+
+  # Docker Build and Push
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    needs: [security-scan, build-test]
+    if: needs.security-scan.outputs.security-passed == 'true' && needs.build-test.outputs.build-passed == 'true'
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom
+          path: sbom.spdx.json
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [security-scan, build-test, docker-build]
+    if: github.event.inputs.environment == 'staging' || github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.vedantatrade.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install deployment dependencies
+        run: |
+          npm install -g @aws-sdk/client-s3
+          npm install -g @aws-sdk/client-cloudfront
+
+      - name: Deploy to staging S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET: ${{ secrets.STAGING_S3_BUCKET }}
+        run: |
+          aws s3 sync build/web/ s3://$S3_BUCKET --delete
+          aws s3 cp build/web/ s3://$S3_BUCKET --recursive --metadata-directive REPLACE
+
+      - name: Invalidate CloudFront cache
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.STAGING_CLOUDFRONT_DISTRIBUTION_ID }}
+        run: |
+          aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+
+      - name: Run smoke tests
+        run: |
+          curl -f https://staging.vedantatrade.com/health || exit 1
+          curl -f https://staging.vedantatrade.com/api/health || exit 1
+
+      - name: Notify deployment success
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: 'Staging deployment successful! 🚀'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [security-scan, build-test, docker-build, deploy-staging]
+    if: github.event.inputs.environment == 'production' || startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: production
+      url: https://vedantatrade.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install deployment dependencies
+        run: |
+          npm install -g @aws-sdk/client-s3
+          npm install -g @aws-sdk/client-cloudfront
+          npm install -g @aws-sdk/client-ec2
+
+      - name: Create backup
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET: ${{ secrets.PRODUCTION_S3_BUCKET }}
+        run: |
+          BACKUP_DIR="backup-$(date +%Y%m%d-%H%M%S)"
+          aws s3 sync s3://$S3_BUCKET/ s3://$S3_BUCKET-backups/$BACKUP_DIR/ --delete
+          echo "Backup created: $BACKUP_DIR"
+
+      - name: Deploy to production S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET: ${{ secrets.PRODUCTION_S3_BUCKET }}
+        run: |
+          aws s3 sync build/web/ s3://$S3_BUCKET --delete
+          aws s3 cp build/web/ s3://$S3_BUCKET --recursive --metadata-directive REPLACE
+
+      - name: Invalidate CloudFront cache
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.PRODUCTION_CLOUDFRONT_DISTRIBUTION_ID }}
+        run: |
+          aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+
+      - name: Deploy mobile apps to stores
+        env:
+          FASTLANE_USER: ${{ secrets.FASTLANE_USER }}
+          FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          GOOGLE_PLAY_JSON_KEY: ${{ secrets.GOOGLE_PLAY_JSON_KEY }}
+        run: |
+          # Deploy to App Store
+          cd ios
+          fastlane deploy_to_app_store
+          
+          # Deploy to Google Play
+          cd ../android
+          fastlane deploy_to_play_store
+
+      - name: Run comprehensive health checks
+        run: |
+          # Wait for deployment to propagate
+          sleep 30
+          
+          # Health checks
+          curl -f https://vedantatrade.com/health || exit 1
+          curl -f https://vedantatrade.com/api/health || exit 1
+          curl -f https://vedantatrade.com/api/version || exit 1
+          
+          # Performance checks
+          curl -o /dev/null -s -w "%{http_code}\n" https://vedantatrade.com/ | grep -q "200" || exit 1
+          
+          # Security checks
+          curl -I https://vedantatrade.com/ | grep -q "strict-transport-security" || exit 1
+          curl -I https://vedantatrade.com/ | grep -q "x-frame-options" || exit 1
+
+      - name: Run smoke tests
+        run: |
+          # Critical user flows
+          curl -f https://vedantatrade.com/login || exit 1
+          curl -f https://vedantatrade.com/products || exit 1
+          curl -f https://vedantatrade.com/dashboard || exit 1
+
+      - name: Update deployment status
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment.id,
+              state: 'success',
+              environment: 'production',
+              environment_url: 'https://vedantatrade.com'
+            })
+
+      - name: Notify deployment success
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: 'Production deployment successful! 🎉'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+          body: |
+            ## 🚀 Release ${{ github.ref }}
+            
+            ### ✨ New Features
+            - Feature 1 description
+            - Feature 2 description
+            
+            🐛 Bug Fixes
+            - Bug fix 1 description
+            - Bug fix 2 description
+            
+            🔧 Improvements
+            - Improvement 1 description
+            - Improvement 2 description
+            
+            📱 Downloads
+            - [Web Application](https://vedantatrade.com)
+            - [Android APK](https://play.google.com/store/apps/details?id=com.vedantatrade)
+            - [iOS App](https://apps.apple.com/app/vedantatrade/id123456789)
+
+  # Rollback on Failure
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: failure()
+    environment:
+      name: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install deployment dependencies
+        run: |
+          npm install -g @aws-sdk/client-s3
+          npm install -g @aws-sdk/client-cloudfront
+
+      - name: Rollback to previous version
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET: ${{ secrets.PRODUCTION_S3_BUCKET }}
+        run: |
+          # Find latest backup
+          LATEST_BACKUP=$(aws s3 ls s3://$S3_BUCKET-backups/ | sort -r | head -n 1 | awk '{print $2}')
+          
+          # Restore from backup
+          aws s3 sync s3://$S3_BUCKET-backups/$LATEST_BACKUP/ s3://$S3_BUCKET/ --delete
+          
+          # Invalidate cache
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.PRODUCTION_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: 'Production deployment failed. Rollback initiated! 🚨'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Post-deployment monitoring
+  monitor:
+    name: Post-deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: always() && needs.deploy-production.result == 'success'
+    steps:
+      - name: Wait for deployment to stabilize
+        run: sleep 300
+
+      - name: Monitor application health
+        run: |
+          for i in {1..10}; do
+            if curl -f https://vedantatrade.com/health; then
+              echo "Health check passed: attempt $i"
+              break
+            else
+              echo "Health check failed: attempt $i"
+              if [ $i -eq 10 ]; then
+                exit 1
+              fi
+              sleep 30
+            fi
+          done
+
+      - name: Monitor performance metrics
+        run: |
+          # Check response time
+          RESPONSE_TIME=$(curl -o /dev/null -s -w "%{time_total}" https://vedantatrade.com/)
+          if (( $(echo "$RESPONSE_TIME > 2.0" | bc -l) )); then
+            echo "Response time too high: $RESPONSE_TIME seconds"
+            exit 1
+          fi
+
+      - name: Send monitoring report
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#monitoring'
+          text: 'Post-deployment monitoring completed successfully! 📊'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

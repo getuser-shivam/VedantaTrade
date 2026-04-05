@@ -633,7 +633,7 @@ class WebSocketManager {
   /// Log message
   void _log(String message) {
     if (enableLogging) {
-      print('[WebSocketManager] $message');
+// print('[WebSocketManager] $message'); // Removed for production
     }
   }
 

@@ -26,7 +26,7 @@ class DistributionService {
           'limit': limit,
           if (search.isNotEmpty) 'search': search,
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -75,7 +75,7 @@ class DistributionService {
           'manager_name': managerName,
           'capacity': capacity,
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -110,7 +110,7 @@ class DistributionService {
           'limit': limit,
           if (search.isNotEmpty) 'search': search,
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -143,7 +143,7 @@ class DistributionService {
           'center_id': centerId,
           'quantity': quantity,
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -177,7 +177,7 @@ class DistributionService {
           'limit': limit,
           if (centerId != null) 'centerId': centerId,
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -218,7 +218,7 @@ class DistributionService {
           'vehicle_type': vehicleType,
           'driver_id': driverId,
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -288,7 +288,7 @@ class DistributionService {
           if (productId != null) 'product_id': productId,
           if (campaignId != null) 'campaign_id': campaignId,
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -333,7 +333,7 @@ class DistributionService {
           'notes': notes,
           'sale_date': DateTime.now().toIso8601String(),
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -371,7 +371,7 @@ class DistributionService {
           'page': page,
           'limit': limit,
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -413,7 +413,7 @@ class DistributionService {
           'created_by': createdBy,
           'status': 'ACTIVE',
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -440,7 +440,7 @@ class DistributionService {
     try {
       final response = await _dio.get(
         '/api/distribution/campaigns/$campaignId/products',
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -478,7 +478,7 @@ class DistributionService {
           'start_date': startDate?.toIso8601String(),
           'end_date': endDate?.toIso8601String(),
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -509,7 +509,7 @@ class DistributionService {
         queryParameters: {
           if (centerId != null) 'center_id': centerId,
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -548,7 +548,7 @@ class DistributionService {
           'notes': notes,
           'transfer_date': DateTime.now().toIso8601String(),
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -583,7 +583,7 @@ class DistributionService {
           if (startDate != null) 'start_date': startDate.toIso8601String(),
           if (endDate != null) 'end_date': endDate.toIso8601String(),
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );
@@ -616,7 +616,7 @@ class DistributionService {
           'metric_value': metricValue,
           'metric_date': DateTime.now().toIso8601String(),
         },
-        options: token != null
+// options: token != null // TODO: Move to environment variables
             ? Options(headers: {'Authorization': 'Bearer $token'})
             : null,
       );

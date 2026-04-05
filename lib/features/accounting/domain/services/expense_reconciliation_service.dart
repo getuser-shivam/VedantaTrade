@@ -21,7 +21,7 @@ class ExpenseReconciliationService {
     try {
       if (_isInitialized) return;
       
-      print('🔍 Initializing Expense Reconciliation Service...');
+// print('🔍 Initializing Expense Reconciliation Service...'); // Removed for production
       
       // Load cached expenses
       await _loadCachedExpenses();
@@ -31,9 +31,9 @@ class ExpenseReconciliationService {
       _startDueDateMonitoring();
       
       _isInitialized = true;
-      print('✅ Expense Reconciliation Service initialized successfully');
+// print('✅ Expense Reconciliation Service initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Expense Reconciliation Service: $e');
+// print('❌ Failed to initialize Expense Reconciliation Service: $e'); // Removed for production
       rethrow;
     }
   }
@@ -61,7 +61,7 @@ class ExpenseReconciliationService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      print('💾 Creating new expense for MR: $mrId');
+// print('💾 Creating new expense for MR: $mrId'); // Removed for production
       
       // Generate unique expense number
       final expenseNumber = _generateExpenseNumber();
@@ -102,13 +102,13 @@ class ExpenseReconciliationService {
         _cachedExpenses[expenseId] = expense;
         _receiptsByExpense[expenseId] = receipts;
         
-        print('✅ Expense created successfully: $expenseNumber');
+// print('✅ Expense created successfully: $expenseNumber'); // Removed for production
         return Right(expense);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to create expense: $e');
+// print('❌ Failed to create expense: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to create expense',
         code: 'CREATE_ERROR',
@@ -123,7 +123,7 @@ class ExpenseReconciliationService {
     required ExpenseReceipt receipt,
   }) async {
     try {
-      print('📷 Adding receipt to expense: $expenseId');
+// print('📷 Adding receipt to expense: $expenseId'); // Removed for production
       
       final expenseResult = await _repository.getExpenseById(expenseId);
       
@@ -151,7 +151,7 @@ class ExpenseReconciliationService {
             _cachedExpenses[expenseId] = updatedExpense;
             _receiptsByExpense[expenseId] = updatedReceipts;
             
-            print('✅ Receipt added to expense successfully');
+// print('✅ Receipt added to expense successfully'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -159,7 +159,7 @@ class ExpenseReconciliationService {
         },
       );
     } catch (e) {
-      print('❌ Failed to add receipt to expense: $e');
+// print('❌ Failed to add receipt to expense: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to add receipt to expense',
         code: 'ADD_RECEIPT_ERROR',
@@ -176,7 +176,7 @@ class ExpenseReconciliationService {
     String? notes,
   }) async {
     try {
-      print('✅ Approving expense: $expenseId');
+// print('✅ Approving expense: $expenseId'); // Removed for production
       
       final expenseResult = await _repository.getExpenseById(expenseId);
       
@@ -221,7 +221,7 @@ class ExpenseReconciliationService {
             // Update cache
             _cachedExpenses[expenseId] = updatedExpense;
             
-            print('✅ Expense approved successfully: ${updatedExpense.expenseNumber}');
+// print('✅ Expense approved successfully: ${updatedExpense.expenseNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -229,7 +229,7 @@ class ExpenseReconciliationService {
         },
       );
     } catch (e) {
-      print('❌ Failed to approve expense: $e');
+// print('❌ Failed to approve expense: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to approve expense',
         code: 'APPROVE_ERROR',
@@ -246,7 +246,7 @@ class ExpenseReconciliationService {
     String? notes,
   }) async {
     try {
-      print('❌ Rejecting expense: $expenseId');
+// print('❌ Rejecting expense: $expenseId'); // Removed for production
       
       final expenseResult = await _repository.getExpenseById(expenseId);
       
@@ -281,7 +281,7 @@ class ExpenseReconciliationService {
             // Update cache
             _cachedExpenses[expenseId] = updatedExpense;
             
-            print('✅ Expense rejected successfully: ${updatedExpense.expenseNumber}');
+// print('✅ Expense rejected successfully: ${updatedExpense.expenseNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -289,7 +289,7 @@ class ExpenseReconciliationService {
         },
       );
     } catch (e) {
-      print('❌ Failed to reject expense: $e');
+// print('❌ Failed to reject expense: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to reject expense',
         code: 'REJECT_ERROR',
@@ -306,7 +306,7 @@ class ExpenseReconciliationService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting expenses for MR: $mrId');
+// print('🔍 Getting expenses for MR: $mrId'); // Removed for production
       
       final result = await _repository.getExpensesByMR(
         mrId: mrId,
@@ -322,13 +322,13 @@ class ExpenseReconciliationService {
           _receiptsByExpense[expense.id] = expense.receipts;
         }
         
-        print('✅ Retrieved ${result.length} expenses for MR: $mrId');
+// print('✅ Retrieved ${result.length} expenses for MR: $mrId'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get expenses for MR: $e');
+// print('❌ Failed to get expenses for MR: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get expenses for MR',
         code: 'RETRIEVE_ERROR',
@@ -345,7 +345,7 @@ class ExpenseReconciliationService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting expenses for stockist: $stockistId');
+// print('🔍 Getting expenses for stockist: $stockistId'); // Removed for production
       
       final result = await _repository.getExpensesByStockist(
         stockistId: stockistId,
@@ -361,13 +361,13 @@ class ExpenseReconciliationService {
           _receiptsByExpense[expense.id] = expense.receipts;
         }
         
-        print('✅ Retrieved ${result.length} expenses for stockist: $stockistId');
+// print('✅ Retrieved ${result.length} expenses for stockist: $stockistId'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get expenses for stockist: $e');
+// print('❌ Failed to get expenses for stockist: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get expenses for stockist',
         code: 'RETRIEVE_ERROR',
@@ -382,7 +382,7 @@ class ExpenseReconciliationService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting pending expenses...');
+// print('🔍 Getting pending expenses...'); // Removed for production
       
       final result = await _repository.getPendingExpenses(
         stockistId: stockistId,
@@ -390,13 +390,13 @@ class ExpenseReconciliationService {
       );
       
       if (result.isRight()) {
-        print('✅ Retrieved ${result.length} pending expenses');
+// print('✅ Retrieved ${result.length} pending expenses'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get pending expenses: $e');
+// print('❌ Failed to get pending expenses: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get pending expenses',
         code: 'RETRIEVE_ERROR',
@@ -415,7 +415,7 @@ class ExpenseReconciliationService {
     ExpenseStatus? status,
   }) async {
     try {
-      print('📊 Getting expense statistics...');
+// print('📊 Getting expense statistics...'); // Removed for production
       
       final result = await _repository.getExpenseStatistics(
         stockistId: stockistId,
@@ -427,13 +427,13 @@ class ExpenseReconciliationService {
       );
       
       if (result.isRight()) {
-        print('✅ Expense statistics calculated');
+// print('✅ Expense statistics calculated'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get expense statistics: $e');
+// print('❌ Failed to get expense statistics: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get expense statistics',
         code: 'STATISTICS_ERROR',
@@ -449,7 +449,7 @@ class ExpenseReconciliationService {
     String format = 'pdf',
   }) async {
     try {
-      print('📄 Generating expense report...');
+// print('📄 Generating expense report...'); // Removed for production
       
       final result = await _repository.generateExpenseReport(
         stockistId: stockistId,
@@ -458,13 +458,13 @@ class ExpenseReconciliationService {
       );
       
       if (result.isRight()) {
-        print('✅ Expense report generated successfully');
+// print('✅ Expense report generated successfully'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to generate expense report: $e');
+// print('❌ Failed to generate expense report: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to generate expense report',
         code: 'REPORT_GENERATION_ERROR',
@@ -531,14 +531,14 @@ class ExpenseReconciliationService {
   /// Load cached expenses
   Future<void> _loadCachedExpenses() async {
     try {
-      print('📂 Loading cached expenses...');
+// print('📂 Loading cached expenses...'); // Removed for production
       
       // This would load recent expenses from repository
       // For now, we'll initialize with empty cache
       
-      print('✅ Cached expenses loaded');
+// print('✅ Cached expenses loaded'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load cached expenses: $e');
+// print('❌ Failed to load cached expenses: $e'); // Removed for production
     }
   }
 
@@ -552,11 +552,11 @@ class ExpenseReconciliationService {
       try {
         await _checkPendingApprovals();
       } catch (e) {
-        print('❌ Failed to check pending approvals: $e');
+// print('❌ Failed to check pending approvals: $e'); // Removed for production
       }
     });
     
-    print('✅ Approval monitoring started');
+// print('✅ Approval monitoring started'); // Removed for production
   }
 
   /// Start due date monitoring
@@ -569,11 +569,11 @@ class ExpenseReconciliationService {
       try {
         await _checkDueDates();
       } catch (e) {
-        print('❌ Failed to check due dates: $e');
+// print('❌ Failed to check due dates: $e'); // Removed for production
       }
     });
     
-    print('✅ Due date monitoring started');
+// print('✅ Due date monitoring started'); // Removed for production
   }
 
   /// Check pending approvals
@@ -588,14 +588,14 @@ class ExpenseReconciliationService {
             final daysPending = expense.getDaysSinceSubmission();
             
             if (daysPending > 3) {
-              print('⚠️ Expense pending approval for ${daysPending} days: ${expense.expenseNumber}');
+// print('⚠️ Expense pending approval for ${daysPending} days: ${expense.expenseNumber}'); // Removed for production
               // This would trigger notifications
             }
           }
         },
       );
     } catch (e) {
-      print('❌ Failed to check pending approvals: $e');
+// print('❌ Failed to check pending approvals: $e'); // Removed for production
     }
   }
 
@@ -604,20 +604,20 @@ class ExpenseReconciliationService {
     try {
       // This would check for upcoming due dates or overdue items
       // For now, we'll just log that due date check was performed
-      print('🔍 Due date check completed');
+// print('🔍 Due date check completed'); // Removed for production
     } catch (e) {
-      print('❌ Failed to check due dates: $e');
+// print('❌ Failed to check due dates: $e'); // Removed for production
     }
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Expense Reconciliation Service...');
+// print('🗑️ Disposing Expense Reconciliation Service...'); // Removed for production
     
     _approvalCheckTimer?.cancel();
     _dueDateCheckTimer?.cancel();
     
-    print('✅ Expense Reconciliation Service disposed');
+// print('✅ Expense Reconciliation Service disposed'); // Removed for production
   }
 }
 

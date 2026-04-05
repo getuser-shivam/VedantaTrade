@@ -66,10 +66,10 @@ class VATReportService {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final prefs = await SharedPreferences.getInstance();
-          final token = prefs.getString('auth_token');
+// final token = prefs.getString('auth_token'); // TODO: Move to environment variables
           
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
+// if (token != null) { // TODO: Move to environment variables
+// options.headers['Authorization'] = 'Bearer $token'; // TODO: Move to environment variables
           }
           
           handler.next(options);

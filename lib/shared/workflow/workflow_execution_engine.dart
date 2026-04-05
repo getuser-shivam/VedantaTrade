@@ -26,7 +26,7 @@ class WorkflowExecutionEngine {
     try {
       if (_isInitialized) return;
       
-      print('🔧 Initializing Workflow Execution Engine...');
+// print('🔧 Initializing Workflow Execution Engine...'); // Removed for production
       
       // Register built-in task handlers
       await _registerTaskHandlers();
@@ -35,9 +35,9 @@ class WorkflowExecutionEngine {
       _startEventMonitoring();
       
       _isInitialized = true;
-      print('✅ Workflow Execution Engine initialized successfully');
+// print('✅ Workflow Execution Engine initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Workflow Execution Engine: $e');
+// print('❌ Failed to initialize Workflow Execution Engine: $e'); // Removed for production
       rethrow;
     }
   }
@@ -50,7 +50,7 @@ class WorkflowExecutionEngine {
     ExecutionOptions? options,
   }) async {
     try {
-      print('🚀 Executing workflow with advanced features: $workflowId');
+// print('🚀 Executing workflow with advanced features: $workflowId'); // Removed for production
       
       final workflow = _workflowManager.getWorkflow(workflowId);
       if (workflow == null) {
@@ -99,10 +99,10 @@ class WorkflowExecutionEngine {
       // Clean up
       _cleanup(executionId);
       
-      print('✅ Workflow execution completed: $executionId');
+// print('✅ Workflow execution completed: $executionId'); // Removed for production
       return Right(result);
     } catch (e) {
-      print('❌ Failed to execute workflow: $e');
+// print('❌ Failed to execute workflow: $e'); // Removed for production
       return Left(WorkflowError(
         code: 'EXECUTION_ERROR',
         message: 'Failed to execute workflow',
@@ -114,7 +114,7 @@ class WorkflowExecutionEngine {
   /// Register task handler
   void registerTaskHandler(String taskType, TaskHandler handler) {
     _taskHandlers[taskType] = handler;
-    print('✅ Task handler registered: $taskType');
+// print('✅ Task handler registered: $taskType'); // Removed for production
   }
 
   /// Get task handler
@@ -141,7 +141,7 @@ class WorkflowExecutionEngine {
       context.checkpoints.add(checkpoint);
     }
     
-    print('📍 Checkpoint created: $name for execution: $executionId');
+// print('📍 Checkpoint created: $name for execution: $executionId'); // Removed for production
   }
 
   /// Restore from checkpoint
@@ -150,7 +150,7 @@ class WorkflowExecutionEngine {
     String checkpointId,
   ) async {
     try {
-      print('🔄 Restoring from checkpoint: $checkpointId');
+// print('🔄 Restoring from checkpoint: $checkpointId'); // Removed for production
       
       final checkpoints = _checkpoints[executionId] ?? [];
       final checkpoint = checkpoints.firstWhereOrNull((c) => c.id == checkpointId);
@@ -168,10 +168,10 @@ class WorkflowExecutionEngine {
         context.variables.addAll(checkpoint.data);
       }
       
-      print('✅ Restored from checkpoint: $checkpointId');
+// print('✅ Restored from checkpoint: $checkpointId'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to restore from checkpoint: $e');
+// print('❌ Failed to restore from checkpoint: $e'); // Removed for production
       return Left(WorkflowError(
         code: 'RESTORE_ERROR',
         message: 'Failed to restore from checkpoint',
@@ -183,7 +183,7 @@ class WorkflowExecutionEngine {
   /// Pause execution
   Future<Either<WorkflowError, void>> pauseExecution(String executionId) async {
     try {
-      print('⏸️ Pausing execution: $executionId');
+// print('⏸️ Pausing execution: $executionId'); // Removed for production
       
       final executor = _executors[executionId];
       if (executor == null) {
@@ -196,10 +196,10 @@ class WorkflowExecutionEngine {
       
       await executor.pause();
       
-      print('✅ Execution paused: $executionId');
+// print('✅ Execution paused: $executionId'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to pause execution: $e');
+// print('❌ Failed to pause execution: $e'); // Removed for production
       return Left(WorkflowError(
         code: 'PAUSE_ERROR',
         message: 'Failed to pause execution',
@@ -211,7 +211,7 @@ class WorkflowExecutionEngine {
   /// Resume execution
   Future<Either<WorkflowError, void>> resumeExecution(String executionId) async {
     try {
-      print('▶️ Resuming execution: $executionId');
+// print('▶️ Resuming execution: $executionId'); // Removed for production
       
       final executor = _executors[executionId];
       if (executor == null) {
@@ -224,10 +224,10 @@ class WorkflowExecutionEngine {
       
       await executor.resume();
       
-      print('✅ Execution resumed: $executionId');
+// print('✅ Execution resumed: $executionId'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to resume execution: $e');
+// print('❌ Failed to resume execution: $e'); // Removed for production
       return Left(WorkflowError(
         code: 'RESUME_ERROR',
         message: 'Failed to resume execution',
@@ -267,7 +267,7 @@ class WorkflowExecutionEngine {
   /// Register built-in task handlers
   Future<void> _registerTaskHandlers() async {
     try {
-      print('📝 Registering built-in task handlers...');
+// print('📝 Registering built-in task handlers...'); // Removed for production
       
       // Setup task handler
       registerTaskHandler('setup', SetupTaskHandler());
@@ -299,9 +299,9 @@ class WorkflowExecutionEngine {
       // Monitoring task handler
       registerTaskHandler('monitoring', MonitoringTaskHandler());
       
-      print('✅ Built-in task handlers registered');
+// print('✅ Built-in task handlers registered'); // Removed for production
     } catch (e) {
-      print('❌ Failed to register task handlers: $e');
+// print('❌ Failed to register task handlers: $e'); // Removed for production
     }
   }
 
@@ -311,7 +311,7 @@ class WorkflowExecutionEngine {
       _handleWorkflowEvent(event);
     });
     
-    print('✅ Event monitoring started');
+// print('✅ Event monitoring started'); // Removed for production
   }
 
   /// Handle workflow event
@@ -319,16 +319,16 @@ class WorkflowExecutionEngine {
     // Handle workflow events that affect execution
     switch (event.type) {
       case WorkflowEventType.executionStarted:
-        print('📥 Execution started: ${event.executionId}');
+// print('📥 Execution started: ${event.executionId}'); // Removed for production
         break;
       case WorkflowEventType.executionCompleted:
-        print('✅ Execution completed: ${event.executionId}');
+// print('✅ Execution completed: ${event.executionId}'); // Removed for production
         break;
       case WorkflowEventType.executionFailed:
-        print('❌ Execution failed: ${event.executionId}');
+// print('❌ Execution failed: ${event.executionId}'); // Removed for production
         break;
       case WorkflowEventType.executionCanceled:
-        print('⏹️ Execution canceled: ${event.executionId}');
+// print('⏹️ Execution canceled: ${event.executionId}'); // Removed for production
         break;
       default:
         break;
@@ -338,7 +338,7 @@ class WorkflowExecutionEngine {
   /// Set timeout
   void _setTimeout(String executionId, Duration timeout) {
     _timeoutTimers[executionId] = Timer(timeout, () {
-      print('⏰ Execution timeout: $executionId');
+// print('⏰ Execution timeout: $executionId'); // Removed for production
       _handleTimeout(executionId);
     });
   }
@@ -384,7 +384,7 @@ class WorkflowExecutionEngine {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Workflow Execution Engine...');
+// print('🗑️ Disposing Workflow Execution Engine...'); // Removed for production
     
     for (final timer in _timeoutTimers.values) {
       timer.cancel();
@@ -396,7 +396,7 @@ class WorkflowExecutionEngine {
     _checkpoints.clear();
     _eventController.close();
     
-    print('✅ Workflow Execution Engine disposed');
+// print('✅ Workflow Execution Engine disposed'); // Removed for production
   }
 }
 
@@ -423,7 +423,7 @@ class WorkflowExecutor {
   /// Execute workflow
   Future<WorkflowExecutionResult> execute() async {
     try {
-      print('🚀 Executing workflow: ${workflow.name}');
+// print('🚀 Executing workflow: ${workflow.name}'); // Removed for production
       
       // Initialize dependency graphs
       _initializeDependencyGraph();
@@ -443,10 +443,10 @@ class WorkflowExecutor {
                         ExecutionStatus.completed;
       context.endTime = DateTime.now();
       
-      print('✅ Workflow execution completed: ${workflow.name}');
+// print('✅ Workflow execution completed: ${workflow.name}'); // Removed for production
       return result;
     } catch (e) {
-      print('❌ Workflow execution failed: $e');
+// print('❌ Workflow execution failed: $e'); // Removed for production
       
       context.status = ExecutionStatus.failed;
       context.endTime = DateTime.now();
@@ -479,7 +479,7 @@ class WorkflowExecutor {
         timestamp: DateTime.now(),
       ));
       
-      print('⏸️ Execution paused: $id');
+// print('⏸️ Execution paused: $id'); // Removed for production
     }
   }
 
@@ -497,7 +497,7 @@ class WorkflowExecutor {
         timestamp: DateTime.now(),
       ));
       
-      print('▶️ Execution resumed: $id');
+// print('▶️ Execution resumed: $id'); // Removed for production
     }
   }
 
@@ -515,7 +515,7 @@ class WorkflowExecutor {
       timestamp: DateTime.now(),
     ));
     
-    print('⏰ Execution timeout: $id');
+// print('⏰ Execution timeout: $id'); // Removed for production
   }
 
   /// Initialize dependency graph
@@ -552,7 +552,7 @@ class WorkflowExecutor {
       await Future.delayed(const Duration(milliseconds: 100));
     }
     
-    print('🔧 Executing task: ${task.name}');
+// print('🔧 Executing task: ${task.name}'); // Removed for production
     
     final taskExecution = TaskExecution(
       id: _generateTaskExecutionId(),
@@ -605,7 +605,7 @@ class WorkflowExecutor {
         metadata: {'task_id': task.id, 'task_name': task.name},
       ));
       
-      print('✅ Task completed: ${task.name}');
+// print('✅ Task completed: ${task.name}'); // Removed for production
       
       // Complete task completer
       final completer = _taskCompleters[task.id];
@@ -632,7 +632,7 @@ class WorkflowExecutor {
         metadata: {'task_id': task.id, 'task_name': task.name, 'error': e.toString()},
       ));
       
-      print('❌ Task failed: ${task.name} - $e');
+// print('❌ Task failed: ${task.name} - $e'); // Removed for production
       
       // Complete task completer with error
       final completer = _taskCompleters[task.id];
@@ -710,7 +710,7 @@ abstract class TaskHandler {
 class SetupTaskHandler implements TaskHandler {
   @override
   Future<Map<String, dynamic>> execute(WorkflowTask task, ExecutionContext context) async {
-    print('⚙️ Setting up environment...');
+// print('⚙️ Setting up environment...'); // Removed for production
     
     // Simulate setup process
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));
@@ -727,7 +727,7 @@ class SetupTaskHandler implements TaskHandler {
 class DevelopmentTaskHandler implements TaskHandler {
   @override
   Future<Map<String, dynamic>> execute(WorkflowTask task, ExecutionContext context) async {
-    print('💻 Developing feature...');
+// print('💻 Developing feature...'); // Removed for production
     
     // Simulate development process
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));
@@ -745,7 +745,7 @@ class DevelopmentTaskHandler implements TaskHandler {
 class TestingTaskHandler implements TaskHandler {
   @override
   Future<Map<String, dynamic>> execute(WorkflowTask task, ExecutionContext context) async {
-    print('🧪 Running tests...');
+// print('🧪 Running tests...'); // Removed for production
     
     // Simulate testing process
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));
@@ -765,7 +765,7 @@ class TestingTaskHandler implements TaskHandler {
 class BuildTaskHandler implements TaskHandler {
   @override
   Future<Map<String, dynamic>> execute(WorkflowTask task, ExecutionContext context) async {
-    print('🔨 Building artifacts...');
+// print('🔨 Building artifacts...'); // Removed for production
     
     // Simulate build process
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));
@@ -783,7 +783,7 @@ class BuildTaskHandler implements TaskHandler {
 class DeploymentTaskHandler implements TaskHandler {
   @override
   Future<Map<String, dynamic>> execute(WorkflowTask task, ExecutionContext context) async {
-    print('🚀 Deploying application...');
+// print('🚀 Deploying application...'); // Removed for production
     
     // Simulate deployment process
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));
@@ -802,7 +802,7 @@ class DeploymentTaskHandler implements TaskHandler {
 class SecurityTaskHandler implements TaskHandler {
   @override
   Future<Map<String, dynamic>> execute(WorkflowTask task, ExecutionContext context) async {
-    print('🔒 Running security scan...');
+// print('🔒 Running security scan...'); // Removed for production
     
     // Simulate security scan
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));
@@ -820,7 +820,7 @@ class SecurityTaskHandler implements TaskHandler {
 class DocumentationTaskHandler implements TaskHandler {
   @override
   Future<Map<String, dynamic>> execute(WorkflowTask task, ExecutionContext context) async {
-    print('📚 Generating documentation...');
+// print('📚 Generating documentation...'); // Removed for production
     
     // Simulate documentation generation
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));
@@ -839,7 +839,7 @@ class DocumentationTaskHandler implements TaskHandler {
 class ReviewTaskHandler implements TaskHandler {
   @override
   Future<Map<String, dynamic>> execute(WorkflowTask task, ExecutionContext context) async {
-    print('👀 Reviewing code...');
+// print('👀 Reviewing code...'); // Removed for production
     
     // Simulate code review
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));
@@ -858,7 +858,7 @@ class ReviewTaskHandler implements TaskHandler {
 class AnalysisTaskHandler implements TaskHandler {
   @override
   Future<Map<String, dynamic>> execute(WorkflowTask task, ExecutionContext context) async {
-    print('📊 Analyzing requirements...');
+// print('📊 Analyzing requirements...'); // Removed for production
     
     // Simulate analysis
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));
@@ -877,7 +877,7 @@ class AnalysisTaskHandler implements TaskHandler {
 class MonitoringTaskHandler implements TaskHandler {
   @override
   Future<Map<String, dynamic>> execute(WorkflowTask task, ExecutionContext context) async {
-    print('📈 Setting up monitoring...');
+// print('📈 Setting up monitoring...'); // Removed for production
     
     // Simulate monitoring setup
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));

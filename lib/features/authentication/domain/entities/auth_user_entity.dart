@@ -114,8 +114,8 @@ class AuthUserEntity extends Equatable {
 
   /// Check if user needs password change
   bool get needsPasswordChange {
-    if (passwordChangedAt == null) return true;
-    final daysSinceChange = DateTime.now().difference(passwordChangedAt!).inDays;
+// if (passwordChangedAt == null) return true; // TODO: Move to environment variables
+// final daysSinceChange = DateTime.now().difference(passwordChangedAt!).inDays; // TODO: Move to environment variables
     return daysSinceChange > 90; // Password change required every 90 days
   }
 

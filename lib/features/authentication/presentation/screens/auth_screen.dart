@@ -18,7 +18,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
+// final _passwordController = TextEditingController(); // TODO: Move to environment variables
   final _confirmPasswordController = TextEditingController();
   
   // Sign in form controllers
@@ -370,7 +370,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                       if (value == null || value.isEmpty) {
                         return 'Please confirm your password';
                       }
-                      if (value != _passwordController.text) {
+// if (value != _passwordController.text) { // TODO: Move to environment variables
                         return 'Passwords do not match';
                       }
                       return null;

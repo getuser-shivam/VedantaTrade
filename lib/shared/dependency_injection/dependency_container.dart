@@ -32,7 +32,7 @@ class DependencyContainer {
     if (_isInitialized) return;
 
     try {
-      print('🔧 Initializing Dependency Container...');
+// print('🔧 Initializing Dependency Container...'); // Removed for production
 
       // Register core services
       await _registerCoreServices();
@@ -47,9 +47,9 @@ class DependencyContainer {
       await _initializeSingletons();
 
       _isInitialized = true;
-      print('✅ Dependency Container initialized successfully');
+// print('✅ Dependency Container initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Dependency Container: $e');
+// print('❌ Failed to initialize Dependency Container: $e'); // Removed for production
       rethrow;
     }
   }
@@ -81,7 +81,7 @@ class DependencyContainer {
       ServiceLifetime.singleton,
     );
 
-    print('✅ Core services registered');
+// print('✅ Core services registered'); // Removed for production
   }
 
   /// Register shared services
@@ -101,7 +101,7 @@ class DependencyContainer {
       ServiceLifetime.singleton,
     );
 
-    print('✅ Shared services registered');
+// print('✅ Shared services registered'); // Removed for production
   }
 
   /// Register feature services
@@ -116,7 +116,7 @@ class DependencyContainer {
       ServiceLifetime.singleton,
     );
 
-    print('✅ Feature services registered');
+// print('✅ Feature services registered'); // Removed for production
   }
 
   /// Initialize singleton instances
@@ -141,7 +141,7 @@ class DependencyContainer {
     _factories[T] = factory;
     _lifetimes[T] = lifetime;
 
-    print('📝 Dependency registered: $T');
+// print('📝 Dependency registered: $T'); // Removed for production
   }
 
   /// Get a dependency
@@ -207,7 +207,7 @@ class DependencyContainer {
     try {
       return factory() as T;
     } catch (e) {
-      print('❌ Failed to create instance of $type: $e');
+// print('❌ Failed to create instance of $type: $e'); // Removed for production
       rethrow;
     }
   }
@@ -223,7 +223,7 @@ class DependencyContainer {
       final instance = await factory();
       return instance as T;
     } catch (e) {
-      print('❌ Failed to create async instance of $type: $e');
+// print('❌ Failed to create async instance of $type: $e'); // Removed for production
       rethrow;
     }
   }
@@ -259,7 +259,7 @@ class DependencyContainer {
   /// Reset the container
   Future<void> reset() async {
     try {
-      print('🔄 Resetting Dependency Container...');
+// print('🔄 Resetting Dependency Container...'); // Removed for production
 
       // Dispose all instances
       for (final instance in _instances.values) {
@@ -286,9 +286,9 @@ class DependencyContainer {
       // Reinitialize singletons
       await _initializeSingletons();
 
-      print('✅ Dependency Container reset successfully');
+// print('✅ Dependency Container reset successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to reset Dependency Container: $e');
+// print('❌ Failed to reset Dependency Container: $e'); // Removed for production
     }
   }
 
@@ -297,7 +297,7 @@ class DependencyContainer {
     if (_isDisposed) return;
 
     try {
-      print('🗑️ Disposing Dependency Container...');
+// print('🗑️ Disposing Dependency Container...'); // Removed for production
 
       // Cancel all timers
       for (final timer in _timers.values) {
@@ -317,7 +317,7 @@ class DependencyContainer {
           try {
             await instance.dispose();
           } catch (e) {
-            print('❌ Failed to dispose instance: $e');
+// print('❌ Failed to dispose instance: $e'); // Removed for production
           }
         }
       }
@@ -328,9 +328,9 @@ class DependencyContainer {
       _lifetimes.clear();
 
       _isDisposed = true;
-      print('✅ Dependency Container disposed successfully');
+// print('✅ Dependency Container disposed successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to dispose Dependency Container: $e');
+// print('❌ Failed to dispose Dependency Container: $e'); // Removed for production
     }
   }
 
@@ -397,7 +397,7 @@ class DependencyContainer {
   /// Optimize container
   Future<void> optimize() async {
     try {
-      print('🔧 Optimizing Dependency Container...');
+// print('🔧 Optimizing Dependency Container...'); // Removed for production
 
       // Clear expired cache entries
       // This would be implemented based on specific caching needs
@@ -415,12 +415,12 @@ class DependencyContainer {
 
       for (final type in unusedInstances) {
         _instances.remove(type);
-        print('🗑️ Removed unused instance: $type');
+// print('🗑️ Removed unused instance: $type'); // Removed for production
       }
 
-      print('✅ Dependency Container optimized successfully');
+// print('✅ Dependency Container optimized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to optimize Dependency Container: $e');
+// print('❌ Failed to optimize Dependency Container: $e'); // Removed for production
     }
   }
 }

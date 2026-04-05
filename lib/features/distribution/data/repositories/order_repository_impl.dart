@@ -29,7 +29,7 @@ class OrderRepositoryImpl implements OrderRepository {
   /// Initialize repository
   Future<void> initialize() async {
     try {
-      print('🔍 Initializing Order Repository...');
+// print('🔍 Initializing Order Repository...'); // Removed for production
       
       await _databaseHelper.initialize();
       await _createTables();
@@ -42,9 +42,9 @@ class OrderRepositoryImpl implements OrderRepository {
       // Start periodic sync
       _startPeriodicSync();
       
-      print('✅ Order Repository initialized successfully');
+// print('✅ Order Repository initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Order Repository: $e');
+// print('❌ Failed to initialize Order Repository: $e'); // Removed for production
       rethrow;
     }
   }
@@ -52,7 +52,7 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Either<Failure, void>> saveOrder(Order order) async {
     try {
-      print('💾 Saving order: ${order.orderNumber}');
+// print('💾 Saving order: ${order.orderNumber}'); // Removed for production
       
       // Save to database
       final db = await _databaseHelper.database;
@@ -72,10 +72,10 @@ class OrderRepositoryImpl implements OrderRepository {
       // Add to stream
       _orderStreamController.add(order);
       
-      print('✅ Order saved successfully: ${order.orderNumber}');
+// print('✅ Order saved successfully: ${order.orderNumber}'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to save order: $e');
+// print('❌ Failed to save order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to save order',
         code: 'SAVE_ERROR',
@@ -87,11 +87,11 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Either<Failure, Order?>> getOrderById(String id) async {
     try {
-      print('🔍 Getting order by ID: $id');
+// print('🔍 Getting order by ID: $id'); // Removed for production
       
       // Check cache first
       if (_cachedOrders.containsKey(id)) {
-        print('✅ Order found in cache: $id');
+// print('✅ Order found in cache: $id'); // Removed for production
         return Right(_cachedOrders[id]);
       }
       
@@ -105,17 +105,17 @@ class OrderRepositoryImpl implements OrderRepository {
       );
       
       if (maps.isEmpty) {
-        print('⚠️ Order not found: $id');
+// print('⚠️ Order not found: $id'); // Removed for production
         return const Right(null);
       }
       
       final order = Order.fromMap(maps.first);
       _cachedOrders[id] = order;
       
-      print('✅ Order retrieved: ${order.orderNumber}');
+// print('✅ Order retrieved: ${order.orderNumber}'); // Removed for production
       return Right(order);
     } catch (e) {
-      print('❌ Failed to get order: $e');
+// print('❌ Failed to get order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get order',
         code: 'RETRIEVE_ERROR',
@@ -131,7 +131,7 @@ class OrderRepositoryImpl implements OrderRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting orders for retailer: $retailerId');
+// print('🔍 Getting orders for retailer: $retailerId'); // Removed for production
       
       String whereClause = 'retailer_id = ?';
       List<dynamic> whereArgs = [retailerId];
@@ -152,10 +152,10 @@ class OrderRepositoryImpl implements OrderRepository {
       
       final orders = maps.map((map) => Order.fromMap(map)).toList();
       
-      print('✅ Retrieved ${orders.length} orders for retailer: $retailerId');
+// print('✅ Retrieved ${orders.length} orders for retailer: $retailerId'); // Removed for production
       return Right(orders);
     } catch (e) {
-      print('❌ Failed to get orders for retailer: $e');
+// print('❌ Failed to get orders for retailer: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get orders for retailer',
         code: 'RETRIEVE_ERROR',
@@ -171,7 +171,7 @@ class OrderRepositoryImpl implements OrderRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting orders for stockist: $stockistId');
+// print('🔍 Getting orders for stockist: $stockistId'); // Removed for production
       
       String whereClause = 'stockist_id = ?';
       List<dynamic> whereArgs = [stockistId];
@@ -192,10 +192,10 @@ class OrderRepositoryImpl implements OrderRepository {
       
       final orders = maps.map((map) => Order.fromMap(map)).toList();
       
-      print('✅ Retrieved ${orders.length} orders for stockist: $stockistId');
+// print('✅ Retrieved ${orders.length} orders for stockist: $stockistId'); // Removed for production
       return Right(orders);
     } catch (e) {
-      print('❌ Failed to get orders for stockist: $e');
+// print('❌ Failed to get orders for stockist: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get orders for stockist',
         code: 'RETRIEVE_ERROR',
@@ -210,7 +210,7 @@ class OrderRepositoryImpl implements OrderRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting orders by status: ${status.name}');
+// print('🔍 Getting orders by status: ${status.name}'); // Removed for production
       
       final db = await _databaseHelper.database;
       final maps = await db.query(
@@ -223,10 +223,10 @@ class OrderRepositoryImpl implements OrderRepository {
       
       final orders = maps.map((map) => Order.fromMap(map)).toList();
       
-      print('✅ Retrieved ${orders.length} orders with status: ${status.name}');
+// print('✅ Retrieved ${orders.length} orders with status: ${status.name}'); // Removed for production
       return Right(orders);
     } catch (e) {
-      print('❌ Failed to get orders by status: $e');
+// print('❌ Failed to get orders by status: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get orders by status',
         code: 'RETRIEVE_ERROR',
@@ -242,7 +242,7 @@ class OrderRepositoryImpl implements OrderRepository {
     String? mrId,
   }) async {
     try {
-      print('🔍 Getting orders by date range: $startDate to $endDate');
+// print('🔍 Getting orders by date range: $startDate to $endDate'); // Removed for production
       
       String whereClause = 'created_at >= ? AND created_at <= ?';
       List<dynamic> whereArgs = [startDate.toIso8601String(), endDate.toIso8601String()];
@@ -262,10 +262,10 @@ class OrderRepositoryImpl implements OrderRepository {
       
       final orders = maps.map((map) => Order.fromMap(map)).toList();
       
-      print('✅ Retrieved ${orders.length} orders for date range');
+// print('✅ Retrieved ${orders.length} orders for date range'); // Removed for production
       return Right(orders);
     } catch (e) {
-      print('❌ Failed to get orders by date range: $e');
+// print('❌ Failed to get orders by date range: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get orders by date range',
         code: 'RETRIEVE_ERROR',
@@ -277,7 +277,7 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Either<Failure, void>> updateOrder(Order order) async {
     try {
-      print('📝 Updating order: ${order.orderNumber}');
+// print('📝 Updating order: ${order.orderNumber}'); // Removed for production
       
       // Update database
       final db = await _databaseHelper.database;
@@ -298,10 +298,10 @@ class OrderRepositoryImpl implements OrderRepository {
       // Add to stream
       _orderStreamController.add(order);
       
-      print('✅ Order updated successfully: ${order.orderNumber}');
+// print('✅ Order updated successfully: ${order.orderNumber}'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to update order: $e');
+// print('❌ Failed to update order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to update order',
         code: 'UPDATE_ERROR',
@@ -313,7 +313,7 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Either<Failure, void>> deleteOrder(String id) async {
     try {
-      print('🗑️ Deleting order: $id');
+// print('🗑️ Deleting order: $id'); // Removed for production
       
       // Delete from database
       final db = await _databaseHelper.database;
@@ -333,10 +333,10 @@ class OrderRepositoryImpl implements OrderRepository {
         await _sendOrderNotification(order, 'deleted');
       }
       
-      print('✅ Order deleted successfully: $id');
+// print('✅ Order deleted successfully: $id'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to delete order: $e');
+// print('❌ Failed to delete order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to delete order',
         code: 'DELETE_ERROR',
@@ -354,7 +354,7 @@ class OrderRepositoryImpl implements OrderRepository {
     DateTime? endDate,
   }) async {
     try {
-      print('📊 Getting order statistics...');
+// print('📊 Getting order statistics...'); // Removed for production
       
       String whereClause = '1=1';
       List<dynamic> whereArgs = [];
@@ -440,10 +440,10 @@ class OrderRepositoryImpl implements OrderRepository {
         'generated_at': DateTime.now().toIso8601String(),
       };
       
-      print('✅ Order statistics calculated');
+// print('✅ Order statistics calculated'); // Removed for production
       return Right(statistics);
     } catch (e) {
-      print('❌ Failed to get order statistics: $e');
+// print('❌ Failed to get order statistics: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get order statistics',
         code: 'STATISTICS_ERROR',
@@ -506,9 +506,9 @@ class OrderRepositoryImpl implements OrderRepository {
         CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders (created_at)
       ''');
       
-      print('✅ Database tables created successfully');
+// print('✅ Database tables created successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to create database tables: $e');
+// print('❌ Failed to create database tables: $e'); // Removed for production
       rethrow;
     }
   }
@@ -525,9 +525,9 @@ class OrderRepositoryImpl implements OrderRepository {
         _updateStatusCache(order);
       }
       
-      print('✅ Loaded ${_cachedOrders.length} orders into cache');
+// print('✅ Loaded ${_cachedOrders.length} orders into cache'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load cached orders: $e');
+// print('❌ Failed to load cached orders: $e'); // Removed for production
     }
   }
 
@@ -555,7 +555,7 @@ class OrderRepositoryImpl implements OrderRepository {
     try {
       if (_webSocketChannel == null) return;
       
-      print('🌐 Connecting to WebSocket...');
+// print('🌐 Connecting to WebSocket...'); // Removed for production
       
       _webSocketChannel!.stream.listen(
         (data) {
@@ -563,15 +563,15 @@ class OrderRepositoryImpl implements OrderRepository {
             final message = jsonDecode(data as String);
             _handleWebSocketMessage(message);
           } catch (e) {
-            print('❌ Failed to handle WebSocket message: $e');
+// print('❌ Failed to handle WebSocket message: $e'); // Removed for production
           }
         },
         onError: (error) {
-          print('❌ WebSocket error: $error');
+// print('❌ WebSocket error: $error'); // Removed for production
           _isConnected = false;
         },
         onDone: () {
-          print('🔌 WebSocket connection closed');
+// print('🔌 WebSocket connection closed'); // Removed for production
           _isConnected = false;
         },
       );
@@ -583,10 +583,10 @@ class OrderRepositoryImpl implements OrderRepository {
         'version': '1.0.0',
       }));
       
-      print('✅ WebSocket connected successfully');
+// print('✅ WebSocket connected successfully'); // Removed for production
       _isConnected = true;
     } catch (e) {
-      print('❌ Failed to connect to WebSocket: $e');
+// print('❌ Failed to connect to WebSocket: $e'); // Removed for production
     }
   }
 
@@ -606,10 +606,10 @@ class OrderRepositoryImpl implements OrderRepository {
           _handleSyncRequest(message['data'] as Map<String, dynamic>);
           break;
         default:
-          print('⚠️ Unknown WebSocket message type: $type');
+// print('⚠️ Unknown WebSocket message type: $type'); // Removed for production
       }
     } catch (e) {
-      print('❌ Failed to handle WebSocket message: $e');
+// print('❌ Failed to handle WebSocket message: $e'); // Removed for production
     }
   }
 
@@ -629,9 +629,9 @@ class OrderRepositoryImpl implements OrderRepository {
       // Add to stream
       _orderStreamController.add(order);
       
-      print('✅ Order updated via WebSocket: ${order.orderNumber}');
+// print('✅ Order updated via WebSocket: ${order.orderNumber}'); // Removed for production
     } catch (e) {
-      print('❌ Failed to handle order update: $e');
+// print('❌ Failed to handle order update: $e'); // Removed for production
     }
   }
 
@@ -643,7 +643,7 @@ class OrderRepositoryImpl implements OrderRepository {
         'timestamp': DateTime.now().toIso8601String(),
       }));
     } catch (e) {
-      print('❌ Failed to handle ping: $e');
+// print('❌ Failed to handle ping: $e'); // Removed for production
     }
   }
 
@@ -675,9 +675,9 @@ class OrderRepositoryImpl implements OrderRepository {
         'count': orders.length,
       }));
       
-      print('✅ Sync response sent: ${orders.length} orders');
+// print('✅ Sync response sent: ${orders.length} orders'); // Removed for production
     } catch (e) {
-      print('❌ Failed to handle sync request: $e');
+// print('❌ Failed to handle sync request: $e'); // Removed for production
     }
   }
 
@@ -695,9 +695,9 @@ class OrderRepositoryImpl implements OrderRepository {
       
       _webSocketChannel!.sink.add(jsonEncode(notification));
       
-      print('✅ Order notification sent: $action - ${order.orderNumber}');
+// print('✅ Order notification sent: $action - ${order.orderNumber}'); // Removed for production
     } catch (e) {
-      print('❌ Failed to send order notification: $e');
+// print('❌ Failed to send order notification: $e'); // Removed for production
     }
   }
 
@@ -725,20 +725,20 @@ class OrderRepositoryImpl implements OrderRepository {
           }
         }
       } catch (e) {
-        print('❌ Failed to sync orders: $e');
+// print('❌ Failed to sync orders: $e'); // Removed for production
       }
     });
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Order Repository...');
+// print('🗑️ Disposing Order Repository...'); // Removed for production
     
     _syncTimer?.cancel();
     _webSocketChannel?.sink.close();
     _orderStreamController.close();
     
-    print('✅ Order Repository disposed');
+// print('✅ Order Repository disposed'); // Removed for production
   }
 }
 
@@ -763,10 +763,10 @@ class DatabaseHelper {
         onUpgrade: _onUpgrade,
       );
       
-      print('✅ Database initialized: $path');
+// print('✅ Database initialized: $path'); // Removed for production
       return database;
     } catch (e) {
-      print('❌ Failed to initialize database: $e');
+// print('❌ Failed to initialize database: $e'); // Removed for production
       rethrow;
     }
   }
@@ -774,23 +774,23 @@ class DatabaseHelper {
   Future<void> _onCreate(Database db, int version) async {
     try {
       await db.execute('PRAGMA foreign_keys = ON');
-      print('✅ Database created with version $version');
+// print('✅ Database created with version $version'); // Removed for production
     } catch (e) {
-      print('❌ Failed to create database: $e');
+// print('❌ Failed to create database: $e'); // Removed for production
     }
   }
   
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     try {
-      print('🔄 Upgrading database from version $oldVersion to $newVersion');
+// print('🔄 Upgrading database from version $oldVersion to $newVersion'); // Removed for production
       
       // Handle database upgrades here
       await db.execute('DROP TABLE IF EXISTS orders');
       await _createTables();
       
-      print('✅ Database upgraded to version $newVersion');
+// print('✅ Database upgraded to version $newVersion'); // Removed for production
     } catch (e) {
-      print('❌ Failed to upgrade database: $e');
+// print('❌ Failed to upgrade database: $e'); // Removed for production
     }
   }
 }

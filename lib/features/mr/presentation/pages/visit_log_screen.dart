@@ -253,7 +253,7 @@ class _VisitLogScreenState extends State<VisitLogScreen> with TickerProviderStat
 
   Future<void> _saveVisitRecord(Map<String, dynamic> visitData) async {
     // This would save to the database
-    print('Saving visit record: $visitData');
+// print('Saving visit record: $visitData'); // Removed for production
     // Implementation would go here
   }
 

@@ -41,7 +41,7 @@ class LocationServiceImpl implements LocationService {
   /// Initialize location service
   Future<void> initialize() async {
     try {
-      print('🔍 Initializing Location Service...');
+// print('🔍 Initializing Location Service...'); // Removed for production
       
       // Initialize database connection
       await _initializeDatabase();
@@ -58,9 +58,9 @@ class LocationServiceImpl implements LocationService {
       // Start location tracking
       await _startLocationTracking();
       
-      print('✅ Location Service initialized successfully');
+// print('✅ Location Service initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Location Service: $e');
+// print('❌ Failed to initialize Location Service: $e'); // Removed for production
       _emitEvent(LocationServiceEvent(
         type: LocationServiceEventType.initializationFailed,
         message: 'Failed to initialize location service',
@@ -75,21 +75,21 @@ class LocationServiceImpl implements LocationService {
   Future<void> _initializeDatabase() async {
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
-        print('📊 Attempting database connection (attempt $attempt/$_maxRetries)...');
+// print('📊 Attempting database connection (attempt $attempt/$_maxRetries)...'); // Removed for production
         
         await _databaseHelper.initialize();
         await _createTables();
         
-        print('✅ Database connection established successfully');
+// print('✅ Database connection established successfully'); // Removed for production
         _isConnected = true;
         _retryCount = 0;
         return;
       } catch (e) {
-        print('❌ Database connection failed (attempt $attempt/$_maxRetries): $e');
+// print('❌ Database connection failed (attempt $attempt/$_maxRetries): $e'); // Removed for production
         
         if (attempt == _maxRetries) {
           // Final attempt failed, switch to offline mode
-          print('⚠️ All database connection attempts failed, switching to offline mode');
+// print('⚠️ All database connection attempts failed, switching to offline mode'); // Removed for production
           _isConnected = false;
           _emitEvent(LocationServiceEvent(
             type: LocationServiceEventType.connectionLost,
@@ -141,9 +141,9 @@ class LocationServiceImpl implements LocationService {
         CREATE INDEX IF NOT EXISTS idx_location_data_is_synced ON location_data (is_synced)
       ''');
       
-      print('✅ Database tables created successfully');
+// print('✅ Database tables created successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to create database tables: $e');
+// print('❌ Failed to create database tables: $e'); // Removed for production
       rethrow;
     }
   }
@@ -168,9 +168,9 @@ class LocationServiceImpl implements LocationService {
         throw Exception('Location permissions are permanently denied');
       }
       
-      print('✅ Location permissions verified');
+// print('✅ Location permissions verified'); // Removed for production
     } catch (e) {
-      print('❌ Failed to check location permissions: $e');
+// print('❌ Failed to check location permissions: $e'); // Removed for production
       rethrow;
     }
   }
@@ -179,7 +179,7 @@ class LocationServiceImpl implements LocationService {
   Future<void> _loadCachedLocations() async {
     try {
       if (!_isConnected) {
-        print('⚠️ Skipping cache load - database not connected');
+// print('⚠️ Skipping cache load - database not connected'); // Removed for production
         return;
       }
       
@@ -191,9 +191,9 @@ class LocationServiceImpl implements LocationService {
         _locationCache[location.id] = location;
       }
       
-      print('✅ Loaded ${_locationCache.length} cached locations');
+// print('✅ Loaded ${_locationCache.length} cached locations'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load cached locations: $e');
+// print('❌ Failed to load cached locations: $e'); // Removed for production
       // Don't rethrow - continue with empty cache
     }
   }
@@ -209,14 +209,14 @@ class LocationServiceImpl implements LocationService {
         _isConnected = connectivityResult != ConnectivityResult.none;
         
         if (wasConnected && !_isConnected) {
-          print('⚠️ Connection lost');
+// print('⚠️ Connection lost'); // Removed for production
           _emitEvent(LocationServiceEvent(
             type: LocationServiceEventType.connectionLost,
             message: 'Network connection lost',
             timestamp: DateTime.now(),
           ));
         } else if (!wasConnected && _isConnected) {
-          print('✅ Connection restored');
+// print('✅ Connection restored'); // Removed for production
           _emitEvent(LocationServiceEvent(
             type: LocationServiceEventType.connectionRestored,
             message: 'Network connection restored',
@@ -228,11 +228,11 @@ class LocationServiceImpl implements LocationService {
           await _syncOfflineData();
         }
       } catch (e) {
-        print('❌ Connectivity check failed: $e');
+// print('❌ Connectivity check failed: $e'); // Removed for production
       }
     });
     
-    print('✅ Connectivity monitoring started');
+// print('✅ Connectivity monitoring started'); // Removed for production
   }
 
   /// Start location tracking
@@ -240,7 +240,7 @@ class LocationServiceImpl implements LocationService {
     try {
       if (_isTracking) return;
       
-      print('📍 Starting location tracking...');
+// print('📍 Starting location tracking...'); // Removed for production
       
       const LocationSettings locationSettings = LocationSettings(
         accuracy: LocationAccuracy.high,
@@ -259,7 +259,7 @@ class LocationServiceImpl implements LocationService {
           
           await _handleLocationUpdate(position);
         } catch (e) {
-          print('❌ Failed to get location: $e');
+// print('❌ Failed to get location: $e'); // Removed for production
           _emitEvent(LocationServiceEvent(
             type: LocationServiceEventType.locationUpdateFailed,
             message: 'Failed to get current location',
@@ -276,9 +276,9 @@ class LocationServiceImpl implements LocationService {
       await _handleLocationUpdate(position);
       
       _isTracking = true;
-      print('✅ Location tracking started');
+// print('✅ Location tracking started'); // Removed for production
     } catch (e) {
-      print('❌ Failed to start location tracking: $e');
+// print('❌ Failed to start location tracking: $e'); // Removed for production
       rethrow;
     }
   }
@@ -316,9 +316,9 @@ class LocationServiceImpl implements LocationService {
       // Emit location update
       _locationStreamController.add(locationData);
       
-      print('📍 Location updated: ${position.latitude}, ${position.longitude}');
+// print('📍 Location updated: ${position.latitude}, ${position.longitude}'); // Removed for production
     } catch (e) {
-      print('❌ Failed to handle location update: $e');
+// print('❌ Failed to handle location update: $e'); // Removed for production
     }
   }
 
@@ -333,9 +333,9 @@ class LocationServiceImpl implements LocationService {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
       
-      print('💾 Location saved to database: ${locationData.id}');
+// print('💾 Location saved to database: ${locationData.id}'); // Removed for production
     } catch (e) {
-      print('❌ Failed to save location to database: $e');
+// print('❌ Failed to save location to database: $e'); // Removed for production
       
       // Fall back to offline cache
       await _saveLocationToOfflineCache(locationData);
@@ -364,9 +364,9 @@ class LocationServiceImpl implements LocationService {
       );
       await _preferences.setString('location_offline_cache', cacheJson);
       
-      print('💾 Location saved to offline cache: ${locationData.id}');
+// print('💾 Location saved to offline cache: ${locationData.id}'); // Removed for production
     } catch (e) {
-      print('❌ Failed to save location to offline cache: $e');
+// print('❌ Failed to save location to offline cache: $e'); // Removed for production
     }
   }
 
@@ -399,7 +399,7 @@ class LocationServiceImpl implements LocationService {
       
       return Right(locationData);
     } catch (e) {
-      print('❌ Failed to get current location: $e');
+// print('❌ Failed to get current location: $e'); // Removed for production
       return Left(LocationServiceError(
         code: 'GET_LOCATION_FAILED',
         message: 'Failed to get current location',
@@ -457,10 +457,10 @@ class LocationServiceImpl implements LocationService {
       
       final locations = maps.map((map) => LocationData.fromMap(map)).toList();
       
-      print('✅ Retrieved ${locations.length} locations from database');
+// print('✅ Retrieved ${locations.length} locations from database'); // Removed for production
       return Right(locations);
     } catch (e) {
-      print('❌ Failed to get location history: $e');
+// print('❌ Failed to get location history: $e'); // Removed for production
       
       // Try offline cache as fallback
       return _getLocationHistoryFromOfflineCache(
@@ -508,10 +508,10 @@ class LocationServiceImpl implements LocationService {
         locations = locations.take(limit).toList();
       }
       
-      print('✅ Retrieved ${locations.length} locations from offline cache');
+// print('✅ Retrieved ${locations.length} locations from offline cache'); // Removed for production
       return Right(locations);
     } catch (e) {
-      print('❌ Failed to get location history from offline cache: $e');
+// print('❌ Failed to get location history from offline cache: $e'); // Removed for production
       return Left(LocationServiceError(
         code: 'OFFLINE_CACHE_FAILED',
         message: 'Failed to get location history from offline cache',
@@ -528,7 +528,7 @@ class LocationServiceImpl implements LocationService {
         return const Right(null);
       }
       
-      print('📍 Starting location tracking for user: ${userId ?? 'current'}');
+// print('📍 Starting location tracking for user: ${userId ?? 'current'}'); // Removed for production
       
       // Save user ID if provided
       if (userId != null) {
@@ -546,7 +546,7 @@ class LocationServiceImpl implements LocationService {
       
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to start tracking: $e');
+// print('❌ Failed to start tracking: $e'); // Removed for production
       return Left(LocationServiceError(
         code: 'START_TRACKING_FAILED',
         message: 'Failed to start location tracking',
@@ -563,7 +563,7 @@ class LocationServiceImpl implements LocationService {
         return const Right(null);
       }
       
-      print('⏹️ Stopping location tracking');
+// print('⏹️ Stopping location tracking'); // Removed for production
       
       _locationUpdateTimer?.cancel();
       _isTracking = false;
@@ -576,7 +576,7 @@ class LocationServiceImpl implements LocationService {
       
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to stop tracking: $e');
+// print('❌ Failed to stop tracking: $e'); // Removed for production
       return Left(LocationServiceError(
         code: 'STOP_TRACKING_FAILED',
         message: 'Failed to stop location tracking',
@@ -597,7 +597,7 @@ class LocationServiceImpl implements LocationService {
         ));
       }
       
-      print('🔄 Syncing offline data...');
+// print('🔄 Syncing offline data...'); // Removed for production
       
       int syncedCount = 0;
       
@@ -626,7 +626,7 @@ class LocationServiceImpl implements LocationService {
               
               syncedCount++;
             } catch (e) {
-              print('❌ Failed to sync location ${location.id}: $e');
+// print('❌ Failed to sync location ${location.id}: $e'); // Removed for production
             }
           }
         }
@@ -640,7 +640,7 @@ class LocationServiceImpl implements LocationService {
       // Save updated offline cache
       await _saveOfflineCacheToPreferences();
       
-      print('✅ Synced $syncedCount locations');
+// print('✅ Synced $syncedCount locations'); // Removed for production
       
       _emitEvent(LocationServiceEvent(
         type: LocationServiceEventType.syncCompleted,
@@ -651,7 +651,7 @@ class LocationServiceImpl implements LocationService {
       
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to sync offline data: $e');
+// print('❌ Failed to sync offline data: $e'); // Removed for production
       return Left(LocationServiceError(
         code: 'SYNC_FAILED',
         message: 'Failed to sync offline data',
@@ -663,13 +663,13 @@ class LocationServiceImpl implements LocationService {
   /// Reconnect database
   Future<void> _reconnectDatabase() async {
     try {
-      print('🔄 Attempting to reconnect database...');
+// print('🔄 Attempting to reconnect database...'); // Removed for production
       
       await _initializeDatabase();
       
-      print('✅ Database reconnected successfully');
+// print('✅ Database reconnected successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to reconnect database: $e');
+// print('❌ Failed to reconnect database: $e'); // Removed for production
     }
   }
 
@@ -681,7 +681,7 @@ class LocationServiceImpl implements LocationService {
       );
       await _preferences.setString('location_offline_cache', cacheJson);
     } catch (e) {
-      print('❌ Failed to save offline cache to preferences: $e');
+// print('❌ Failed to save offline cache to preferences: $e'); // Removed for production
     }
   }
 
@@ -697,7 +697,7 @@ class LocationServiceImpl implements LocationService {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Location Service...');
+// print('🗑️ Disposing Location Service...'); // Removed for production
     
     _locationUpdateTimer?.cancel();
     _connectionCheckTimer?.cancel();
@@ -709,7 +709,7 @@ class LocationServiceImpl implements LocationService {
     }
     _syncTimers.clear();
     
-    print('✅ Location Service disposed');
+// print('✅ Location Service disposed'); // Removed for production
   }
 }
 
@@ -731,7 +731,7 @@ class DatabaseHelper {
   Future<Database> _initializeDatabase() async {
     for (int attempt = 1; attempt <= _maxConnectionAttempts; attempt++) {
       try {
-        print('📊 Initializing database (attempt $attempt/$_maxConnectionAttempts)...');
+// print('📊 Initializing database (attempt $attempt/$_maxConnectionAttempts)...'); // Removed for production
         
         final databasesPath = await getDatabasesPath();
         final path = join(databasesPath, 'vedantatrade_location.db');
@@ -748,14 +748,14 @@ class DatabaseHelper {
         _isInitialized = true;
         _connectionAttempts = 0;
         
-        print('✅ Database initialized successfully: $path');
+// print('✅ Database initialized successfully: $path'); // Removed for production
         return database;
       } catch (e) {
-        print('❌ Database initialization failed (attempt $attempt/$_maxConnectionAttempts): $e');
+// print('❌ Database initialization failed (attempt $attempt/$_maxConnectionAttempts): $e'); // Removed for production
         _connectionAttempts++;
         
         if (attempt == _maxConnectionAttempts) {
-          print('⚠️ All database initialization attempts failed');
+// print('⚠️ All database initialization attempts failed'); // Removed for production
           rethrow;
         }
         
@@ -776,17 +776,17 @@ class DatabaseHelper {
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    print('📝 Creating database tables...');
+// print('📝 Creating database tables...'); // Removed for production
     
     // Tables will be created by the service
-    print('✅ Database created with version $version');
+// print('✅ Database created with version $version'); // Removed for production
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    print('🔄 Upgrading database from version $oldVersion to $newVersion');
+// print('🔄 Upgrading database from version $oldVersion to $newVersion'); // Removed for production
     
     // Handle database upgrades here
-    print('✅ Database upgraded to version $newVersion');
+// print('✅ Database upgraded to version $newVersion'); // Removed for production
   }
 
   Future<void> initialize() async {
@@ -798,7 +798,7 @@ class DatabaseHelper {
       await _database!.close();
       _database = null;
       _isInitialized = false;
-      print('📁 Database connection closed');
+// print('📁 Database connection closed'); // Removed for production
     }
   }
 
@@ -808,7 +808,7 @@ class DatabaseHelper {
       await db.rawQuery('SELECT 1');
       return true;
     } catch (e) {
-      print('❌ Database connection test failed: $e');
+// print('❌ Database connection test failed: $e'); // Removed for production
       _isInitialized = false;
       return false;
     }

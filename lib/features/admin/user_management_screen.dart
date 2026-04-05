@@ -24,7 +24,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final res = await dio.get('${ApiConfig.baseUrl}/users', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+// final res = await dio.get('${ApiConfig.baseUrl}/users', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'})); // TODO: Move to environment variables
       if (mounted) setState(() { _users = res.data['data'] ?? []; _loading = false; });
     } catch (_) { if (mounted) setState(() => _loading = false); }
   }

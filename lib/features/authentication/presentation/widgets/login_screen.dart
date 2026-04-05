@@ -21,7 +21,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+// final _passwordController = TextEditingController(); // TODO: Move to environment variables
   final _identifierController = TextEditingController();
   bool _obscurePassword = true;
   bool _rememberMe = false;
@@ -65,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final identifier = _identifierController.text.trim();
-      final password = _passwordController.text;
+// final password = _passwordController.text; // TODO: Move to environment variables
 
       await context.read<AuthenticationProvider>().loginUser(
         identifier: identifier,

@@ -25,12 +25,12 @@ class ArchitectureValidator {
 
   /// Initialize the validator
   Future<void> initialize() async {
-    print('🔧 Initializing Architecture Validator...');
+// print('🔧 Initializing Architecture Validator...'); // Removed for production
 
     // Register architecture rules
     await _registerArchitectureRules();
 
-    print('✅ Architecture Validator initialized');
+// print('✅ Architecture Validator initialized'); // Removed for production
   }
 
   /// Validate the entire architecture
@@ -43,7 +43,7 @@ class ArchitectureValidator {
     final report = ArchitectureValidationReport(startTime: DateTime.now());
 
     try {
-      print('🔍 Starting architecture validation...');
+// print('🔍 Starting architecture validation...'); // Removed for production
 
       // Phase 1: Validate component hierarchy
       await _validateComponentHierarchy(report);
@@ -72,12 +72,12 @@ class ArchitectureValidator {
       report.endTime = DateTime.now();
       report.success = true;
 
-      print('✅ Architecture validation completed successfully');
+// print('✅ Architecture validation completed successfully'); // Removed for production
     } catch (e) {
       report.endTime = DateTime.now();
       report.success = false;
       report.error = e.toString();
-      print('❌ Architecture validation failed: $e');
+// print('❌ Architecture validation failed: $e'); // Removed for production
     } finally {
       _isValidating = false;
     }
@@ -136,7 +136,7 @@ class ArchitectureValidator {
       validator: _validateOpenClosed,
     ));
 
-    print('✅ Architecture rules registered');
+// print('✅ Architecture rules registered'); // Removed for production
   }
 
   /// Register a rule
@@ -146,7 +146,7 @@ class ArchitectureValidator {
 
   /// Validate component hierarchy
   Future<void> _validateComponentHierarchy(ArchitectureValidationReport report) async {
-    print('🏗️ Phase 1: Validating component hierarchy...');
+// print('🏗️ Phase 1: Validating component hierarchy...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     final dependencyGraph = _hierarchyManager.getDependencyGraph();
@@ -180,12 +180,12 @@ class ArchitectureValidator {
     }
 
     report.hierarchyViolations = violations;
-    print('✅ Phase 1 completed: $violations hierarchy violations detected');
+// print('✅ Phase 1 completed: $violations hierarchy violations detected'); // Removed for production
   }
 
   /// Validate dependencies
   Future<void> _validateDependencies(ArchitectureValidationReport report) async {
-    print('🔗 Phase 2: Validating dependencies...');
+// print('🔗 Phase 2: Validating dependencies...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     final dependencyGraph = _hierarchyManager.getDependencyGraph();
@@ -218,12 +218,12 @@ class ArchitectureValidator {
     }
 
     report.dependencyViolations = violations;
-    print('✅ Phase 2 completed: $violations dependency violations detected');
+// print('✅ Phase 2 completed: $violations dependency violations detected'); // Removed for production
   }
 
   /// Validate layer separation
   Future<void> _validateLayerSeparation(ArchitectureValidationReport report) async {
-    print('🏗️ Phase 3: Validating layer separation...');
+// print('🏗️ Phase 3: Validating layer separation...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     
@@ -255,12 +255,12 @@ class ArchitectureValidator {
     }
 
     report.layerViolations = violations;
-    print('✅ Phase 3 completed: $violations layer violations detected');
+// print('✅ Phase 3 completed: $violations layer violations detected'); // Removed for production
   }
 
   /// Validate naming conventions
   Future<void> _validateNamingConventions(ArchitectureValidationReport report) async {
-    print('📝 Phase 4: Validating naming conventions...');
+// print('📝 Phase 4: Validating naming conventions...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     
@@ -290,12 +290,12 @@ class ArchitectureValidator {
     }
 
     report.namingViolations = violations;
-    print('✅ Phase 4 completed: $violations naming violations detected');
+// print('✅ Phase 4 completed: $violations naming violations detected'); // Removed for production
   }
 
   /// Validate code organization
   Future<void> _validateCodeOrganization(ArchitectureValidationReport report) async {
-    print('📁 Phase 5: Validating code organization...');
+// print('📁 Phase 5: Validating code organization...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     final byLayer = _hierarchyManager.getComponentsByLayer();
@@ -328,12 +328,12 @@ class ArchitectureValidator {
     }
 
     report.organizationViolations = violations;
-    print('✅ Phase 5 completed: $violations organization violations detected');
+// print('✅ Phase 5 completed: $violations organization violations detected'); // Removed for production
   }
 
   /// Validate scalability patterns
   Future<void> _validateScalabilityPatterns(ArchitectureValidationReport report) async {
-    print('📈 Phase 6: Validating scalability patterns...');
+// print('📈 Phase 6: Validating scalability patterns...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     final metrics = _hierarchyManager.getMetrics();
@@ -385,12 +385,12 @@ class ArchitectureValidator {
     }
 
     report.scalabilityViolations = violations;
-    print('✅ Phase 6 completed: $violations scalability violations detected');
+// print('✅ Phase 6 completed: $violations scalability violations detected'); // Removed for production
   }
 
   /// Validate performance patterns
   Future<void> _validatePerformancePatterns(ArchitectureValidationReport report) async {
-    print('⚡ Phase 7: Validating performance patterns...');
+// print('⚡ Phase 7: Validating performance patterns...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     
@@ -421,12 +421,12 @@ class ArchitectureValidator {
     }
 
     report.performanceViolations = violations;
-    print('✅ Phase 7 completed: $violations performance violations detected');
+// print('✅ Phase 7 completed: $violations performance violations detected'); // Removed for production
   }
 
   /// Validate security patterns
   Future<void> _validateSecurityPatterns(ArchitectureValidationReport report) async {
-    print('🔒 Phase 8: Validating security patterns...');
+// print('🔒 Phase 8: Validating security patterns...'); // Removed for production
 
     final hierarchy = _hierarchyManager.getHierarchy();
     
@@ -456,7 +456,7 @@ class ArchitectureValidator {
     }
 
     report.securityViolations = violations;
-    print('✅ Phase 8 completed: $violations security violations detected');
+// print('✅ Phase 8 completed: $violations security violations detected'); // Removed for production
   }
 
   /// Rule validation methods
@@ -627,9 +627,9 @@ class ArchitectureValidator {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Architecture Validator...');
+// print('🗑️ Disposing Architecture Validator...'); // Removed for production
     _eventController.close();
-    print('✅ Architecture Validator disposed');
+// print('✅ Architecture Validator disposed'); // Removed for production
   }
 }
 

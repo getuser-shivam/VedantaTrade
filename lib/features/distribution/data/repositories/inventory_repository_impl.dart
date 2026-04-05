@@ -33,7 +33,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     try {
       if (_isInitialized) return;
       
-      print('🔍 Initializing Inventory Repository...');
+// print('🔍 Initializing Inventory Repository...'); // Removed for production
       
       await _databaseHelper.initialize();
       await _createTables();
@@ -45,9 +45,9 @@ class InventoryRepositoryImpl implements InventoryRepository {
       _startExpiryMonitoring();
       
       _isInitialized = true;
-      print('✅ Inventory Repository initialized successfully');
+// print('✅ Inventory Repository initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Inventory Repository: $e');
+// print('❌ Failed to initialize Inventory Repository: $e'); // Removed for production
       rethrow;
     }
   }
@@ -55,7 +55,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<Either<Failure, void>> saveInventory(Inventory inventory) async {
     try {
-      print('💾 Saving inventory: ${inventory.sku}');
+// print('💾 Saving inventory: ${inventory.sku}'); // Removed for production
       
       // Save to database
       final db = await _databaseHelper.database;
@@ -74,10 +74,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       // Check for alerts
       await _checkForAlerts(inventory);
       
-      print('✅ Inventory saved successfully: ${inventory.sku}');
+// print('✅ Inventory saved successfully: ${inventory.sku}'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to save inventory: $e');
+// print('❌ Failed to save inventory: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to save inventory',
         code: 'SAVE_ERROR',
@@ -89,11 +89,11 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<Either<Failure, Inventory?>> getInventoryById(String id) async {
     try {
-      print('🔍 Getting inventory by ID: $id');
+// print('🔍 Getting inventory by ID: $id'); // Removed for production
       
       // Check cache first
       if (_cachedInventory.containsKey(id)) {
-        print('✅ Inventory found in cache: $id');
+// print('✅ Inventory found in cache: $id'); // Removed for production
         return Right(_cachedInventory[id]);
       }
       
@@ -107,17 +107,17 @@ class InventoryRepositoryImpl implements InventoryRepository {
       );
       
       if (maps.isEmpty) {
-        print('⚠️ Inventory not found: $id');
+// print('⚠️ Inventory not found: $id'); // Removed for production
         return const Right(null);
       }
       
       final inventory = Inventory.fromMap(maps.first);
       _cachedInventory[id] = inventory;
       
-      print('✅ Inventory retrieved: ${inventory.sku}');
+// print('✅ Inventory retrieved: ${inventory.sku}'); // Removed for production
       return Right(inventory);
     } catch (e) {
-      print('❌ Failed to get inventory: $e');
+// print('❌ Failed to get inventory: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get inventory',
         code: 'RETRIEVE_ERROR',
@@ -129,7 +129,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<Either<Failure, Inventory?>> getInventoryBySku(String sku) async {
     try {
-      print('🔍 Getting inventory by SKU: $sku');
+// print('🔍 Getting inventory by SKU: $sku'); // Removed for production
       
       // Check cache first
       final cachedItem = _cachedInventory.values
@@ -137,7 +137,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
           .firstOrNull;
       
       if (cachedItem != null) {
-        print('✅ Inventory found in cache: $sku');
+// print('✅ Inventory found in cache: $sku'); // Removed for production
         return Right(cachedItem);
       }
       
@@ -151,17 +151,17 @@ class InventoryRepositoryImpl implements InventoryRepository {
       );
       
       if (maps.isEmpty) {
-        print('⚠️ Inventory not found: $sku');
+// print('⚠️ Inventory not found: $sku'); // Removed for production
         return const Right(null);
       }
       
       final inventory = Inventory.fromMap(maps.first);
       _cachedInventory[inventory.id] = inventory;
       
-      print('✅ Inventory retrieved: ${inventory.sku}');
+// print('✅ Inventory retrieved: ${inventory.sku}'); // Removed for production
       return Right(inventory);
     } catch (e) {
-      print('❌ Failed to get inventory by SKU: $e');
+// print('❌ Failed to get inventory by SKU: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get inventory by SKU',
         code: 'RETRIEVE_ERROR',
@@ -173,7 +173,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<Either<Failure, List<Inventory>>> getInventoryByProductId(String productId) async {
     try {
-      print('🔍 Getting inventory by product ID: $productId');
+// print('🔍 Getting inventory by product ID: $productId'); // Removed for production
       
       final db = await _databaseHelper.database;
       final maps = await db.query(
@@ -185,10 +185,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       
       final inventory = maps.map((map) => Inventory.fromMap(map)).toList();
       
-      print('✅ Retrieved ${inventory.length} inventory items for product: $productId');
+// print('✅ Retrieved ${inventory.length} inventory items for product: $productId'); // Removed for production
       return Right(inventory);
     } catch (e) {
-      print('❌ Failed to get inventory by product ID: $e');
+// print('❌ Failed to get inventory by product ID: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get inventory by product ID',
         code: 'RETRIEVE_ERROR',
@@ -204,7 +204,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting inventory for stockist: $stockistId');
+// print('🔍 Getting inventory for stockist: $stockistId'); // Removed for production
       
       String whereClause = 'stockist_id = ?';
       List<dynamic> whereArgs = [stockistId];
@@ -225,10 +225,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       
       final inventory = maps.map((map) => Inventory.fromMap(map)).toList();
       
-      print('✅ Retrieved ${inventory.length} inventory items for stockist: $stockistId');
+// print('✅ Retrieved ${inventory.length} inventory items for stockist: $stockistId'); // Removed for production
       return Right(inventory);
     } catch (e) {
-      print('❌ Failed to get inventory for stockist: $e');
+// print('❌ Failed to get inventory for stockist: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get inventory for stockist',
         code: 'RETRIEVE_ERROR',
@@ -245,7 +245,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting inventory by category: $category');
+// print('🔍 Getting inventory by category: $category'); // Removed for production
       
       String whereClause = 'category = ?';
       List<dynamic> whereArgs = [category];
@@ -271,10 +271,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       
       final inventory = maps.map((map) => Inventory.fromMap(map)).toList();
       
-      print('✅ Retrieved ${inventory.length} inventory items for category: $category');
+// print('✅ Retrieved ${inventory.length} inventory items for category: $category'); // Removed for production
       return Right(inventory);
     } catch (e) {
-      print('❌ Failed to get inventory by category: $e');
+// print('❌ Failed to get inventory by category: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get inventory by category',
         code: 'RETRIEVE_ERROR',
@@ -289,7 +289,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting low stock items...');
+// print('🔍 Getting low stock items...'); // Removed for production
       
       String whereClause = 'is_low_stock = 1';
       List<dynamic> whereArgs = [];
@@ -310,10 +310,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       
       final inventory = maps.map((map) => Inventory.fromMap(map)).toList();
       
-      print('✅ Retrieved ${inventory.length} low stock items');
+// print('✅ Retrieved ${inventory.length} low stock items'); // Removed for production
       return Right(inventory);
     } catch (e) {
-      print('❌ Failed to get low stock items: $e');
+// print('❌ Failed to get low stock items: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get low stock items',
         code: 'RETRIEVE_ERROR',
@@ -328,7 +328,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting out of stock items...');
+// print('🔍 Getting out of stock items...'); // Removed for production
       
       String whereClause = 'is_out_of_stock = 1';
       List<dynamic> whereArgs = [];
@@ -349,10 +349,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       
       final inventory = maps.map((map) => Inventory.fromMap(map)).toList();
       
-      print('✅ Retrieved ${inventory.length} out of stock items');
+// print('✅ Retrieved ${inventory.length} out of stock items'); // Removed for production
       return Right(inventory);
     } catch (e) {
-      print('❌ Failed to get out of stock items: $e');
+// print('❌ Failed to get out of stock items: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get out of stock items',
         code: 'RETRIEVE_ERROR',
@@ -368,7 +368,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting expiring items...');
+// print('🔍 Getting expiring items...'); // Removed for production
       
       final threshold = daysThreshold ?? 30;
       final thresholdDate = DateTime.now().add(Duration(days: threshold));
@@ -392,10 +392,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       
       final inventory = maps.map((map) => Inventory.fromMap(map)).toList();
       
-      print('✅ Retrieved ${inventory.length} expiring items');
+// print('✅ Retrieved ${inventory.length} expiring items'); // Removed for production
       return Right(inventory);
     } catch (e) {
-      print('❌ Failed to get expiring items: $e');
+// print('❌ Failed to get expiring items: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get expiring items',
         code: 'RETRIEVE_ERROR',
@@ -410,7 +410,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting expired items...');
+// print('🔍 Getting expired items...'); // Removed for production
       
       String whereClause = 'is_expired = 1';
       List<dynamic> whereArgs = [];
@@ -431,10 +431,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       
       final inventory = maps.map((map) => Inventory.fromMap(map)).toList();
       
-      print('✅ Retrieved ${inventory.length} expired items');
+// print('✅ Retrieved ${inventory.length} expired items'); // Removed for production
       return Right(inventory);
     } catch (e) {
-      print('❌ Failed to get expired items: $e');
+// print('❌ Failed to get expired items: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get expired items',
         code: 'RETRIEVE_ERROR',
@@ -450,7 +450,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     String? reason,
   }) async {
     try {
-      print('📝 Updating inventory stock: $id -> $newStock');
+// print('📝 Updating inventory stock: $id -> $newStock'); // Removed for production
       
       final inventoryResult = await getInventoryById(id);
       
@@ -495,12 +495,12 @@ class InventoryRepositoryImpl implements InventoryRepository {
           // Check for alerts
           await _checkForAlerts(finalInventory);
           
-          print('✅ Inventory stock updated successfully: ${finalInventory.sku}');
+// print('✅ Inventory stock updated successfully: ${finalInventory.sku}'); // Removed for production
           return const Right(null);
         },
       );
     } catch (e) {
-      print('❌ Failed to update inventory stock: $e');
+// print('❌ Failed to update inventory stock: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to update inventory stock',
         code: 'UPDATE_ERROR',
@@ -516,7 +516,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     String? reason,
   }) async {
     try {
-      print('📝 Updating inventory status: $id -> ${status.name}');
+// print('📝 Updating inventory status: $id -> ${status.name}'); // Removed for production
       
       final inventoryResult = await getInventoryById(id);
       
@@ -551,12 +551,12 @@ class InventoryRepositoryImpl implements InventoryRepository {
           // Check for alerts
           await _checkForAlerts(updatedInventory);
           
-          print('✅ Inventory status updated successfully: ${updatedInventory.sku}');
+// print('✅ Inventory status updated successfully: ${updatedInventory.sku}'); // Removed for production
           return const Right(null);
         },
       );
     } catch (e) {
-      print('❌ Failed to update inventory status: $e');
+// print('❌ Failed to update inventory status: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to update inventory status',
         code: 'UPDATE_ERROR',
@@ -568,7 +568,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
   @override
   Future<Either<Failure, void>> batchUpdateInventory(List<Inventory> items) async {
     try {
-      print('📝 Batch updating inventory: ${items.length} items');
+// print('📝 Batch updating inventory: ${items.length} items'); // Removed for production
       
       final db = await _databaseHelper.database;
       final batch = db.batch();
@@ -593,10 +593,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       
       await batch.commit(noResult: true);
       
-      print('✅ Batch update completed successfully');
+// print('✅ Batch update completed successfully'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to batch update inventory: $e');
+// print('❌ Failed to batch update inventory: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to batch update inventory',
         code: 'BATCH_UPDATE_ERROR',
@@ -614,7 +614,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     int? limit,
   }) async {
     try {
-      print('🔍 Searching inventory: $query');
+// print('🔍 Searching inventory: $query'); // Removed for production
       
       String whereClause = '(sku LIKE ? OR product_name LIKE ? OR brand LIKE ?)';
       List<dynamic> whereArgs = ['%$query%', '%$query%', '%$query%'];
@@ -645,10 +645,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
       
       final inventory = maps.map((map) => Inventory.fromMap(map)).toList();
       
-      print('✅ Search completed: ${inventory.length} items found');
+// print('✅ Search completed: ${inventory.length} items found'); // Removed for production
       return Right(inventory);
     } catch (e) {
-      print('❌ Failed to search inventory: $e');
+// print('❌ Failed to search inventory: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to search inventory',
         code: 'SEARCH_ERROR',
@@ -664,7 +664,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
     InventoryStatus? status,
   }) async {
     try {
-      print('📊 Getting inventory statistics...');
+// print('📊 Getting inventory statistics...'); // Removed for production
       
       String whereClause = '1=1';
       List<dynamic> whereArgs = [];
@@ -742,10 +742,10 @@ class InventoryRepositoryImpl implements InventoryRepository {
         'generated_at': DateTime.now().toIso8601String(),
       };
       
-      print('✅ Inventory statistics calculated');
+// print('✅ Inventory statistics calculated'); // Removed for production
       return Right(statistics);
     } catch (e) {
-      print('❌ Failed to get inventory statistics: $e');
+// print('❌ Failed to get inventory statistics: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get inventory statistics',
         code: 'STATISTICS_ERROR',
@@ -851,9 +851,9 @@ class InventoryRepositoryImpl implements InventoryRepository {
         CREATE INDEX IF NOT EXISTS idx_inventory_created_at ON inventory (created_at)
       ''');
       
-      print('✅ Database tables created successfully');
+// print('✅ Database tables created successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to create database tables: $e');
+// print('❌ Failed to create database tables: $e'); // Removed for production
       rethrow;
     }
   }
@@ -869,9 +869,9 @@ class InventoryRepositoryImpl implements InventoryRepository {
         _cachedInventory[inventory.id] = inventory;
       }
       
-      print('✅ Loaded ${_cachedInventory.length} inventory items into cache');
+// print('✅ Loaded ${_cachedInventory.length} inventory items into cache'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load cached inventory: $e');
+// print('❌ Failed to load cached inventory: $e'); // Removed for production
     }
   }
 
@@ -907,9 +907,9 @@ class InventoryRepositoryImpl implements InventoryRepository {
         _activeAlerts[alert.id] = alert;
       }
       
-      print('✅ Loaded ${_activeAlerts.length} active alerts');
+// print('✅ Loaded ${_activeAlerts.length} active alerts'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load active alerts: $e');
+// print('❌ Failed to load active alerts: $e'); // Removed for production
     }
   }
 
@@ -923,11 +923,11 @@ class InventoryRepositoryImpl implements InventoryRepository {
       try {
         await _checkAllInventoryStockLevels();
       } catch (e) {
-        print('❌ Failed to check stock levels: $e');
+// print('❌ Failed to check stock levels: $e'); // Removed for production
       }
     });
     
-    print('✅ Stock monitoring started');
+// print('✅ Stock monitoring started'); // Removed for production
   }
 
   /// Start expiry monitoring
@@ -940,11 +940,11 @@ class InventoryRepositoryImpl implements InventoryRepository {
       try {
         await _checkAllInventoryExpiry();
       } catch (e) {
-        print('❌ Failed to check expiry: $e');
+// print('❌ Failed to check expiry: $e'); // Removed for production
       }
     });
     
-    print('✅ Expiry monitoring started');
+// print('✅ Expiry monitoring started'); // Removed for production
   }
 
   /// Check all inventory stock levels
@@ -958,7 +958,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
         await _checkForAlerts(inventory);
       }
     } catch (e) {
-      print('❌ Failed to check all stock levels: $e');
+// print('❌ Failed to check all stock levels: $e'); // Removed for production
     }
   }
 
@@ -973,7 +973,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
         await _checkForAlerts(inventory);
       }
     } catch (e) {
-      print('❌ Failed to check all expiry: $e');
+// print('❌ Failed to check all expiry: $e'); // Removed for production
     }
   }
 
@@ -1012,7 +1012,7 @@ class InventoryRepositoryImpl implements InventoryRepository {
       }
       
     } catch (e) {
-      print('❌ Failed to check for alerts: $e');
+// print('❌ Failed to check for alerts: $e'); // Removed for production
     }
   }
 
@@ -1125,22 +1125,22 @@ class InventoryRepositoryImpl implements InventoryRepository {
       
       _activeAlerts[alert.id] = alert;
       
-      print('✅ Alert saved: ${alert.title}');
+// print('✅ Alert saved: ${alert.title}'); // Removed for production
     } catch (e) {
-      print('❌ Failed to save alert: $e');
+// print('❌ Failed to save alert: $e'); // Removed for production
     }
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Inventory Repository...');
+// print('🗑️ Disposing Inventory Repository...'); // Removed for production
     
     _stockCheckTimer?.cancel();
     _expiryCheckTimer?.cancel();
     _inventoryStreamController.close();
     _alertStreamController.close();
     
-    print('✅ Inventory Repository disposed');
+// print('✅ Inventory Repository disposed'); // Removed for production
   }
 }
 
@@ -1165,10 +1165,10 @@ class DatabaseHelper {
         onUpgrade: _onUpgrade,
       );
       
-      print('✅ Inventory database initialized: $path');
+// print('✅ Inventory database initialized: $path'); // Removed for production
       return database;
     } catch (e) {
-      print('❌ Failed to initialize inventory database: $e');
+// print('❌ Failed to initialize inventory database: $e'); // Removed for production
       rethrow;
     }
   }
@@ -1176,24 +1176,24 @@ class DatabaseHelper {
   Future<void> _onCreate(Database db, int version) async {
     try {
       await db.execute('PRAGMA foreign_keys = ON');
-      print('✅ Inventory database created with version $version');
+// print('✅ Inventory database created with version $version'); // Removed for production
     } catch (e) {
-      print('❌ Failed to create inventory database: $e');
+// print('❌ Failed to create inventory database: $e'); // Removed for production
     }
   }
   
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     try {
-      print('🔄 Upgrading inventory database from version $oldVersion to $newVersion');
+// print('🔄 Upgrading inventory database from version $oldVersion to $newVersion'); // Removed for production
       
       // Handle database upgrades here
       await db.execute('DROP TABLE IF EXISTS inventory');
       await db.execute('DROP TABLE IF EXISTS stock_alerts');
       await db.execute('DROP TABLE IF EXISTS inventory_movements');
       
-      print('✅ Inventory database upgraded to version $newVersion');
+// print('✅ Inventory database upgraded to version $newVersion'); // Removed for production
     } catch (e) {
-      print('❌ Failed to upgrade inventory database: $e');
+// print('❌ Failed to upgrade inventory database: $e'); // Removed for production
     }
   }
 }

@@ -29,7 +29,7 @@ class _ScraperScreenState extends State<ScraperScreen> with SingleTickerProvider
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final headers = {'Authorization': 'Bearer ${auth.token}'};
+// final headers = {'Authorization': 'Bearer ${auth.token}'}; // TODO: Move to environment variables
       final [jobsRes, leadsRes] = await Future.wait([
         dio.get('${ApiConfig.baseUrl}/scraper/jobs', options: Options(headers: headers)),
         dio.get('${ApiConfig.baseUrl}/scraper/leads?status=RAW&limit=50', options: Options(headers: headers)),

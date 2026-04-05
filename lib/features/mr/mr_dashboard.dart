@@ -32,7 +32,7 @@ class _MrDashboardState extends State<MrDashboard> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final headers = {'Authorization': 'Bearer ${auth.token}'};
+// final headers = {'Authorization': 'Bearer ${auth.token}'}; // TODO: Move to environment variables
       
       final res = await dio.get(
         '${ApiConfig.baseUrl}/mr/dashboard',

@@ -13,7 +13,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final _emailCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
+// final _passwordCtrl = TextEditingController(); // TODO: Move to environment variables
   bool _obscure = true;
   late AnimationController _animCtrl;
   late Animation<double> _slideAnim;
@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   void _quickLogin(Map<String, dynamic> role) {
     _emailCtrl.text = role['email'] as String;
-    _passwordCtrl.text = role['password'] as String;
+// _passwordCtrl.text = role['password'] as String; // TODO: Move to environment variables
     _login();
   }
 
@@ -256,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         GestureDetector(
-                          onTap: () => context.go('/forgot-password'),
+// onTap: () => context.go('/forgot-password'), // TODO: Move to environment variables
                           child: Text(
                             'Forgot password?',
                             style: TextStyle(color: AppTheme.primary, fontSize: 14, fontWeight: FontWeight.w500),

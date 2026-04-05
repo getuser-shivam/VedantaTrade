@@ -34,7 +34,7 @@ class AppErrorHandler {
         handler(error);
       } catch (e) {
         // Prevent infinite loops
-        print('Error in error handler: $e');
+// print('Error in error handler: $e'); // Removed for production
       }
     }
     
@@ -103,9 +103,9 @@ class AppErrorHandler {
     final timestamp = DateTime.now().toIso8601String();
     final logMessage = '[$timestamp] $errorType: $errorMessage - $context';
     
-    print(logMessage);
+// print(logMessage); // Removed for production
     if (stackTrace != null) {
-      print('Stack trace: $stackTrace');
+// print('Stack trace: $stackTrace'); // Removed for production
     }
     
     // In a real app, you would send this to a logging service
@@ -180,7 +180,7 @@ class AppErrorHandler {
   void _showErrorSnackBar(String message, Color backgroundColor, Color textColor) {
     // This would be implemented using a global key or context
     // For now, this is a placeholder
-    print('Error Message: $message');
+// print('Error Message: $message'); // Removed for production
   }
   
   void clearErrorHandlers() {
@@ -539,7 +539,7 @@ class ErrorLogger {
     };
     
     // Log to console for development
-    print('ERROR: ${logEntry.toString()}');
+// print('ERROR: ${logEntry.toString()}'); // Removed for production
     
     // In a real app, you would send this to a logging service
     // AnalyticsService.logError(logEntry);
@@ -559,7 +559,7 @@ class ErrorLogger {
       'additionalInfo': additionalInfo,
     };
     
-    print('WARNING: ${logEntry.toString()}');
+// print('WARNING: ${logEntry.toString()}'); // Removed for production
     // AnalyticsService.logWarning(logEntry);
   }
   
@@ -577,7 +577,7 @@ class ErrorLogger {
       'additionalInfo': additionalInfo,
     };
     
-    print('INFO: ${logEntry.toString()}');
+// print('INFO: ${logEntry.toString()}'); // Removed for production
     // AnalyticsService.logInfo(logEntry);
   }
   
@@ -596,7 +596,7 @@ class ErrorLogger {
         'additionalInfo': additionalInfo,
       };
       
-      print('DEBUG: ${logEntry.toString()}');
+// print('DEBUG: ${logEntry.toString()}'); // Removed for production
       // AnalyticsService.logDebug(logEntry);
     }
   }

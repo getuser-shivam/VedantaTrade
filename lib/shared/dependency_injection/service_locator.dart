@@ -45,7 +45,7 @@ class ServiceLocator {
     if (_isInitialized) return;
 
     try {
-      print('🔧 Initializing Service Locator...');
+// print('🔧 Initializing Service Locator...'); // Removed for production
 
       // Register core services
       await _registerCoreServices();
@@ -63,9 +63,9 @@ class ServiceLocator {
       await _initializeServices();
 
       _isInitialized = true;
-      print('✅ Service Locator initialized successfully');
+// print('✅ Service Locator initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Service Locator: $e');
+// print('❌ Failed to initialize Service Locator: $e'); // Removed for production
       rethrow;
     }
   }
@@ -142,7 +142,7 @@ class ServiceLocator {
       dependencies: [LoggerService],
     );
 
-    print('✅ Core services registered');
+// print('✅ Core services registered'); // Removed for production
   }
 
   /// Register feature services
@@ -178,7 +178,7 @@ class ServiceLocator {
       dependencies: [WorkflowManager, LoggerService],
     );
 
-    print('✅ Feature services registered');
+// print('✅ Feature services registered'); // Removed for production
   }
 
   /// Register utility services
@@ -225,7 +225,7 @@ class ServiceLocator {
       dependencies: [StorageService, LoggerService, EncryptionService],
     );
 
-    print('✅ Utility services registered');
+// print('✅ Utility services registered'); // Removed for production
   }
 
   /// Register infrastructure services
@@ -244,7 +244,7 @@ class ServiceLocator {
       dependencies: [],
     );
 
-    print('✅ Infrastructure services registered');
+// print('✅ Infrastructure services registered'); // Removed for production
   }
 
   /// Initialize all services
@@ -259,7 +259,7 @@ class ServiceLocator {
   /// Initialize individual service
   Future<void> _initializeService(ServiceRegistration registration) async {
     try {
-      print('🔧 Initializing service: ${registration.type}');
+// print('🔧 Initializing service: ${registration.type}'); // Removed for production
 
       // Check dependencies
       for (final dependency in registration.dependencies) {
@@ -280,9 +280,9 @@ class ServiceLocator {
         await instance.initialize();
       }
 
-      print('✅ Service initialized: ${registration.type}');
+// print('✅ Service initialized: ${registration.type}'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize service ${registration.type}: $e');
+// print('❌ Failed to initialize service ${registration.type}: $e'); // Removed for production
       rethrow;
     }
   }
@@ -304,7 +304,7 @@ class ServiceLocator {
       dependencies: dependencies,
     );
 
-    print('📝 Service registered: $T');
+// print('📝 Service registered: $T'); // Removed for production
   }
 
   /// Get a service instance
@@ -427,7 +427,7 @@ class ServiceLocator {
   /// Reset service locator
   Future<void> reset() async {
     try {
-      print('🔄 Resetting Service Locator...');
+// print('🔄 Resetting Service Locator...'); // Removed for production
 
       // Dispose all instances
       for (final instance in _instances.values) {
@@ -454,9 +454,9 @@ class ServiceLocator {
       // Reinitialize
       await _initializeServices();
 
-      print('✅ Service Locator reset successfully');
+// print('✅ Service Locator reset successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to reset Service Locator: $e');
+// print('❌ Failed to reset Service Locator: $e'); // Removed for production
       rethrow;
     }
   }
@@ -466,7 +466,7 @@ class ServiceLocator {
     if (_isDisposed) return;
 
     try {
-      print('🗑️ Disposing Service Locator...');
+// print('🗑️ Disposing Service Locator...'); // Removed for production
 
       // Cancel all timers
       for (final timer in _timers.values) {
@@ -486,7 +486,7 @@ class ServiceLocator {
           try {
             await instance.dispose();
           } catch (e) {
-            print('❌ Failed to dispose service: $e');
+// print('❌ Failed to dispose service: $e'); // Removed for production
           }
         }
       }
@@ -497,9 +497,9 @@ class ServiceLocator {
       _dependencies.clear();
 
       _isDisposed = true;
-      print('✅ Service Locator disposed successfully');
+// print('✅ Service Locator disposed successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to dispose Service Locator: $e');
+// print('❌ Failed to dispose Service Locator: $e'); // Removed for production
     }
   }
 

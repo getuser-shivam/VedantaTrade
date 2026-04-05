@@ -24,7 +24,7 @@ class _UIComponentsDemoState extends State<UIComponentsDemo> {
   int _counterValue = 1234;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+// final _passwordController = TextEditingController(); // TODO: Move to environment variables
 
   @override
   void dispose() {

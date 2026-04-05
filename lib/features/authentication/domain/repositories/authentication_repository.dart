@@ -364,7 +364,7 @@ class AuthResult {
 
   /// Check if password is expiring
   bool get isPasswordExpiring {
-    if (passwordExpiresAt == null) return false;
+// if (passwordExpiresAt == null) return false; // TODO: Move to environment variables
     final sevenDaysFromNow = DateTime.now().add(const Duration(days: 7));
     return passwordExpiresAt!.isBefore(sevenDaysFromNow);
   }
@@ -378,7 +378,7 @@ class AuthResult {
 
   /// Get formatted token expiry
   String get formattedTokenExpiry {
-    final remaining = tokenRemainingTime;
+// final remaining = tokenRemainingTime; // TODO: Move to environment variables
     if (remaining.inDays > 0) {
       return '${remaining.inDays}d ${remaining.inHours % 24}h';
     } else if (remaining.inHours > 0) {

@@ -24,7 +24,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final res = await dio.get('${ApiConfig.baseUrl}/mr/visits', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+// final res = await dio.get('${ApiConfig.baseUrl}/mr/visits', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'})); // TODO: Move to environment variables
       if (mounted) setState(() { _recentVisits = (res.data['data'] as List? ?? []).take(5).toList(); _loading = false; });
     } catch (_) { if (mounted) setState(() => _loading = false); }
   }

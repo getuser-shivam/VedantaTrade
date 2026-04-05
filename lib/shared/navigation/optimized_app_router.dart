@@ -410,7 +410,7 @@ class NavigationObserver extends NavigatorObserver {
   
   static void _logNavigationEvent(String action, String? routeName) {
     // Log navigation events for analytics
-    print('Navigation: $action -> $routeName');
+// print('Navigation: $action -> $routeName'); // Removed for production
     // This would integrate with your analytics service
   }
 }
@@ -432,10 +432,10 @@ class DeepLinkHandler {
           }
           break;
         default:
-          print('Unknown deep link scheme: ${uri.scheme}');
+// print('Unknown deep link scheme: ${uri.scheme}'); // Removed for production
       }
     } catch (e) {
-      print('Deep link handling error: $e');
+// print('Deep link handling error: $e'); // Removed for production
     }
   }
   
@@ -469,7 +469,7 @@ class DeepLinkHandler {
         }
         break;
       default:
-        print('Unknown deep link path: $path');
+// print('Unknown deep link path: $path'); // Removed for production
     }
   }
   

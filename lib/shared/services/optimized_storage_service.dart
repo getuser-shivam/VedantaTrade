@@ -44,9 +44,9 @@ class OptimizedStorageService {
       // Clean expired cache entries
       _cleanExpiredCache();
       
-      print('Storage service initialized successfully');
+// print('Storage service initialized successfully'); // Removed for production
     } catch (e) {
-      print('Failed to initialize storage service: $e');
+// print('Failed to initialize storage service: $e'); // Removed for production
       rethrow;
     }
   }
@@ -73,7 +73,7 @@ class OptimizedStorageService {
         await dir.create(recursive: true);
       }
     } catch (e) {
-      print('Failed to create directory $dirPath: $e');
+// print('Failed to create directory $dirPath: $e'); // Removed for production
     }
   }
   
@@ -107,9 +107,9 @@ class OptimizedStorageService {
         _cacheData(fileName, processedContent);
       }
       
-      print('Successfully wrote to file: $fileName');
+// print('Successfully wrote to file: $fileName'); // Removed for production
     } catch (e) {
-      print('Failed to write to file $fileName: $e');
+// print('Failed to write to file $fileName: $e'); // Removed for production
       rethrow;
     }
   }
@@ -142,7 +142,7 @@ class OptimizedStorageService {
       
       return content;
     } catch (e) {
-      print('Failed to read from file $fileName: $e');
+// print('Failed to read from file $fileName: $e'); // Removed for production
       rethrow;
     }
   }
@@ -157,7 +157,7 @@ class OptimizedStorageService {
         subDirectory: subDirectory, 
         compress: compress);
     } catch (e) {
-      print('Failed to write JSON to file $fileName: $e');
+// print('Failed to write JSON to file $fileName: $e'); // Removed for production
       rethrow;
     }
   }
@@ -171,7 +171,7 @@ class OptimizedStorageService {
       
       return jsonDecode(content) as Map<String, dynamic>?;
     } catch (e) {
-      print('Failed to read JSON from file $fileName: $e');
+// print('Failed to read JSON from file $fileName: $e'); // Removed for production
       return null;
     }
   }
@@ -186,10 +186,10 @@ class OptimizedStorageService {
         _memoryCache.remove(fileName);
         _cacheTimestamps.remove(fileName);
         
-        print('Successfully deleted file: $fileName');
+// print('Successfully deleted file: $fileName'); // Removed for production
       }
     } catch (e) {
-      print('Failed to delete file $fileName: $e');
+// print('Failed to delete file $fileName: $e'); // Removed for production
     }
   }
   
@@ -250,7 +250,7 @@ class OptimizedStorageService {
     }
     _cacheTimers.clear();
     
-    print('Cache cleared');
+// print('Cache cleared'); // Removed for production
   }
   
   Map<String, dynamic> getCacheStats() {
@@ -298,9 +298,9 @@ class OptimizedStorageService {
         }
       }
       
-      print('Backup created: $name');
+// print('Backup created: $name'); // Removed for production
     } catch (e) {
-      print('Failed to create backup: $e');
+// print('Failed to create backup: $e'); // Removed for production
       rethrow;
     }
   }
@@ -350,9 +350,9 @@ class OptimizedStorageService {
         }
       }
       
-      print('Backup restored: $backupName');
+// print('Backup restored: $backupName'); // Removed for production
     } catch (e) {
-      print('Failed to restore backup: $e');
+// print('Failed to restore backup: $e'); // Removed for production
       rethrow;
     }
   }
@@ -396,7 +396,7 @@ class OptimizedStorageService {
       
       return backupNames;
     } catch (e) {
-      print('Failed to list backups: $e');
+// print('Failed to list backups: $e'); // Removed for production
       return [];
     }
   }
@@ -407,10 +407,10 @@ class OptimizedStorageService {
       
       if (await backupDir.exists()) {
         await backupDir.delete(recursive: true);
-        print('Backup deleted: $backupName');
+// print('Backup deleted: $backupName'); // Removed for production
       }
     } catch (e) {
-      print('Failed to delete backup: $e');
+// print('Failed to delete backup: $e'); // Removed for production
     }
   }
   
@@ -426,7 +426,7 @@ class OptimizedStorageService {
       // Keep only last 1000 log entries
       await _trimLogFile(logFile);
     } catch (e) {
-      print('Failed to write log: $e');
+// print('Failed to write log: $e'); // Removed for production
     }
   }
   
@@ -449,7 +449,7 @@ class OptimizedStorageService {
         await logFile.writeAsString(trimmedLines.join('\n'));
       }
     } catch (e) {
-      print('Failed to trim log file: $e');
+// print('Failed to trim log file: $e'); // Removed for production
     }
   }
   
@@ -465,7 +465,7 @@ class OptimizedStorageService {
       
       return lines.sublist(startIndex);
     } catch (e) {
-      print('Failed to read logs: $e');
+// print('Failed to read logs: $e'); // Removed for production
       return [];
     }
   }
@@ -478,10 +478,10 @@ class OptimizedStorageService {
         await for (final entity in logDir.list()) {
           await entity.delete(recursive: true);
         }
-        print('Logs cleared');
+// print('Logs cleared'); // Removed for production
       }
     } catch (e) {
-      print('Failed to clear logs: $e');
+// print('Failed to clear logs: $e'); // Removed for production
     }
   }
   
@@ -501,9 +501,9 @@ class OptimizedStorageService {
       final file = await _getFile(fileName, subDirectory: 'images');
       await file.writeAsBytes(compressedBytes);
       
-      print('Image saved: $fileName');
+// print('Image saved: $fileName'); // Removed for production
     } catch (e) {
-      print('Failed to save image: $e');
+// print('Failed to save image: $e'); // Removed for production
       rethrow;
     }
   }
@@ -517,7 +517,7 @@ class OptimizedStorageService {
       
       return await file.readAsBytes();
     } catch (e) {
-      print('Failed to load image: $e');
+// print('Failed to load image: $e'); // Removed for production
       return null;
     }
   }
@@ -574,7 +574,7 @@ class OptimizedStorageService {
         'cacheStats': getCacheStats(),
       };
     } catch (e) {
-      print('Failed to get storage info: $e');
+// print('Failed to get storage info: $e'); // Removed for production
       return {};
     }
   }
@@ -591,7 +591,7 @@ class OptimizedStorageService {
       
       return totalSize;
     } catch (e) {
-      print('Failed to calculate directory size: $e');
+// print('Failed to calculate directory size: $e'); // Removed for production
       return 0;
     }
   }
@@ -601,7 +601,7 @@ class OptimizedStorageService {
       final appDir = _appDirectory!;
       return await appDir.parent.availableSpace();
     } catch (e) {
-      print('Failed to get free space: $e');
+// print('Failed to get free space: $e'); // Removed for production
       return 0;
     }
   }
@@ -616,14 +616,14 @@ class OptimizedStorageService {
           try {
             await entity.delete(recursive: true);
           } catch (e) {
-            print('Failed to delete temp file: $e');
+// print('Failed to delete temp file: $e'); // Removed for production
           }
         }
         
-        print('Temp files cleaned up');
+// print('Temp files cleaned up'); // Removed for production
       }
     } catch (e) {
-      print('Failed to cleanup temp files: $e');
+// print('Failed to cleanup temp files: $e'); // Removed for production
     }
   }
   
@@ -641,10 +641,10 @@ class OptimizedStorageService {
           await deleteBackup(backup);
         }
         
-        print('Cleaned up ${oldBackups.length} old backups');
+// print('Cleaned up ${oldBackups.length} old backups'); // Removed for production
       }
     } catch (e) {
-      print('Failed to cleanup old backups: $e');
+// print('Failed to cleanup old backups: $e'); // Removed for production
     }
   }
   
@@ -663,9 +663,9 @@ class OptimizedStorageService {
       final logFile = await _getLogFile();
       await _trimLogFile(logFile);
       
-      print('Storage optimization completed');
+// print('Storage optimization completed'); // Removed for production
     } catch (e) {
-      print('Failed to optimize storage: $e');
+// print('Failed to optimize storage: $e'); // Removed for production
     }
   }
   
@@ -674,7 +674,7 @@ class OptimizedStorageService {
     try {
       await _secureStorage.write(key: key, value: value);
     } catch (e) {
-      print('Failed to write secure data: $e');
+// print('Failed to write secure data: $e'); // Removed for production
     }
   }
   
@@ -682,7 +682,7 @@ class OptimizedStorageService {
     try {
       return await _secureStorage.read(key: key);
     } catch (e) {
-      print('Failed to read secure data: $e');
+// print('Failed to read secure data: $e'); // Removed for production
       return null;
     }
   }
@@ -691,7 +691,7 @@ class OptimizedStorageService {
     try {
       await _secureStorage.delete(key: key);
     } catch (e) {
-      print('Failed to delete secure data: $e');
+// print('Failed to delete secure data: $e'); // Removed for production
     }
   }
   
@@ -699,7 +699,7 @@ class OptimizedStorageService {
     try {
       await _secureStorage.deleteAll();
     } catch (e) {
-      print('Failed to clear secure data: $e');
+// print('Failed to clear secure data: $e'); // Removed for production
     }
   }
   
@@ -713,9 +713,9 @@ class OptimizedStorageService {
       }
       _cacheTimers.clear();
       
-      print('Storage service disposed');
+// print('Storage service disposed'); // Removed for production
     } catch (e) {
-      print('Failed to dispose storage service: $e');
+// print('Failed to dispose storage service: $e'); // Removed for production
     }
   }
 }

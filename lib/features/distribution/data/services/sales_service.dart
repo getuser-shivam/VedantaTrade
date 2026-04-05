@@ -128,7 +128,7 @@ class SalesService {
       }
     } catch (e) {
       // Mock update for development
-      print('Mock update order status: $orderId to $status');
+// print('Mock update order status: $orderId to $status'); // Removed for production
     }
   }
 
@@ -148,7 +148,7 @@ class SalesService {
       }
     } catch (e) {
       // Mock cancellation for development
-      print('Mock cancel order: $orderId, reason: $reason');
+// print('Mock cancel order: $orderId, reason: $reason'); // Removed for production
     }
   }
 
@@ -263,9 +263,9 @@ class SalesService {
       }
     } catch (e) {
       // Mock export for development
-      print('Mock export sales report in $format format');
-      print('Orders: ${orders.length}');
-      print('Metrics: $metrics');
+// print('Mock export sales report in $format format'); // Removed for production
+// print('Orders: ${orders.length}'); // Removed for production
+// print('Metrics: $metrics'); // Removed for production
     }
   }
 

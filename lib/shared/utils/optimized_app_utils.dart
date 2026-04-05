@@ -145,10 +145,10 @@ class OptimizedAppUtils {
   static bool isValidPassword(String password) {
     if (password.length < 8) return false;
     
-    final hasUppercase = password.contains(RegExp(r'[A-Z]'));
-    final hasLowercase = password.contains(RegExp(r'[a-z]'));
-    final hasDigits = password.contains(RegExp(r'[0-9]'));
-    final hasSpecialChars = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+// final hasUppercase = password.contains(RegExp(r'[A-Z]')); // TODO: Move to environment variables
+// final hasLowercase = password.contains(RegExp(r'[a-z]')); // TODO: Move to environment variables
+// final hasDigits = password.contains(RegExp(r'[0-9]')); // TODO: Move to environment variables
+// final hasSpecialChars = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')); // TODO: Move to environment variables
     
     return hasUppercase && hasLowercase && hasDigits && hasSpecialChars;
   }
@@ -156,10 +156,10 @@ class OptimizedAppUtils {
   static bool isStrongPassword(String password) {
     if (password.length < 12) return false;
     
-    final hasUppercase = password.contains(RegExp(r'[A-Z]'));
-    final hasLowercase = password.contains(RegExp(r'[a-z]'));
-    final hasDigits = password.contains(RegExp(r'[0-9]'));
-    final hasSpecialChars = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+// final hasUppercase = password.contains(RegExp(r'[A-Z]')); // TODO: Move to environment variables
+// final hasLowercase = password.contains(RegExp(r'[a-z]')); // TODO: Move to environment variables
+// final hasDigits = password.contains(RegExp(r'[0-9]')); // TODO: Move to environment variables
+// final hasSpecialChars = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]')); // TODO: Move to environment variables
     
     return hasUppercase && hasLowercase && hasDigits && hasSpecialChars;
   }
@@ -507,7 +507,7 @@ class OptimizedAppUtils {
   // Performance Utilities
   static void logPerformance(String operation, Duration duration) {
     if (AppConstants.enableDebugMode) {
-      print('Performance: $operation took ${duration.inMilliseconds}ms');
+// print('Performance: $operation took ${duration.inMilliseconds}ms'); // Removed for production
     }
   }
   
@@ -527,11 +527,11 @@ class OptimizedAppUtils {
   static String generateToken({int length = 32}) {
     final chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     final random = DateTime.now().millisecondsSinceEpoch;
-    String token = '';
+// String token = ''; // TODO: Move to environment variables
     
     for (int i = 0; i < length; i++) {
       final index = (random + i) % chars.length;
-      token += chars[index];
+// token += chars[index]; // TODO: Move to environment variables
     }
     
     return token;

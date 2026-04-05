@@ -32,7 +32,7 @@ class _ExpenseReconciliationScreenState extends State<ExpenseReconciliationScree
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final headers = {'Authorization': 'Bearer ${auth.token}'};
+// final headers = {'Authorization': 'Bearer ${auth.token}'}; // TODO: Move to environment variables
       
       final res = await dio.get(
         '${ApiConfig.baseUrl}/accounting/expenses',
@@ -63,7 +63,7 @@ class _ExpenseReconciliationScreenState extends State<ExpenseReconciliationScree
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final headers = {'Authorization': 'Bearer ${auth.token}'};
+// final headers = {'Authorization': 'Bearer ${auth.token}'}; // TODO: Move to environment variables
       
       await dio.patch(
         '${ApiConfig.baseUrl}/accounting/expenses/$expenseId',
@@ -82,7 +82,7 @@ class _ExpenseReconciliationScreenState extends State<ExpenseReconciliationScree
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final headers = {'Authorization': 'Bearer ${auth.token}'};
+// final headers = {'Authorization': 'Bearer ${auth.token}'}; // TODO: Move to environment variables
       
       await dio.patch(
         '${ApiConfig.baseUrl}/accounting/expenses/$expenseId',

@@ -37,7 +37,7 @@ class _StockistDashboardState extends State<StockistDashboard>
       final dio = Dio();
       
       // Load dashboard stats
-      final res = await dio.get('${ApiConfig.baseUrl}/stockists/dashboard', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+// final res = await dio.get('${ApiConfig.baseUrl}/stockists/dashboard', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'})); // TODO: Move to environment variables
       if (mounted) {
         setState(() {
           _stats = res.data['data'] ?? {'pendingOrders': 0, 'totalInventoryItems': 0, 'overduePayments': 0, 'outstandingAmount': 0};
@@ -66,7 +66,7 @@ class _StockistDashboardState extends State<StockistDashboard>
       final auth = context.read<AuthProvider>();
       final dio = Dio();
       
-      final res = await dio.get('${ApiConfig.baseUrl}/stockists/orders', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+// final res = await dio.get('${ApiConfig.baseUrl}/stockists/orders', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'})); // TODO: Move to environment variables
       
       if (mounted) {
         setState(() {
@@ -102,7 +102,7 @@ class _StockistDashboardState extends State<StockistDashboard>
       final auth = context.read<AuthProvider>();
       final dio = Dio();
       
-      final res = await dio.get('${ApiConfig.baseUrl}/stockists/inventory', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+// final res = await dio.get('${ApiConfig.baseUrl}/stockists/inventory', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'})); // TODO: Move to environment variables
       
       if (mounted) {
         setState(() {

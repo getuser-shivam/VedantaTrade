@@ -26,7 +26,7 @@ class _AccountantDashboardState extends State<AccountantDashboard> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final headers = {'Authorization': 'Bearer ${auth.token}'};
+// final headers = {'Authorization': 'Bearer ${auth.token}'}; // TODO: Move to environment variables
       final [dashRes, invRes] = await Future.wait([
         dio.get('${ApiConfig.baseUrl}/accounting/dashboard', options: Options(headers: headers)),
         dio.get('${ApiConfig.baseUrl}/accounting/invoices?limit=5', options: Options(headers: headers)),

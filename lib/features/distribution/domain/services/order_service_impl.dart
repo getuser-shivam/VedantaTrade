@@ -35,7 +35,7 @@ class OrderServiceImpl implements OrderService {
   /// Initialize order service
   Future<void> initialize() async {
     try {
-      print('🔍 Initializing Order Service...');
+// print('🔍 Initializing Order Service...'); // Removed for production
       
       // Load existing orders
       await _loadExistingOrders();
@@ -48,9 +48,9 @@ class OrderServiceImpl implements OrderService {
         await _connectWebSocket();
       }
       
-      print('✅ Order Service initialized successfully');
+// print('✅ Order Service initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Order Service: $e');
+// print('❌ Failed to initialize Order Service: $e'); // Removed for production
       rethrow;
     }
   }
@@ -67,7 +67,7 @@ class OrderServiceImpl implements OrderService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      print('🛒 Creating new order for retailer: $retailerId');
+// print('🛒 Creating new order for retailer: $retailerId'); // Removed for production
       
       // Generate unique order number
       final orderNumber = _generateOrderNumber();
@@ -110,13 +110,13 @@ class OrderServiceImpl implements OrderService {
         // Add to stream
         _orderStreamController.add(order);
         
-        print('✅ Order created successfully: ${order.orderNumber}');
+// print('✅ Order created successfully: ${order.orderNumber}'); // Removed for production
         return Right(order);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to create order: $e');
+// print('❌ Failed to create order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to create order',
         code: 'CREATE_ERROR',
@@ -128,7 +128,7 @@ class OrderServiceImpl implements OrderService {
   /// Approve order
   Future<Either<Failure, void>> approveOrder(String orderId, {String? approvedBy}) async {
     try {
-      print('✅ Approving order: $orderId');
+// print('✅ Approving order: $orderId'); // Removed for production
       
       final orderResult = await _repository.getOrderById(orderId);
       
@@ -166,7 +166,7 @@ class OrderServiceImpl implements OrderService {
             // Add to stream
             _orderStreamController.add(approvedOrder);
             
-            print('✅ Order approved successfully: ${approvedOrder.orderNumber}');
+// print('✅ Order approved successfully: ${approvedOrder.orderNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -174,7 +174,7 @@ class OrderServiceImpl implements OrderService {
         },
       );
     } catch (e) {
-      print('❌ Failed to approve order: $e');
+// print('❌ Failed to approve order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to approve order',
         code: 'APPROVE_ERROR',
@@ -189,7 +189,7 @@ class OrderServiceImpl implements OrderService {
     String? notes,
   }) async {
     try {
-      print('🚚 Dispatching order: $orderId');
+// print('🚚 Dispatching order: $orderId'); // Removed for production
       
       final orderResult = await _repository.getOrderById(orderId);
       
@@ -228,7 +228,7 @@ class OrderServiceImpl implements OrderService {
             // Add to stream
             _orderStreamController.add(dispatchedOrder);
             
-            print('✅ Order dispatched successfully: ${dispatchedOrder.orderNumber}');
+// print('✅ Order dispatched successfully: ${dispatchedOrder.orderNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -236,7 +236,7 @@ class OrderServiceImpl implements OrderService {
         },
       );
     } catch (e) {
-      print('❌ Failed to dispatch order: $e');
+// print('❌ Failed to dispatch order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to dispatch order',
         code: 'DISPATCH_ERROR',
@@ -251,7 +251,7 @@ class OrderServiceImpl implements OrderService {
     List<String>? attachments,
   }) async {
     try {
-      print('📦 Marking order as delivered: $orderId');
+// print('📦 Marking order as delivered: $orderId'); // Removed for production
       
       final orderResult = await _repository.getOrderById(orderId);
       
@@ -290,7 +290,7 @@ class OrderServiceImpl implements OrderService {
             // Add to stream
             _orderStreamController.add(deliveredOrder);
             
-            print('✅ Order marked as delivered: ${deliveredOrder.orderNumber}');
+// print('✅ Order marked as delivered: ${deliveredOrder.orderNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -298,7 +298,7 @@ class OrderServiceImpl implements OrderService {
         },
       );
     } catch (e) {
-      print('❌ Failed to mark order as delivered: $e');
+// print('❌ Failed to mark order as delivered: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to mark order as delivered',
         code: 'DELIVER_ERROR',
@@ -314,7 +314,7 @@ class OrderServiceImpl implements OrderService {
     List<String>? attachments,
   }) async {
     try {
-      print('💳 Marking order as paid: $orderId');
+// print('💳 Marking order as paid: $orderId'); // Removed for production
       
       final orderResult = await _repository.getOrderById(orderId);
       
@@ -356,7 +356,7 @@ class OrderServiceImpl implements OrderService {
             // Add to stream
             _orderStreamController.add(paidOrder);
             
-            print('✅ Order marked as paid: ${paidOrder.orderNumber}');
+// print('✅ Order marked as paid: ${paidOrder.orderNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -364,7 +364,7 @@ class OrderServiceImpl implements OrderService {
         },
       );
     } catch (e) {
-      print('❌ Failed to mark order as paid: $e');
+// print('❌ Failed to mark order as paid: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to mark order as paid',
         code: 'PAY_ERROR',
@@ -376,7 +376,7 @@ class OrderServiceImpl implements OrderService {
   /// Cancel order
   Future<Either<Failure, void>> cancelOrder(String orderId, {String? reason}) async {
     try {
-      print('❌ Cancelling order: $orderId');
+// print('❌ Cancelling order: $orderId'); // Removed for production
       
       final orderResult = await _repository.getOrderById(orderId);
       
@@ -414,7 +414,7 @@ class OrderServiceImpl implements OrderService {
             // Add to stream
             _orderStreamController.add(cancelledOrder);
             
-            print('✅ Order cancelled successfully: ${cancelledOrder.orderNumber}');
+// print('✅ Order cancelled successfully: ${cancelledOrder.orderNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -422,7 +422,7 @@ class OrderServiceImpl implements OrderService {
         },
       );
     } catch (e) {
-      print('❌ Failed to cancel order: $e');
+// print('❌ Failed to cancel order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to cancel order',
         code: 'CANCEL_ERROR',
@@ -438,7 +438,7 @@ class OrderServiceImpl implements OrderService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting orders for retailer: $retailerId');
+// print('🔍 Getting orders for retailer: $retailerId'); // Removed for production
       
       final result = await _repository.getOrdersByRetailer(
         retailerId: retailerId,
@@ -447,13 +447,13 @@ class OrderServiceImpl implements OrderService {
       );
       
       if (result.isRight()) {
-        print('✅ Retrieved ${result.length} orders for retailer: $retailerId');
+// print('✅ Retrieved ${result.length} orders for retailer: $retailerId'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get orders for retailer: $e');
+// print('❌ Failed to get orders for retailer: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get orders for retailer',
         code: 'RETRIEVE_ERROR',
@@ -469,7 +469,7 @@ class OrderServiceImpl implements OrderService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting orders for stockist: $stockistId');
+// print('🔍 Getting orders for stockist: $stockistId'); // Removed for production
       
       final result = await _repository.getOrdersByStockist(
         stockistId: stockistId,
@@ -478,13 +478,13 @@ class OrderServiceImpl implements OrderService {
       );
       
       if (result.isRight()) {
-        print('✅ Retrieved ${result.length} orders for stockist: $stockistId');
+// print('✅ Retrieved ${result.length} orders for stockist: $stockistId'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get orders for stockist: $e');
+// print('❌ Failed to get orders for stockist: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get orders for stockist',
         code: 'RETRIEVE_ERROR',
@@ -499,7 +499,7 @@ class OrderServiceImpl implements OrderService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting orders by status: ${status.name}');
+// print('🔍 Getting orders by status: ${status.name}'); // Removed for production
       
       final result = await _repository.getOrdersByStatus(
         status: status,
@@ -507,13 +507,13 @@ class OrderServiceImpl implements OrderService {
       );
       
       if (result.isRight()) {
-        print('✅ Retrieved ${result.length} orders with status: ${status.name}');
+// print('✅ Retrieved ${result.length} orders with status: ${status.name}'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get orders by status: $e');
+// print('❌ Failed to get orders by status: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get orders by status',
         code: 'RETRIEVE_ERROR',
@@ -531,7 +531,7 @@ class OrderServiceImpl implements OrderService {
     DateTime? endDate,
   }) async {
     try {
-      print('📊 Getting order statistics...');
+// print('📊 Getting order statistics...'); // Removed for production
       
       final result = await _repository.getOrderStatistics(
         retailerId: retailerId,
@@ -542,13 +542,13 @@ class OrderServiceImpl implements OrderService {
       );
       
       if (result.isRight()) {
-        print('✅ Order statistics retrieved successfully');
+// print('✅ Order statistics retrieved successfully'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get order statistics: $e');
+// print('❌ Failed to get order statistics: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get order statistics',
         code: 'STATISTICS_ERROR',
@@ -561,7 +561,7 @@ class OrderServiceImpl implements OrderService {
   void setCurrentUser(String userId, String role) {
     _currentUserId = userId;
     _currentUserRole = role;
-    print('✅ Current user set: $userId ($role)');
+// print('✅ Current user set: $userId ($role)'); // Removed for production
   }
 
   /// Generate unique order number
@@ -574,7 +574,7 @@ class OrderServiceImpl implements OrderService {
   /// Load existing orders
   Future<void> _loadExistingOrders() async {
     try {
-      print('📂 Loading existing orders...');
+// print('📂 Loading existing orders...'); // Removed for production
       
       final pendingResult = await _repository.getOrdersByStatus(status: OrderStatus.pending);
       final activeResult = await _repository.getOrdersByStatus(status: OrderStatus.approved);
@@ -591,9 +591,9 @@ class OrderServiceImpl implements OrderService {
         }
       }
       
-      print('✅ Loaded ${_pendingOrders.length + _activeOrders.length} existing orders');
+// print('✅ Loaded ${_pendingOrders.length + _activeOrders.length} existing orders'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load existing orders: $e');
+// print('❌ Failed to load existing orders: $e'); // Removed for production
     }
   }
 
@@ -607,7 +607,7 @@ class OrderServiceImpl implements OrderService {
       try {
         await _checkOrderStatuses();
       } catch (e) {
-        print('❌ Failed to check order statuses: $e');
+// print('❌ Failed to check order statuses: $e'); // Removed for production
       }
     });
   }
@@ -635,13 +635,13 @@ class OrderServiceImpl implements OrderService {
               // Add to stream
               _orderStreamController.add(dbOrder);
               
-              print('🔄 Order status updated: ${dbOrder.orderNumber} -> ${dbOrder.status.name}');
+// print('🔄 Order status updated: ${dbOrder.orderNumber} -> ${dbOrder.status.name}'); // Removed for production
             }
           },
         );
       }
     } catch (e) {
-      print('❌ Failed to check order statuses: $e');
+// print('❌ Failed to check order statuses: $e'); // Removed for production
     }
   }
 
@@ -650,7 +650,7 @@ class OrderServiceImpl implements OrderService {
     try {
       if (_webSocketChannel == null) return;
       
-      print('🌐 Connecting to WebSocket...');
+// print('🌐 Connecting to WebSocket...'); // Removed for production
       
       _webSocketChannel!.stream.listen(
         (data) {
@@ -658,15 +658,15 @@ class OrderServiceImpl implements OrderService {
             final message = jsonDecode(data as String);
             _handleWebSocketMessage(message);
           } catch (e) {
-            print('❌ Failed to handle WebSocket message: $e');
+// print('❌ Failed to handle WebSocket message: $e'); // Removed for production
           }
         },
         onError: (error) {
-          print('❌ WebSocket error: $error');
+// print('❌ WebSocket error: $error'); // Removed for production
           _isConnected = false;
         },
         onDone: () {
-          print('🔌 WebSocket connection closed');
+// print('🔌 WebSocket connection closed'); // Removed for production
           _isConnected = false;
         },
       );
@@ -679,9 +679,9 @@ class OrderServiceImpl implements OrderService {
       }));
       
       _isConnected = true;
-      print('✅ WebSocket connected successfully');
+// print('✅ WebSocket connected successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to connect to WebSocket: $e');
+// print('❌ Failed to connect to WebSocket: $e'); // Removed for production
       _isConnected = false;
     }
   }
@@ -702,10 +702,10 @@ class OrderServiceImpl implements OrderService {
           _handleSyncRequest(message['data'] as Map<String, dynamic>);
           break;
         default:
-          print('⚠️ Unknown WebSocket message type: $type');
+// print('⚠️ Unknown WebSocket message type: $type'); // Removed for production
       }
     } catch (e) {
-      print('❌ Failed to handle WebSocket message: $e');
+// print('❌ Failed to handle WebSocket message: $e'); // Removed for production
     }
   }
 
@@ -722,9 +722,9 @@ class OrderServiceImpl implements OrderService {
       // Add to stream
       _orderStreamController.add(order);
       
-      print('📥 Order updated via WebSocket: ${order.orderNumber} -> ${order.status.name}');
+// print('📥 Order updated via WebSocket: ${order.orderNumber} -> ${order.status.name}'); // Removed for production
     } catch (e) {
-      print('❌ Failed to handle order update: $e');
+// print('❌ Failed to handle order update: $e'); // Removed for production
     }
   }
 
@@ -736,7 +736,7 @@ class OrderServiceImpl implements OrderService {
         'timestamp': DateTime.now().toIso8601String(),
       }));
     } catch (e) {
-      print('❌ Failed to handle ping: $e');
+// print('❌ Failed to handle ping: $e'); // Removed for production
     }
   }
 
@@ -767,9 +767,9 @@ class OrderServiceImpl implements OrderService {
         'count': orders.length,
       }));
       
-      print('📤 Sync response sent: ${orders.length} orders');
+// print('📤 Sync response sent: ${orders.length} orders'); // Removed for production
     } catch (e) {
-      print('❌ Failed to handle sync request: $e');
+// print('❌ Failed to handle sync request: $e'); // Removed for production
     }
   }
 
@@ -801,21 +801,21 @@ class OrderServiceImpl implements OrderService {
       
       _webSocketChannel!.sink.add(jsonEncode(notification));
       
-      print('📢 Order notification sent: $action - ${order.orderNumber}');
+// print('📢 Order notification sent: $action - ${order.orderNumber}'); // Removed for production
     } catch (e) {
-      print('❌ Failed to send order notification: $e');
+// print('❌ Failed to send order notification: $e'); // Removed for production
     }
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Order Service...');
+// print('🗑️ Disposing Order Service...'); // Removed for production
     
     _statusCheckTimer?.cancel();
     _webSocketChannel?.sink.close();
     _orderStreamController.close();
     _statusUpdateController.close();
     
-    print('✅ Order Service disposed');
+// print('✅ Order Service disposed'); // Removed for production
   }
 }

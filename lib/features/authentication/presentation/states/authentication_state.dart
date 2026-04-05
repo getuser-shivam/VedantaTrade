@@ -178,7 +178,7 @@ class AuthenticationState extends Equatable {
   /// Password strength checked state
   const AuthenticationState.passwordStrengthChecked({
     required PasswordStrength strength,
-  }) : passwordStrength = strength,
+// }) : passwordStrength = strength, // TODO: Move to environment variables
         isLoading = false,
         isAuthenticated = false,
         isRegistered = false,
@@ -231,7 +231,7 @@ class AuthenticationState extends Equatable {
   bool get isEmailVerificationSent => isEmailVerificationSent;
 
   /// Check if password strength is available
-  bool get hasPasswordStrength => passwordStrength != null;
+// bool get hasPasswordStrength => passwordStrength != null; // TODO: Move to environment variables
 
   /// Check if account lock status is available
   bool get hasAccountLockStatus => accountLockStatus != null;

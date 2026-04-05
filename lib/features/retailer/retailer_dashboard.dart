@@ -25,7 +25,7 @@ class _RetailerDashboardState extends State<RetailerDashboard> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final res = await dio.get('${ApiConfig.baseUrl}/retailers/dashboard', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'}));
+// final res = await dio.get('${ApiConfig.baseUrl}/retailers/dashboard', options: Options(headers: {'Authorization': 'Bearer ${auth.token}'})); // TODO: Move to environment variables
       if (mounted) setState(() { _stats = res.data['data']; _loading = false; });
     } catch (_) { if (mounted) setState(() { _loading = false; _stats = {'pendingOrders': 0, 'inventoryCount': 0, 'pendingInvoices': 0}; }); }
   }

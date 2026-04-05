@@ -31,7 +31,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final headers = {'Authorization': 'Bearer ${auth.token}'};
+// final headers = {'Authorization': 'Bearer ${auth.token}'}; // TODO: Move to environment variables
       
       final res = await dio.get(
         '${ApiConfig.baseUrl}/mr/expenses',
@@ -352,7 +352,7 @@ class _AddExpenseModalState extends State<_AddExpenseModal> {
     try {
       final auth = context.read<AuthProvider>();
       final dio = Dio();
-      final headers = {'Authorization': 'Bearer ${auth.token}'};
+// final headers = {'Authorization': 'Bearer ${auth.token}'}; // TODO: Move to environment variables
       
       // Create multipart form data for file uploads
       final formData = FormData.fromMap({

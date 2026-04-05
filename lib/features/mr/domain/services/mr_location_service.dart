@@ -36,7 +36,7 @@ class MRLocationService {
   /// Initialize location service
   Future<void> initialize() async {
     try {
-      print('🔍 Initializing MR Location Service...');
+// print('🔍 Initializing MR Location Service...'); // Removed for production
       
       // Check location permissions
       final hasPermission = await _checkLocationPermission();
@@ -53,9 +53,9 @@ class MRLocationService {
       // Load offline locations from local storage
       await _loadOfflineLocations();
       
-      print('✅ MR Location Service initialized successfully');
+// print('✅ MR Location Service initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize MR Location Service: $e');
+// print('❌ Failed to initialize MR Location Service: $e'); // Removed for production
       rethrow;
     }
   }
@@ -67,12 +67,12 @@ class MRLocationService {
     Duration interval = const Duration(seconds: 30),
   }) async {
     if (_isTracking) {
-      print('⚠️ Location tracking is already active');
+// print('⚠️ Location tracking is already active'); // Removed for production
       return;
     }
 
     try {
-      print('🚀 Starting location tracking...');
+// print('🚀 Starting location tracking...'); // Removed for production
       _isTracking = true;
       _isHighAccuracyMode = highAccuracy;
       
@@ -89,15 +89,15 @@ class MRLocationService {
         await _repository.saveLocation(_lastKnownLocation!);
         _locationStreamController.add(_lastKnownLocation!);
         
-        print('📍 Initial location captured: ${_lastKnownLocation!.getFormattedLocation()}');
+// print('📍 Initial location captured: ${_lastKnownLocation!.getFormattedLocation()}'); // Removed for production
       }
       
       // Start background location polling
       _startLocationPolling(interval);
       
-      print('✅ Location tracking started (High Accuracy: $highAccuracy)');
+// print('✅ Location tracking started (High Accuracy: $highAccuracy)'); // Removed for production
     } catch (e) {
-      print('❌ Failed to start location tracking: $e');
+// print('❌ Failed to start location tracking: $e'); // Removed for production
       _isTracking = false;
       rethrow;
     }
@@ -106,12 +106,12 @@ class MRLocationService {
   /// Stop location tracking
   Future<void> stopTracking() async {
     if (!_isTracking) {
-      print('⚠️ Location tracking is not active');
+// print('⚠️ Location tracking is not active'); // Removed for production
       return;
     }
 
     try {
-      print('🛑 Stopping location tracking...');
+// print('🛑 Stopping location tracking...'); // Removed for production
       _isTracking = false;
       
       // Stop background polling
@@ -123,16 +123,16 @@ class MRLocationService {
         await _syncOfflineLocations();
       }
       
-      print('✅ Location tracking stopped');
+// print('✅ Location tracking stopped'); // Removed for production
     } catch (e) {
-      print('❌ Failed to stop location tracking: $e');
+// print('❌ Failed to stop location tracking: $e'); // Removed for production
     }
   }
 
   /// Get current location with high accuracy
   Future<Position?> _getCurrentHighAccuracyLocation() async {
     try {
-      print('🔍 Getting high accuracy location...');
+// print('🔍 Getting high accuracy location...'); // Removed for production
       
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.bestForNavigation,
@@ -140,14 +140,14 @@ class MRLocationService {
       );
       
       if (position.accuracy <= 10.0) {
-        print('✅ High accuracy location obtained: ${position.accuracy}m');
+// print('✅ High accuracy location obtained: ${position.accuracy}m'); // Removed for production
         return position;
       } else {
-        print('⚠️ Location accuracy is poor: ${position.accuracy}m');
+// print('⚠️ Location accuracy is poor: ${position.accuracy}m'); // Removed for production
         return position;
       }
     } catch (e) {
-      print('❌ Failed to get current location: $e');
+// print('❌ Failed to get current location: $e'); // Removed for production
       return null;
     }
   }
@@ -181,16 +181,16 @@ class MRLocationService {
           await _repository.saveLocation(location);
           _locationStreamController.add(location);
           
-          print('📍 Location updated: ${location.getFormattedLocation()} (${location.getFormattedAccuracy()})');
+// print('📍 Location updated: ${location.getFormattedLocation()} (${location.getFormattedAccuracy()})'); // Removed for production
         } else {
-          print('⚠️ Location quality poor: ${location.getFormattedAccuracy()}');
+// print('⚠️ Location quality poor: ${location.getFormattedAccuracy()}'); // Removed for production
           
           // Add to offline cache for later sync
           _offlineLocations.add(location);
         }
         
       } catch (e) {
-        print('❌ Location polling failed: $e');
+// print('❌ Location polling failed: $e'); // Removed for production
       }
     });
   }
@@ -214,7 +214,7 @@ class MRLocationService {
           return false;
       }
     } catch (e) {
-      print('❌ Permission check failed: $e');
+// print('❌ Permission check failed: $e'); // Removed for production
       return false;
     }
   }
@@ -222,15 +222,15 @@ class MRLocationService {
   /// Load offline locations from local storage
   Future<void> _loadOfflineLocations() async {
     try {
-      print('📂 Loading offline locations...');
+// print('📂 Loading offline locations...'); // Removed for production
       
       // This would load from local storage/database
       // For now, we'll use an empty list
       _offlineLocations = [];
       
-      print('✅ Loaded ${_offlineLocations.length} offline locations');
+// print('✅ Loaded ${_offlineLocations.length} offline locations'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load offline locations: $e');
+// print('❌ Failed to load offline locations: $e'); // Removed for production
     }
   }
 
@@ -239,7 +239,7 @@ class MRLocationService {
     if (_offlineLocations.isEmpty) return;
     
     try {
-      print('🔄 Syncing ${_offlineLocations.length} offline locations...');
+// print('🔄 Syncing ${_offlineLocations.length} offline locations...'); // Removed for production
       
       for (final location in _offlineLocations) {
         final syncedLocation = location.copyWith(
@@ -251,9 +251,9 @@ class MRLocationService {
       }
       
       _offlineLocations.clear();
-      print('✅ Offline locations synced successfully');
+// print('✅ Offline locations synced successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to sync offline locations: $e');
+// print('❌ Failed to sync offline locations: $e'); // Removed for production
     }
   }
 
@@ -265,7 +265,7 @@ class MRLocationService {
     int? limit,
   }) async {
     try {
-      print('📊 Getting location history for MR: $mrId');
+// print('📊 Getting location history for MR: $mrId'); // Removed for production
       
       final locations = await _repository.getLocationsByMrId(
         mrId,
@@ -274,10 +274,10 @@ class MRLocationService {
         limit: limit,
       );
       
-      print('✅ Retrieved ${locations.length} location records');
+// print('✅ Retrieved ${locations.length} location records'); // Removed for production
       return locations;
     } catch (e) {
-      print('❌ Failed to get location history: $e');
+// print('❌ Failed to get location history: $e'); // Removed for production
       return [];
     }
   }
@@ -288,7 +288,7 @@ class MRLocationService {
     DateTime? date,
   }) async {
     try {
-      print('🗺️ Calculating daily trajectory for MR: $mrId');
+// print('🗺️ Calculating daily trajectory for MR: $mrId'); // Removed for production
       
       final targetDate = date ?? DateTime.now();
       final startDate = DateTime(
@@ -311,7 +311,7 @@ class MRLocationService {
       );
       
       if (locations.isEmpty) {
-        print('⚠️ No locations found for trajectory calculation');
+// print('⚠️ No locations found for trajectory calculation'); // Removed for production
         return [];
       }
       
@@ -325,10 +325,10 @@ class MRLocationService {
           .map((loc) => loc.toLatLng())
           .toList();
       
-      print('✅ Calculated trajectory with ${trajectory.length} points');
+// print('✅ Calculated trajectory with ${trajectory.length} points'); // Removed for production
       return trajectory;
     } catch (e) {
-      print('❌ Failed to calculate trajectory: $e');
+// print('❌ Failed to calculate trajectory: $e'); // Removed for production
       return [];
     }
   }
@@ -340,7 +340,7 @@ class MRLocationService {
     DateTime? endDate,
   }) async {
     try {
-      print('📈 Getting location statistics for MR: $mrId');
+// print('📈 Getting location statistics for MR: $mrId'); // Removed for production
       
       final locations = await _repository.getLocationsByMrId(
         mrId,
@@ -395,10 +395,10 @@ class MRLocationService {
                          averageAccuracy <= 20.0 ? 'Fair' : 'Poor',
       };
       
-      print('✅ Location statistics calculated');
+// print('✅ Location statistics calculated'); // Removed for production
       return statistics;
     } catch (e) {
-      print('❌ Failed to get location statistics: $e');
+// print('❌ Failed to get location statistics: $e'); // Removed for production
       return {};
     }
   }
@@ -413,7 +413,7 @@ class MRLocationService {
     String? notes,
   }) async {
     try {
-      print('📍 Adding manual location entry...');
+// print('📍 Adding manual location entry...'); // Removed for production
       
       final location = MRLocation(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -431,22 +431,22 @@ class MRLocationService {
       await _repository.saveLocation(location);
       _locationStreamController.add(location);
       
-      print('✅ Manual location added: ${location.getFormattedLocation()}');
+// print('✅ Manual location added: ${location.getFormattedLocation()}'); // Removed for production
     } catch (e) {
-      print('❌ Failed to add manual location: $e');
+// print('❌ Failed to add manual location: $e'); // Removed for production
     }
   }
 
   /// Delete location record
   Future<void> deleteLocation(String locationId) async {
     try {
-      print('🗑️ Deleting location: $locationId');
+// print('🗑️ Deleting location: $locationId'); // Removed for production
       
       await _repository.deleteLocation(locationId);
       
-      print('✅ Location deleted successfully');
+// print('✅ Location deleted successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to delete location: $e');
+// print('❌ Failed to delete location: $e'); // Removed for production
     }
   }
 
@@ -458,7 +458,7 @@ class MRLocationService {
     String format = 'json',
   }) async {
     try {
-      print('📤 Exporting location data for MR: $mrId');
+// print('📤 Exporting location data for MR: $mrId'); // Removed for production
       
       final locations = await _repository.getLocationsByMrId(
         mrId,
@@ -480,7 +480,7 @@ class MRLocationService {
         final file = File(filename);
         await file.writeAsString(jsonEncode(jsonData));
         
-        print('✅ Location data exported to: $filename');
+// print('✅ Location data exported to: $filename'); // Removed for production
       } else if (format.toLowerCase() == 'csv') {
         final csvData = [
           'Timestamp,Latitude,Longitude,Accuracy,Address,Landmark,Notes',
@@ -498,21 +498,21 @@ class MRLocationService {
         final file = File(filename);
         await file.writeAsString(csvData);
         
-        print('✅ Location data exported to: $filename');
+// print('✅ Location data exported to: $filename'); // Removed for production
       }
     } catch (e) {
-      print('❌ Failed to export location data: $e');
+// print('❌ Failed to export location data: $e'); // Removed for production
     }
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing MR Location Service...');
+// print('🗑️ Disposing MR Location Service...'); // Removed for production
     
     _locationTimer?.cancel();
     _locationStreamController.close();
     _isTracking = false;
     
-    print('✅ MR Location Service disposed');
+// print('✅ MR Location Service disposed'); // Removed for production
   }
 }

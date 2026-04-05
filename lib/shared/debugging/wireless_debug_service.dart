@@ -59,7 +59,7 @@ class WirelessDebugService {
   /// Initialize wireless debugging environment
   Future<void> initialize() async {
     try {
-      print('🔍 Initializing Wireless Debug Service...');
+// print('🔍 Initializing Wireless Debug Service...'); // Removed for production
       
       // Collect device information
       await _collectDeviceInfo();
@@ -76,9 +76,9 @@ class WirelessDebugService {
       // Start network status monitoring
       _startNetworkStatusMonitoring();
       
-      print('✅ Wireless Debug Service initialized successfully');
+// print('✅ Wireless Debug Service initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Wireless Debug Service: $e');
+// print('❌ Failed to initialize Wireless Debug Service: $e'); // Removed for production
       _logError('INITIALIZATION_ERROR', e.toString());
     }
   }
@@ -89,7 +89,7 @@ class WirelessDebugService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      print('🚀 Starting debug session...');
+// print('🚀 Starting debug session...'); // Removed for production
       
       _sessionId = sessionId ?? _generateSessionId();
       _sessionStartTime = DateTime.now();
@@ -108,9 +108,9 @@ class WirelessDebugService {
       
       _logInfo('Debug session started: $_sessionId');
       
-      print('✅ Debug session started: $_sessionId');
+// print('✅ Debug session started: $_sessionId'); // Removed for production
     } catch (e) {
-      print('❌ Failed to start debug session: $e');
+// print('❌ Failed to start debug session: $e'); // Removed for production
       _logError('SESSION_START_ERROR', e.toString());
     }
   }
@@ -119,11 +119,11 @@ class WirelessDebugService {
   Future<void> stopDebugSession({String? reason}) async {
     try {
       if (_sessionId == null) {
-        print('⚠️ No active debug session to stop');
+// print('⚠️ No active debug session to stop'); // Removed for production
         return;
       }
       
-      print('🛑 Stopping debug session: $_sessionId');
+// print('🛑 Stopping debug session: $_sessionId'); // Removed for production
       
       final sessionInfo = {
         'type': 'session_end',
@@ -141,9 +141,9 @@ class WirelessDebugService {
       _sessionId = null;
       _sessionStartTime = null;
       
-      print('✅ Debug session stopped');
+// print('✅ Debug session stopped'); // Removed for production
     } catch (e) {
-      print('❌ Failed to stop debug session: $e');
+// print('❌ Failed to stop debug session: $e'); // Removed for production
       _logError('SESSION_STOP_ERROR', e.toString());
     }
   }
@@ -168,7 +168,7 @@ class WirelessDebugService {
       _logDebugEvent(type, level, data);
       
     } catch (e) {
-      print('❌ Failed to send debug event: $e');
+// print('❌ Failed to send debug event: $e'); // Removed for production
       _logError('EVENT_SEND_ERROR', e.toString());
     }
   }
@@ -188,9 +188,9 @@ class WirelessDebugService {
       
       _logInfo('Screenshot captured: $description');
       
-      print('📸 Screenshot captured: $description');
+// print('📸 Screenshot captured: $description'); // Removed for production
     } catch (e) {
-      print('❌ Failed to capture screenshot: $e');
+// print('❌ Failed to capture screenshot: $e'); // Removed for production
       _logError('SCREENSHOT_ERROR', e.toString());
     }
   }
@@ -219,7 +219,7 @@ class WirelessDebugService {
       });
       
     } catch (e) {
-      print('❌ Failed to log performance metrics: $e');
+// print('❌ Failed to log performance metrics: $e'); // Removed for production
       _logError('PERFORMANCE_LOG_ERROR', e.toString());
     }
   }
@@ -253,7 +253,7 @@ class WirelessDebugService {
       });
       
     } catch (e) {
-      print('❌ Failed to log network request: $e');
+// print('❌ Failed to log network request: $e'); // Removed for production
       _logError('NETWORK_LOG_ERROR', e.toString());
     }
   }
@@ -282,7 +282,7 @@ class WirelessDebugService {
       });
       
     } catch (e) {
-      print('❌ Failed to log user interaction: $e');
+// print('❌ Failed to log user interaction: $e'); // Removed for production
       _logError('USER_INTERACTION_ERROR', e.toString());
     }
   }
@@ -311,7 +311,7 @@ class WirelessDebugService {
       });
       
     } catch (e) {
-      print('❌ Failed to log error: $e');
+// print('❌ Failed to log error: $e'); // Removed for production
     }
   }
 
@@ -331,7 +331,7 @@ class WirelessDebugService {
         'timestamp': DateTime.now().toIso8601String(),
       };
     } catch (e) {
-      print('❌ Failed to get debug dashboard data: $e');
+// print('❌ Failed to get debug dashboard data: $e'); // Removed for production
       return {};
     }
   }
@@ -356,9 +356,9 @@ class WirelessDebugService {
         'network_info': await _getNetworkInfo(),
       });
       
-      print('✅ Device information collected');
+// print('✅ Device information collected'); // Removed for production
     } catch (e) {
-      print('❌ Failed to collect device information: $e');
+// print('❌ Failed to collect device information: $e'); // Removed for production
     }
   }
 
@@ -385,9 +385,9 @@ class WirelessDebugService {
         });
       });
       
-      print('✅ Connectivity monitoring initialized');
+// print('✅ Connectivity monitoring initialized'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize connectivity monitoring: $e');
+// print('❌ Failed to initialize connectivity monitoring: $e'); // Removed for production
     }
   }
 
@@ -416,11 +416,11 @@ class WirelessDebugService {
         _performanceController.add(metric);
         
       } catch (e) {
-        print('❌ Failed to collect performance metrics: $e');
+// print('❌ Failed to collect performance metrics: $e'); // Removed for production
       }
     });
     
-    print('✅ Performance monitoring started');
+// print('✅ Performance monitoring started'); // Removed for production
   }
 
   /// Connect to debug server
@@ -429,7 +429,7 @@ class WirelessDebugService {
       // In a real implementation, this would connect to a WebSocket server
       // For now, we'll simulate the connection
       
-      print('🔌 Connected to debug server');
+// print('🔌 Connected to debug server'); // Removed for production
       
       _isConnected = true;
       
@@ -440,7 +440,7 @@ class WirelessDebugService {
       });
       
     } catch (e) {
-      print('❌ Failed to connect to debug server: $e');
+// print('❌ Failed to connect to debug server: $e'); // Removed for production
       _isConnected = false;
     }
   }
@@ -455,11 +455,11 @@ class WirelessDebugService {
         _networkStatusController.add(networkStatus);
         
       } catch (e) {
-        print('❌ Failed to check network status: $e');
+// print('❌ Failed to check network status: $e'); // Removed for production
       }
     });
     
-    print('✅ Network status monitoring started');
+// print('✅ Network status monitoring started'); // Removed for production
   }
 
   /// Send debug event to server
@@ -480,7 +480,7 @@ class WirelessDebugService {
       _logCount++;
       
     } catch (e) {
-      print('❌ Failed to send debug event: $e');
+// print('❌ Failed to send debug event: $e'); // Removed for production
     }
   }
 
@@ -496,17 +496,17 @@ class WirelessDebugService {
     _debugLogs.add(log);
     
     // Print to console for immediate visibility
-    print('🔍 [$level] $type: $data');
+// print('🔍 [$level] $type: $data'); // Removed for production
   }
 
   /// Log info message
   void _logInfo(String message) {
-    print('ℹ️ $message');
+// print('ℹ️ $message'); // Removed for production
   }
 
   /// Log error message
   void _logError(String error, String details) {
-    print('❌ $error: $details');
+// print('❌ $error: $details'); // Removed for production
   }
 
   /// Generate unique session ID
@@ -657,7 +657,7 @@ class WirelessDebugService {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Wireless Debug Service...');
+// print('🗑️ Disposing Wireless Debug Service...'); // Removed for production
     
     _performanceTimer?.cancel();
     _networkCheckTimer?.cancel();
@@ -666,7 +666,7 @@ class WirelessDebugService {
     _performanceController.close();
     _networkStatusController.close();
     
-    print('✅ Wireless Debug Service disposed');
+// print('✅ Wireless Debug Service disposed'); // Removed for production
   }
 }
 

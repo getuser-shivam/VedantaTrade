@@ -30,7 +30,7 @@ class WorkflowManager {
     try {
       if (_isInitialized) return;
       
-      print('🔧 Initializing Workflow Manager...');
+// print('🔧 Initializing Workflow Manager...'); // Removed for production
       
       // Load built-in workflows
       await _loadBuiltInWorkflows();
@@ -42,9 +42,9 @@ class WorkflowManager {
       _startMonitoring();
       
       _isInitialized = true;
-      print('✅ Workflow Manager initialized successfully');
+// print('✅ Workflow Manager initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Workflow Manager: $e');
+// print('❌ Failed to initialize Workflow Manager: $e'); // Removed for production
       rethrow;
     }
   }
@@ -58,7 +58,7 @@ class WorkflowManager {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      print('📝 Creating workflow: $name');
+// print('📝 Creating workflow: $name'); // Removed for production
       
       final workflowId = _generateWorkflowId();
       final workflow = Workflow(
@@ -101,10 +101,10 @@ class WorkflowManager {
         metadata: {'workflow_name': name},
       ));
       
-      print('✅ Workflow created successfully: $name');
+// print('✅ Workflow created successfully: $name'); // Removed for production
       return Right(workflow);
     } catch (e) {
-      print('❌ Failed to create workflow: $e');
+// print('❌ Failed to create workflow: $e'); // Removed for production
       return Left(WorkflowError(
         code: 'CREATE_ERROR',
         message: 'Failed to create workflow',
@@ -120,7 +120,7 @@ class WorkflowManager {
     String? initiatedBy,
   }) async {
     try {
-      print('🚀 Executing workflow: $workflowId');
+// print('🚀 Executing workflow: $workflowId'); // Removed for production
       
       final workflow = _workflows[workflowId];
       if (workflow == null) {
@@ -175,10 +175,10 @@ class WorkflowManager {
       // Start execution
       await _executeWorkflow(execution);
       
-      print('✅ Workflow execution started: $executionId');
+// print('✅ Workflow execution started: $executionId'); // Removed for production
       return Right(execution);
     } catch (e) {
-      print('❌ Failed to execute workflow: $e');
+// print('❌ Failed to execute workflow: $e'); // Removed for production
       return Left(WorkflowError(
         code: 'EXECUTION_ERROR',
         message: 'Failed to execute workflow',
@@ -230,7 +230,7 @@ class WorkflowManager {
   /// Cancel workflow execution
   Future<Either<WorkflowError, void>> cancelExecution(String executionId) async {
     try {
-      print('⏹️ Canceling workflow execution: $executionId');
+// print('⏹️ Canceling workflow execution: $executionId'); // Removed for production
       
       final execution = _executions[executionId];
       if (execution == null) {
@@ -266,10 +266,10 @@ class WorkflowManager {
         timestamp: DateTime.now(),
       ));
       
-      print('✅ Workflow execution canceled: $executionId');
+// print('✅ Workflow execution canceled: $executionId'); // Removed for production
       return const Right(null);
     } catch (e) {
-      print('❌ Failed to cancel workflow execution: $e');
+// print('❌ Failed to cancel workflow execution: $e'); // Removed for production
       return Left(WorkflowError(
         code: 'CANCEL_ERROR',
         message: 'Failed to cancel workflow execution',
@@ -285,7 +285,7 @@ class WorkflowManager {
     Map<String, dynamic>? parameters,
   }) async {
     try {
-      print('📋 Creating workflow from template: $templateId');
+// print('📋 Creating workflow from template: $templateId'); // Removed for production
       
       final template = _templates[templateId];
       if (template == null) {
@@ -320,10 +320,10 @@ class WorkflowManager {
         _tasks[task.id] = task;
       }
       
-      print('✅ Workflow created from template: $name');
+// print('✅ Workflow created from template: $name'); // Removed for production
       return Right(workflow);
     } catch (e) {
-      print('❌ Failed to create workflow from template: $e');
+// print('❌ Failed to create workflow from template: $e'); // Removed for production
       return Left(WorkflowError(
         code: 'TEMPLATE_ERROR',
         message: 'Failed to create workflow from template',
@@ -340,7 +340,7 @@ class WorkflowManager {
     String? initiatedBy,
   }) async {
     try {
-      print('🚀 Executing workflow from template: $templateId');
+// print('🚀 Executing workflow from template: $templateId'); // Removed for production
       
       final workflowResult = await createWorkflowFromTemplate(
         templateId: templateId,
@@ -359,7 +359,7 @@ class WorkflowManager {
         },
       );
     } catch (e) {
-      print('❌ Failed to execute workflow from template: $e');
+// print('❌ Failed to execute workflow from template: $e'); // Removed for production
       return Left(WorkflowError(
         code: 'TEMPLATE_EXECUTION_ERROR',
         message: 'Failed to execute workflow from template',
@@ -513,7 +513,7 @@ class WorkflowManager {
         ));
       }
     } catch (e) {
-      print('❌ Workflow execution error: $e');
+// print('❌ Workflow execution error: $e'); // Removed for production
       
       final updatedExecution = execution.copyWith(
         status: WorkflowExecutionStatus.failed,
@@ -538,7 +538,7 @@ class WorkflowManager {
   /// Execute task
   Future<void> _executeTask(WorkflowTaskExecution taskExecution, WorkflowTask task) async {
     try {
-      print('🔧 Executing task: ${task.name}');
+// print('🔧 Executing task: ${task.name}'); // Removed for production
       
       final updatedTaskExecution = taskExecution.copyWith(
         status: WorkflowTaskExecutionStatus.running,
@@ -572,9 +572,9 @@ class WorkflowManager {
         metadata: {'task_name': task.name, 'task_id': task.id},
       ));
       
-      print('✅ Task completed: ${task.name}');
+// print('✅ Task completed: ${task.name}'); // Removed for production
     } catch (e) {
-      print('❌ Task execution error: $e');
+// print('❌ Task execution error: $e'); // Removed for production
       
       final failedTaskExecution = taskExecution.copyWith(
         status: WorkflowTaskExecutionStatus.failed,
@@ -604,7 +604,7 @@ class WorkflowManager {
     // This would contain the actual task execution logic
     // For now, we'll simulate task execution
     
-    print('⚙️ Executing task logic: ${task.name}');
+// print('⚙️ Executing task logic: ${task.name}'); // Removed for production
     
     // Simulate task execution time
     await Future.delayed(Duration(milliseconds: task.estimatedDuration));
@@ -621,7 +621,7 @@ class WorkflowManager {
   /// Load built-in workflows
   Future<void> _loadBuiltInWorkflows() async {
     try {
-      print('📂 Loading built-in workflows...');
+// print('📂 Loading built-in workflows...'); // Removed for production
       
       // Development workflow
       await _createDevelopmentWorkflow();
@@ -635,9 +635,9 @@ class WorkflowManager {
       // Documentation workflow
       await _createDocumentationWorkflow();
       
-      print('✅ Built-in workflows loaded');
+// print('✅ Built-in workflows loaded'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load built-in workflows: $e');
+// print('❌ Failed to load built-in workflows: $e'); // Removed for production
     }
   }
 
@@ -824,7 +824,7 @@ class WorkflowManager {
   /// Load workflow templates
   Future<void> _loadWorkflowTemplates() async {
     try {
-      print('📂 Loading workflow templates...');
+// print('📂 Loading workflow templates...'); // Removed for production
       
       // Add built-in templates
       _templates['feature-development'] = WorkflowTemplate(
@@ -861,9 +861,9 @@ class WorkflowManager {
         metadata: {},
       );
       
-      print('✅ Workflow templates loaded');
+// print('✅ Workflow templates loaded'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load workflow templates: $e');
+// print('❌ Failed to load workflow templates: $e'); // Removed for production
     }
   }
 
@@ -877,11 +877,11 @@ class WorkflowManager {
       try {
         await _monitorExecutions();
       } catch (e) {
-        print('❌ Failed to monitor executions: $e');
+// print('❌ Failed to monitor executions: $e'); // Removed for production
       }
     });
     
-    print('✅ Workflow monitoring started');
+// print('✅ Workflow monitoring started'); // Removed for production
   }
 
   /// Monitor executions
@@ -894,13 +894,13 @@ class WorkflowManager {
         
         // Check for timeout (30 minutes)
         if (duration.inMinutes > 30) {
-          print('⚠️ Workflow execution timeout: ${execution.id}');
+// print('⚠️ Workflow execution timeout: ${execution.id}'); // Removed for production
           
           await cancelExecution(execution.id);
         }
       }
     } catch (e) {
-      print('❌ Failed to monitor executions: $e');
+// print('❌ Failed to monitor executions: $e'); // Removed for production
     }
   }
 
@@ -923,13 +923,13 @@ class WorkflowManager {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Workflow Manager...');
+// print('🗑️ Disposing Workflow Manager...'); // Removed for production
     
     _monitoringTimer?.cancel();
     _eventController.close();
     _executionController.close();
     
-    print('✅ Workflow Manager disposed');
+// print('✅ Workflow Manager disposed'); // Removed for production
   }
 }
 

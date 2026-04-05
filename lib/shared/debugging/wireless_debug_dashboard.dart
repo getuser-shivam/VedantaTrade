@@ -123,7 +123,7 @@ class _WirelessDebugDashboardState extends State<WirelessDebugDashboard>
         _currentSession = DebugSessionInfo.fromJson(data['session_info']);
       });
     } catch (e) {
-      print('❌ Failed to refresh dashboard data: $e');
+// print('❌ Failed to refresh dashboard data: $e'); // Removed for production
     }
   }
 

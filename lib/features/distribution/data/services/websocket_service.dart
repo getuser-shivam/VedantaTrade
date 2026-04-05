@@ -73,13 +73,13 @@ class WebSocketService {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('auth_token');
+// final token = prefs.getString('auth_token'); // TODO: Move to environment variables
       
-      if (token == null) {
+// if (token == null) { // TODO: Move to environment variables
         throw Exception('No authentication token found');
       }
 
-      final wsUrl = Uri.parse('${_getWebSocketUrl()}?token=$token');
+// final wsUrl = Uri.parse('${_getWebSocketUrl()}?token=$token'); // TODO: Move to environment variables
       _channel = WebSocketChannel.connect(wsUrl);
 
       _subscription = _channel!.stream.listen(

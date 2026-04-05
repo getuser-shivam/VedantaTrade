@@ -30,7 +30,7 @@ class OrderService {
   /// Initialize order service
   Future<void> initialize() async {
     try {
-      print('🔍 Initializing Order Service...');
+// print('🔍 Initializing Order Service...'); // Removed for production
       
       // Load pending orders
       await _loadPendingOrders();
@@ -46,9 +46,9 @@ class OrderService {
         _connectWebSocket();
       }
       
-      print('✅ Order Service initialized successfully');
+// print('✅ Order Service initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Order Service: $e');
+// print('❌ Failed to initialize Order Service: $e'); // Removed for production
       rethrow;
     }
   }
@@ -65,7 +65,7 @@ class OrderService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      print('🛒 Creating new order for retailer: $retailerId');
+// print('🛒 Creating new order for retailer: $retailerId'); // Removed for production
       
       // Calculate totals
       final totalAmount = items.fold(0.0, (sum, item) => sum + item.totalPrice);
@@ -100,13 +100,13 @@ class OrderService {
         // Send real-time notification
         _sendOrderNotification(order, 'created');
         
-        print('✅ Order created successfully: ${order.orderNumber}');
+// print('✅ Order created successfully: ${order.orderNumber}'); // Removed for production
         return Right(order);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to create order: $e');
+// print('❌ Failed to create order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to create order',
         code: 'CREATE_ERROR',
@@ -118,7 +118,7 @@ class OrderService {
   /// Approve order
   Future<Either<Failure, void>> approveOrder(String orderId) async {
     try {
-      print('✅ Approving order: $orderId');
+// print('✅ Approving order: $orderId'); // Removed for production
       
       final orderResult = await _repository.getOrderById(orderId);
       
@@ -147,7 +147,7 @@ class OrderService {
             // Send real-time notification
             _sendOrderNotification(approvedOrder, 'approved');
             
-            print('✅ Order approved successfully: ${approvedOrder.orderNumber}');
+// print('✅ Order approved successfully: ${approvedOrder.orderNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -155,7 +155,7 @@ class OrderService {
         },
       );
     } catch (e) {
-      print('❌ Failed to approve order: $e');
+// print('❌ Failed to approve order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to approve order',
         code: 'APPROVE_ERROR',
@@ -170,7 +170,7 @@ class OrderService {
     String? notes,
   }) async {
     try {
-      print('🚚 Dispatching order: $orderId');
+// print('🚚 Dispatching order: $orderId'); // Removed for production
       
       final orderResult = await _repository.getOrderById(orderId);
       
@@ -200,7 +200,7 @@ class OrderService {
             // Send real-time notification
             _sendOrderNotification(dispatchedOrder, 'dispatched');
             
-            print('✅ Order dispatched successfully: ${dispatchedOrder.orderNumber}');
+// print('✅ Order dispatched successfully: ${dispatchedOrder.orderNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -208,7 +208,7 @@ class OrderService {
         },
       );
     } catch (e) {
-      print('❌ Failed to dispatch order: $e');
+// print('❌ Failed to dispatch order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to dispatch order',
         code: 'DISPATCH_ERROR',
@@ -223,7 +223,7 @@ class OrderService {
     List<String>? attachments,
   }) async {
     try {
-      print('📦 Marking order as delivered: $orderId');
+// print('📦 Marking order as delivered: $orderId'); // Removed for production
       
       final OrderResult = await _repository.getOrderById(orderId);
       
@@ -253,7 +253,7 @@ class OrderService {
             // Send real-time notification
             _sendOrderNotification(deliveredOrder, 'delivered');
             
-            print('✅ Order marked as delivered: ${deliveredOrder.orderNumber}');
+// print('✅ Order marked as delivered: ${deliveredOrder.orderNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -261,7 +261,7 @@ class OrderService {
         },
       );
     } catch (e) {
-      print('❌ Failed to mark order as delivered: $e');
+// print('❌ Failed to mark order as delivered: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to mark order as delivered',
         code: 'DELIVER_ERROR',
@@ -277,7 +277,7 @@ class OrderService {
     List<String>? attachments,
   }) async {
     try {
-      print('💳 Marking order as paid: $orderId');
+// print('💳 Marking order as paid: $orderId'); // Removed for production
       
       final OrderResult = await _repository.getOrderById(orderId);
       
@@ -308,7 +308,7 @@ class OrderService {
             // Send real-time notification
             _sendOrderNotification(paidOrder, 'paid');
             
-            print('✅ Order marked as paid: ${paidOrder.orderNumber}');
+// print('✅ Order marked as paid: ${paidOrder.orderNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -316,7 +316,7 @@ class OrderService {
         },
       );
     } catch (e) {
-      print('❌ Failed to mark order as paid: $e');
+// print('❌ Failed to mark order as paid: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to mark order as paid',
         code: 'PAY_ERROR',
@@ -328,7 +328,7 @@ class OrderService {
   /// Cancel order
   Future<Either<Failure, void>> cancelOrder(String orderId, {String? reason}) async {
     try {
-      print('❌ Cancelling order: $orderId');
+// print('❌ Cancelling order: $orderId'); // Removed for production
       
       final OrderResult = await _repository.getOrderById(orderId);
       
@@ -361,7 +361,7 @@ class OrderService {
             // Send real-time notification
             _sendOrderNotification(cancelledOrder, 'cancelled');
             
-            print('✅ Order cancelled successfully: ${cancelledOrder.orderNumber}');
+// print('✅ Order cancelled successfully: ${cancelledOrder.orderNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -369,7 +369,7 @@ class OrderService {
         },
       );
     } catch (e) {
-      print('❌ Failed to cancel order: $e');
+// print('❌ Failed to cancel order: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to cancel order',
         code: 'CANCEL_ERROR',
@@ -385,7 +385,7 @@ class OrderService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting orders for retailer: $retailerId');
+// print('🔍 Getting orders for retailer: $retailerId'); // Removed for production
       
       final result = await _repository.getOrdersByRetailer(
         retailerId: retailerId,
@@ -396,12 +396,12 @@ class OrderService {
       return result.fold(
         (error) => Left(error),
         (orders) {
-          print('✅ Retrieved ${orders.length} orders for retailer: $retailerId');
+// print('✅ Retrieved ${orders.length} orders for retailer: $retailerId'); // Removed for production
           return Right(orders);
         },
       );
     } catch (e) {
-      print('❌ Failed to get orders for retailer: $e');
+// print('❌ Failed to get orders for retailer: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get orders for retailer',
         code: 'RETRIEVE_ERROR',
@@ -417,7 +417,7 @@ class OrderService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting orders for stockist: $stockistId');
+// print('🔍 Getting orders for stockist: $stockistId'); // Removed for production
       
       final result = await _repository.getOrdersByStockist(
         stockistId: stockistId,
@@ -428,12 +428,12 @@ class OrderService {
       return result.fold(
         (error) => Left(error),
         (orders) {
-          print('✅ Retrieved ${orders.length} orders for stockist: $stockistId');
+// print('✅ Retrieved ${orders.length} orders for stockist: $stockistId'); // Removed for production
           return Right(orders);
         },
       );
     } catch (e) {
-      print('❌ Failed to get orders for stockist: $e');
+// print('❌ Failed to get orders for stockist: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get orders for stockist',
         code: 'RETRIEVE_ERROR',
@@ -451,7 +451,7 @@ class OrderService {
     DateTime? endDate,
   }) async {
     try {
-      print('📈 Getting order statistics...');
+// print('📈 Getting order statistics...'); // Removed for production
       
       final result = await _repository.getOrderStatistics(
         retailerId: retailerId,
@@ -464,12 +464,12 @@ class OrderService {
       return result.fold(
         (error) => Left(error),
         (stats) {
-          print('✅ Order statistics calculated');
+// print('✅ Order statistics calculated'); // Removed for production
           return Right(stats);
         },
       );
     } catch (e) {
-      print('❌ Failed to get order statistics: $e');
+// print('❌ Failed to get order statistics: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get order statistics',
         code: 'STATISTICS_ERROR',
@@ -481,7 +481,7 @@ class OrderService {
   /// Get pending orders
   Future<Either<Failure, List<Order>>> getPendingOrders({int? limit}) async {
     try {
-      print('🔍 Getting pending orders...');
+// print('🔍 Getting pending orders...'); // Removed for production
       
       final result = await _repository.getOrdersByStatus(
         status: OrderStatus.pending,
@@ -491,12 +491,12 @@ class OrderService {
       return result.fold(
         (error) => Left(error),
         (orders) {
-          print('✅ Retrieved ${orders.length} pending orders');
+// print('✅ Retrieved ${orders.length} pending orders'); // Removed for production
           return Right(orders);
         },
       );
     } catch (e) {
-      print('❌ Failed to get pending orders: $e');
+// print('❌ Failed to get pending orders: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get pending orders',
         code: 'RETRIEVE_ERROR',
@@ -508,7 +508,7 @@ class OrderService {
   /// Get active orders
   Future<Either<Failure, List<Order>>> getActiveOrders({int? limit}) async {
     try {
-      print('🔍 Getting active orders...');
+// print('🔍 Getting active orders...'); // Removed for production
       
       final result = await _repository.getOrdersByStatus(
         status: OrderStatus.approved,
@@ -518,12 +518,12 @@ class OrderService {
       return result.fold(
         (error) => Left(error),
         (orders) {
-          print('✅ Retrieved ${orders.length} active orders');
+// print('✅ Retrieved ${orders.length} active orders'); // Removed for production
           return Right(orders);
         },
       );
     } catch (e) {
-      print('❌ Failed to get active orders: $e');
+// print('❌ Failed to get active orders: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get active orders',
         code: 'RETRIEVE_ERROR',
@@ -544,11 +544,11 @@ class OrderService {
           for (final order in orders) {
             _pendingOrders[order.id] = order;
           }
-          print('✅ Loaded ${orders.length} pending orders');
+// print('✅ Loaded ${orders.length} pending orders'); // Removed for production
         },
       );
     } catch (e) {
-      print('❌ Failed to load pending orders: $e');
+// print('❌ Failed to load pending orders: $e'); // Removed for production
     }
   }
 
@@ -564,11 +564,11 @@ class OrderService {
           for (final order in orders) {
             _activeOrders[order.id] = order;
           }
-          print('✅ Loaded ${orders.length} active orders');
+// print('✅ Loaded ${orders.length} active orders'); // Removed for production
         },
       );
     } catch (e) {
-      print('❌ Failed to load active orders: $e');
+// print('❌ Failed to load active orders: $e'); // Removed for production
     }
   }
 
@@ -622,7 +622,7 @@ class OrderService {
         );
       }
     } catch (e) {
-      print('❌ Failed to check order statuses: $e');
+// print('❌ Failed to check order statuses: $e'); // Removed for production
     }
   }
 
@@ -652,18 +652,18 @@ class OrderService {
             _sendStatusUpdateNotification(order, order);
           }
         } catch (e) {
-          print('❌ Failed to process WebSocket message: $e');
+// print('❌ Failed to process WebSocket message: $e'); // Removed for production
         }
       },
       onError: (error) {
-        print('❌ WebSocket error: $error');
+// print('❌ WebSocket error: $error'); // Removed for production
       },
       onDone: () {
-        print('🔌 WebSocket connection closed');
+// print('🔌 WebSocket connection closed'); // Removed for production
       },
     );
     
-    print('✅ Connected to WebSocket for real-time order updates');
+// print('✅ Connected to WebSocket for real-time order updates'); // Removed for production
   }
 
   /// Send order notification
@@ -683,7 +683,7 @@ class OrderService {
       data: notification,
     ));
     
-    print('📢 Order notification sent: $action - ${order.orderNumber}');
+// print('📢 Order notification sent: $action - ${order.orderNumber}'); // Removed for production
   }
 
   /// Send status update notification
@@ -702,7 +702,7 @@ class OrderService {
       data: notification,
     ));
     
-    print('📢 Status update sent: ${oldOrder.status.name} -> ${newOrder.status.name}');
+// print('📢 Status update sent: ${oldOrder.status.name} -> ${newOrder.status.name}'); // Removed for production
   }
 
   /// Generate unique order number
@@ -714,14 +714,14 @@ class OrderService {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Order Service...');
+// print('🗑️ Disposing Order Service...'); // Removed for production
     
     _statusCheckTimer?.cancel();
     _orderStreamController.close();
     _statusUpdateController.close();
     _webSocketChannel?.sink.close();
     
-    print('✅ Order Service disposed');
+// print('✅ Order Service disposed'); // Removed for production
   }
 }
 

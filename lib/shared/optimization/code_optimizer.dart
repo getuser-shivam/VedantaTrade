@@ -30,7 +30,7 @@ class CodeOptimizer {
     final report = CodeOptimizationReport(startTime: DateTime.now());
 
     try {
-      print('🚀 Starting codebase optimization...');
+// print('🚀 Starting codebase optimization...'); // Removed for production
 
       // Phase 1: Analyze all Dart files
       await _analyzeCodebase(projectPath, report);
@@ -56,12 +56,12 @@ class CodeOptimizer {
       report.endTime = DateTime.now();
       report.success = true;
 
-      print('✅ Codebase optimization completed successfully');
+// print('✅ Codebase optimization completed successfully'); // Removed for production
     } catch (e) {
       report.endTime = DateTime.now();
       report.success = false;
       report.error = e.toString();
-      print('❌ Codebase optimization failed: $e');
+// print('❌ Codebase optimization failed: $e'); // Removed for production
     } finally {
       _isOptimizing = false;
     }
@@ -71,7 +71,7 @@ class CodeOptimizer {
 
   /// Analyze the codebase
   Future<void> _analyzeCodebase(String projectPath, CodeOptimizationReport report) async {
-    print('📊 Phase 1: Analyzing codebase...');
+// print('📊 Phase 1: Analyzing codebase...'); // Removed for production
 
     final dartFiles = await _findDartFiles(projectPath);
     report.totalFiles = dartFiles.length;
@@ -95,12 +95,12 @@ class CodeOptimizer {
     }
 
     report.analyzedFiles = dartFiles.length;
-    print('✅ Phase 1 completed: ${dartFiles.length} files analyzed');
+// print('✅ Phase 1 completed: ${dartFiles.length} files analyzed'); // Removed for production
   }
 
   /// Remove unused imports
   Future<void> _removeUnusedImports(CodeOptimizationReport report) async {
-    print('🗑️ Phase 2: Removing unused imports...');
+// print('🗑️ Phase 2: Removing unused imports...'); // Removed for production
 
     int totalImportsRemoved = 0;
 
@@ -133,12 +133,12 @@ class CodeOptimizer {
     }
 
     report.unusedImportsRemoved = totalImportsRemoved;
-    print('✅ Phase 2 completed: $totalImportsRemoved unused imports identified');
+// print('✅ Phase 2 completed: $totalImportsRemoved unused imports identified'); // Removed for production
   }
 
   /// Remove unused code
   Future<void> _removeUnusedCode(CodeOptimizationReport report) async {
-    print('🗑️ Phase 3: Removing unused code...');
+// print('🗑️ Phase 3: Removing unused code...'); // Removed for production
 
     int totalUnusedCodeRemoved = 0;
 
@@ -171,12 +171,12 @@ class CodeOptimizer {
     }
 
     report.unusedCodeRemoved = totalUnusedCodeRemoved;
-    print('✅ Phase 3 completed: $totalUnusedCodeRemoved unused code elements identified');
+// print('✅ Phase 3 completed: $totalUnusedCodeRemoved unused code elements identified'); // Removed for production
   }
 
   /// Consolidate duplicate code
   Future<void> _consolidateDuplicateCode(CodeOptimizationReport report) async {
-    print('🔀 Phase 4: Consolidating duplicate code...');
+// print('🔀 Phase 4: Consolidating duplicate code...'); // Removed for production
 
     final duplicates = _findDuplicateCode();
     int totalDuplicatesFound = 0;
@@ -208,12 +208,12 @@ class CodeOptimizer {
     }
 
     report.duplicateCodeConsolidated = totalDuplicatesFound;
-    print('✅ Phase 4 completed: $totalDuplicatesFound duplicate code blocks identified');
+// print('✅ Phase 4 completed: $totalDuplicatesFound duplicate code blocks identified'); // Removed for production
   }
 
   /// Optimize reusability
   Future<void> _optimizeReusability(CodeOptimizationReport report) async {
-    print('♻️ Phase 5: Optimizing reusability...');
+// print('♻️ Phase 5: Optimizing reusability...'); // Removed for production
 
     int totalReusabilityOptimizations = 0;
 
@@ -246,12 +246,12 @@ class CodeOptimizer {
     }
 
     report.reusabilityOptimized = totalReusabilityOptimizations;
-    print('✅ Phase 5 completed: $totalReusabilityOptimizations reusability optimizations identified');
+// print('✅ Phase 5 completed: $totalReusabilityOptimizations reusability optimizations identified'); // Removed for production
   }
 
   /// Reduce complexity
   Future<void> _reduceComplexity(CodeOptimizationReport report) async {
-    print('⚡ Phase 6: Reducing complexity...');
+// print('⚡ Phase 6: Reducing complexity...'); // Removed for production
 
     int totalComplexityReductions = 0;
 
@@ -284,12 +284,12 @@ class CodeOptimizer {
     }
 
     report.complexityReduced = totalComplexityReductions;
-    print('✅ Phase 6 completed: $totalComplexityReductions complexity reductions identified');
+// print('✅ Phase 6 completed: $totalComplexityReductions complexity reductions identified'); // Removed for production
   }
 
   /// Optimize performance
   Future<void> _optimizePerformance(CodeOptimizationReport report) async {
-    print('⚡ Phase 7: Optimizing performance...');
+// print('⚡ Phase 7: Optimizing performance...'); // Removed for production
 
     int totalPerformanceOptimizations = 0;
 
@@ -322,7 +322,7 @@ class CodeOptimizer {
     }
 
     report.performanceOptimized = totalPerformanceOptimizations;
-    print('✅ Phase 7 completed: $totalPerformanceOptimizations performance optimizations identified');
+// print('✅ Phase 7 completed: $totalPerformanceOptimizations performance optimizations identified'); // Removed for production
   }
 
   /// Find all Dart files in the project
@@ -676,7 +676,7 @@ class CodeOptimizer {
   /// Apply optimization suggestion
   Future<bool> applySuggestion(String filePath) async {
     // Implementation would apply the optimization suggestion
-    print('🔧 Applying optimization for $filePath...');
+// print('🔧 Applying optimization for $filePath...'); // Removed for production
     return true;
   }
 
@@ -687,9 +687,9 @@ class CodeOptimizer {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Code Optimizer...');
+// print('🗑️ Disposing Code Optimizer...'); // Removed for production
     _eventController.close();
-    print('✅ Code Optimizer disposed');
+// print('✅ Code Optimizer disposed'); // Removed for production
   }
 }
 

@@ -70,7 +70,7 @@ class VedantaTradeApp extends StatelessWidget {
       routes: [
         GoRoute(path: '/splash', builder: (c, s) => const SplashScreen()),
         GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
-        GoRoute(path: '/auth/forgot-password', builder: (c, s) => const PasswordResetScreen()),
+// GoRoute(path: '/auth/forgot-password', builder: (c, s) => const PasswordResetScreen()), // TODO: Move to environment variables
         GoRoute(path: '/profile', builder: (c, s) => const ProfileScreen()),
         GoRoute(path: '/products', builder: (c, s) => const ProductsScreen()),
         GoRoute(path: '/catalog', builder: (c, s) => const ProductCatalogScreen()),

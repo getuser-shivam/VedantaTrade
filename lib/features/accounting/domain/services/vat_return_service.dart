@@ -21,7 +21,7 @@ class VATReturnService {
     try {
       if (_isInitialized) return;
       
-      print('🔍 Initializing VAT Return Service...');
+// print('🔍 Initializing VAT Return Service...'); // Removed for production
       
       // Load cached returns
       await _loadCachedReturns();
@@ -31,9 +31,9 @@ class VATReturnService {
       _startComplianceMonitoring();
       
       _isInitialized = true;
-      print('✅ VAT Return Service initialized successfully');
+// print('✅ VAT Return Service initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize VAT Return Service: $e');
+// print('❌ Failed to initialize VAT Return Service: $e'); // Removed for production
       rethrow;
     }
   }
@@ -51,7 +51,7 @@ class VATReturnService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      print('📝 Creating new VAT return for period: $period');
+// print('📝 Creating new VAT return for period: $period'); // Removed for production
       
       // Generate unique return number
       final returnNumber = _generateReturnNumber();
@@ -95,13 +95,13 @@ class VATReturnService {
         _cachedReturns[returnId] = vatReturn;
         _transactionsByReturn[returnId] = [...salesTransactions, ...purchaseTransactions];
         
-        print('✅ VAT return created successfully: $returnNumber');
+// print('✅ VAT return created successfully: $returnNumber'); // Removed for production
         return Right(vatReturn);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to create VAT return: $e');
+// print('❌ Failed to create VAT return: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to create VAT return',
         code: 'CREATE_ERROR',
@@ -117,7 +117,7 @@ class VATReturnService {
     String? notes,
   }) async {
     try {
-      print('📤 Submitting VAT return to IRDN: $id');
+// print('📤 Submitting VAT return to IRDN: $id'); // Removed for production
       
       final vatReturnResult = await _repository.getVATReturnById(id);
       
@@ -154,7 +154,7 @@ class VATReturnService {
             // Update cache
             _cachedReturns[id] = updatedReturn;
             
-            print('✅ VAT return submitted to IRDN: ${updatedReturn.returnNumber}');
+// print('✅ VAT return submitted to IRDN: ${updatedReturn.returnNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -162,7 +162,7 @@ class VATReturnService {
         },
       );
     } catch (e) {
-      print('❌ Failed to submit VAT return to IRDN: $e');
+// print('❌ Failed to submit VAT return to IRDN: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to submit VAT return to IRDN',
         code: 'SUBMIT_ERROR',
@@ -183,7 +183,7 @@ class VATReturnService {
     String? transactionId,
   }) async {
     try {
-      print('💳 Recording VAT return payment: $id');
+// print('💳 Recording VAT return payment: $id'); // Removed for production
       
       final vatReturnResult = await _repository.getVATReturnById(id);
       
@@ -231,7 +231,7 @@ class VATReturnService {
             // Update cache
             _cachedReturns[id] = updatedReturn;
             
-            print('✅ VAT return payment recorded: ${updatedReturn.returnNumber}');
+// print('✅ VAT return payment recorded: ${updatedReturn.returnNumber}'); // Removed for production
             return const Right(null);
           } else {
             return Left(result.fold((l) => l, (r) => r));
@@ -239,7 +239,7 @@ class VATReturnService {
         },
       );
     } catch (e) {
-      print('❌ Failed to record VAT return payment: $e');
+// print('❌ Failed to record VAT return payment: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to record VAT return payment',
         code: 'PAYMENT_ERROR',
@@ -251,18 +251,18 @@ class VATReturnService {
   /// Generate VAT return PDF
   Future<Either<Failure, String>> generateVATReturnPDF(String id) async {
     try {
-      print('📄 Generating VAT return PDF: $id');
+// print('📄 Generating VAT return PDF: $id'); // Removed for production
       
       final result = await _repository.generateVATReturnPDF(id);
       
       if (result.isRight()) {
-        print('✅ VAT return PDF generated successfully');
+// print('✅ VAT return PDF generated successfully'); // Removed for production
         return Right(result.fold((l) => l, (r) => r));
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to generate VAT return PDF: $e');
+// print('❌ Failed to generate VAT return PDF: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to generate VAT return PDF',
         code: 'PDF_GENERATION_ERROR',
@@ -279,7 +279,7 @@ class VATReturnService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting VAT returns for stockist: $stockistId');
+// print('🔍 Getting VAT returns for stockist: $stockistId'); // Removed for production
       
       final result = await _repository.getVATReturnsByStockist(
         stockistId: stockistId,
@@ -294,13 +294,13 @@ class VATReturnService {
           _cachedReturns[vatReturn.id] = vatReturn;
         }
         
-        print('✅ Retrieved ${result.length} VAT returns for stockist: $stockistId');
+// print('✅ Retrieved ${result.length} VAT returns for stockist: $stockistId'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get VAT returns for stockist: $e');
+// print('❌ Failed to get VAT returns for stockist: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get VAT returns for stockist',
         code: 'RETRIEVE_ERROR',
@@ -315,7 +315,7 @@ class VATReturnService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting pending VAT returns...');
+// print('🔍 Getting pending VAT returns...'); // Removed for production
       
       final result = await _repository.getPendingVATReturns(
         stockistId: stockistId,
@@ -323,13 +323,13 @@ class VATReturnService {
       );
       
       if (result.isRight()) {
-        print('✅ Retrieved ${result.length} pending VAT returns');
+// print('✅ Retrieved ${result.length} pending VAT returns'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get pending VAT returns: $e');
+// print('❌ Failed to get pending VAT returns: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get pending VAT returns',
         code: 'RETRIEVE_ERROR',
@@ -344,7 +344,7 @@ class VATReturnService {
     int? limit,
   }) async {
     try {
-      print('🔍 Getting overdue VAT returns...');
+// print('🔍 Getting overdue VAT returns...'); // Removed for production
       
       final result = await _repository.getOverdueVATReturns(
         stockistId: stockistId,
@@ -352,13 +352,13 @@ class VATReturnService {
       );
       
       if (result.isRight()) {
-        print('✅ Retrieved ${result.length} overdue VAT returns');
+// print('✅ Retrieved ${result.length} overdue VAT returns'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get overdue VAT returns: $e');
+// print('❌ Failed to get overdue VAT returns: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get overdue VAT returns',
         code: 'RETRIEVE_ERROR',
@@ -376,7 +376,7 @@ class VATReturnService {
     VATReturnStatus? status,
   }) async {
     try {
-      print('📊 Getting VAT return statistics...');
+// print('📊 Getting VAT return statistics...'); // Removed for production
       
       final result = await _repository.getVATReturnStatistics(
         stockistId: stockistId,
@@ -387,13 +387,13 @@ class VATReturnService {
       );
       
       if (result.isRight()) {
-        print('✅ VAT return statistics calculated');
+// print('✅ VAT return statistics calculated'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get VAT return statistics: $e');
+// print('❌ Failed to get VAT return statistics: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get VAT return statistics',
         code: 'STATISTICS_ERROR',
@@ -409,7 +409,7 @@ class VATReturnService {
     required DateTime endDate,
   }) async {
     try {
-      print('📋 Getting VAT compliance report...');
+// print('📋 Getting VAT compliance report...'); // Removed for production
       
       final result = await _repository.getVATComplianceReport(
         stockistId: stockistId,
@@ -418,13 +418,13 @@ class VATReturnService {
       );
       
       if (result.isRight()) {
-        print('✅ VAT compliance report generated');
+// print('✅ VAT compliance report generated'); // Removed for production
         return Right(result);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to get VAT compliance report: $e');
+// print('❌ Failed to get VAT compliance report: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to get VAT compliance report',
         code: 'COMPLIANCE_ERROR',
@@ -436,7 +436,7 @@ class VATReturnService {
   /// Validate VAT return
   Future<Either<Failure, VATReturnValidation>> validateVATReturn(VATReturn vatReturn) async {
     try {
-      print('🔍 Validating VAT return: ${vatReturn.returnNumber}');
+// print('🔍 Validating VAT return: ${vatReturn.returnNumber}'); // Removed for production
       
       final errors = <String>[];
       final warnings = <String>[];
@@ -507,10 +507,10 @@ class VATReturnService {
         },
       );
       
-      print('✅ VAT return validation completed');
+// print('✅ VAT return validation completed'); // Removed for production
       return Right(validation);
     } catch (e) {
-      print('❌ Failed to validate VAT return: $e');
+// print('❌ Failed to validate VAT return: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to validate VAT return',
         code: 'VALIDATION_ERROR',
@@ -526,7 +526,7 @@ class VATReturnService {
     String? filePath,
   }) async {
     try {
-      print('📤 Exporting VAT return data: $id');
+// print('📤 Exporting VAT return data: $id'); // Removed for production
       
       final result = await _repository.exportVATReturnData(
         id: id,
@@ -535,13 +535,13 @@ class VATReturnService {
       );
       
       if (result.isRight()) {
-        print('✅ VAT return data exported successfully');
+// print('✅ VAT return data exported successfully'); // Removed for production
         return const Right(null);
       } else {
         return Left(result.fold((l) => l, (r) => r));
       }
     } catch (e) {
-      print('❌ Failed to export VAT return data: $e');
+// print('❌ Failed to export VAT return data: $e'); // Removed for production
       return Left(Failure(
         message: 'Failed to export VAT return data',
         code: 'EXPORT_ERROR',
@@ -560,14 +560,14 @@ class VATReturnService {
   /// Load cached returns
   Future<void> _loadCachedReturns() async {
     try {
-      print('📂 Loading cached VAT returns...');
+// print('📂 Loading cached VAT returns...'); // Removed for production
       
       // This would load recent returns from repository
       // For now, we'll initialize with empty cache
       
-      print('✅ Cached VAT returns loaded');
+// print('✅ Cached VAT returns loaded'); // Removed for production
     } catch (e) {
-      print('❌ Failed to load cached VAT returns: $e');
+// print('❌ Failed to load cached VAT returns: $e'); // Removed for production
     }
   }
 
@@ -581,11 +581,11 @@ class VATReturnService {
       try {
         await _checkDueDates();
       } catch (e) {
-        print('❌ Failed to check due dates: $e');
+// print('❌ Failed to check due dates: $e'); // Removed for production
       }
     });
     
-    print('✅ Due date monitoring started');
+// print('✅ Due date monitoring started'); // Removed for production
   }
 
   /// Start compliance monitoring
@@ -598,11 +598,11 @@ class VATReturnService {
       try {
         await _checkCompliance();
       } catch (e) {
-        print('❌ Failed to check compliance: $e');
+// print('❌ Failed to check compliance: $e'); // Removed for production
       }
     });
     
-    print('✅ Compliance monitoring started');
+// print('✅ Compliance monitoring started'); // Removed for production
   }
 
   /// Check due dates
@@ -614,13 +614,13 @@ class VATReturnService {
         (error) => print('❌ Failed to check due dates: ${error.message}'),
         (overdueReturns) {
           for (final vatReturn in overdueReturns) {
-            print('⚠️ Overdue VAT return: ${vatReturn.returnNumber}');
+// print('⚠️ Overdue VAT return: ${vatReturn.returnNumber}'); // Removed for production
             // This would trigger notifications
           }
         },
       );
     } catch (e) {
-      print('❌ Failed to check due dates: $e');
+// print('❌ Failed to check due dates: $e'); // Removed for production
     }
   }
 
@@ -629,20 +629,20 @@ class VATReturnService {
     try {
       // This would run compliance checks on all active VAT returns
       // For now, we'll just log that compliance check was performed
-      print('🔍 Compliance check completed');
+// print('🔍 Compliance check completed'); // Removed for production
     } catch (e) {
-      print('❌ Failed to check compliance: $e');
+// print('❌ Failed to check compliance: $e'); // Removed for production
     }
   }
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing VAT Return Service...');
+// print('🗑️ Disposing VAT Return Service...'); // Removed for production
     
     _dueDateCheckTimer?.cancel();
     _complianceCheckTimer?.cancel();
     
-    print('✅ VAT Return Service disposed');
+// print('✅ VAT Return Service disposed'); // Removed for production
   }
 }
 

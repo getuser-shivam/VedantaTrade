@@ -26,7 +26,7 @@ class ComponentHierarchyManager {
     if (_isInitialized) return;
 
     try {
-      print('🏗️ Initializing Component Hierarchy Manager...');
+// print('🏗️ Initializing Component Hierarchy Manager...'); // Removed for production
 
       // Register core components
       await _registerCoreComponents();
@@ -47,9 +47,9 @@ class ComponentHierarchyManager {
       await _optimizeHierarchy();
 
       _isInitialized = true;
-      print('✅ Component Hierarchy Manager initialized successfully');
+// print('✅ Component Hierarchy Manager initialized successfully'); // Removed for production
     } catch (e) {
-      print('❌ Failed to initialize Component Hierarchy Manager: $e');
+// print('❌ Failed to initialize Component Hierarchy Manager: $e'); // Removed for production
       rethrow;
     }
   }
@@ -69,7 +69,7 @@ class ComponentHierarchyManager {
     _registerComponent('security_manager', ComponentType.infrastructure, layer: Layer.core);
     _registerComponent('logger_service', ComponentType.service, layer: Layer.core);
 
-    print('✅ Core components registered');
+// print('✅ Core components registered'); // Removed for production
   }
 
   /// Register shared components
@@ -86,7 +86,7 @@ class ComponentHierarchyManager {
     _registerComponent('micro_interactions', ComponentType.ui, layer: Layer.shared);
     _registerComponent('accessibility_helper', ComponentType.ui, layer: Layer.shared);
 
-    print('✅ Shared components registered');
+// print('✅ Shared components registered'); // Removed for production
   }
 
   /// Register feature components
@@ -107,7 +107,7 @@ class ComponentHierarchyManager {
     _registerComponent('geospatial_tracker', ComponentType.service, layer: Layer.feature, feature: 'field_force');
     _registerComponent('route_optimizer', ComponentType.service, layer: Layer.feature, feature: 'field_force');
 
-    print('✅ Feature components registered');
+// print('✅ Feature components registered'); // Removed for production
   }
 
   /// Register a component
@@ -144,7 +144,7 @@ class ComponentHierarchyManager {
 
   /// Build dependency graph
   Future<void> _buildDependencyGraph() async {
-    print('🔗 Building dependency graph...');
+// print('🔗 Building dependency graph...'); // Removed for production
 
     for (final component in _components.values) {
       _parentChildRelations[component.id] = [];
@@ -160,7 +160,7 @@ class ComponentHierarchyManager {
     // Validate dependency graph
     final cycles = _detectCycles();
     if (cycles.isNotEmpty) {
-      print('⚠️ Detected circular dependencies: $cycles');
+// print('⚠️ Detected circular dependencies: $cycles'); // Removed for production
       for (final cycle in cycles) {
         _emitEvent(HierarchyEvent(
           type: HierarchyEventType.circularDependencyDetected,
@@ -171,12 +171,12 @@ class ComponentHierarchyManager {
       }
     }
 
-    print('✅ Dependency graph built');
+// print('✅ Dependency graph built'); // Removed for production
   }
 
   /// Analyze component relationships
   Future<void> _analyzeRelationships() async {
-    print('📊 Analyzing component relationships...');
+// print('📊 Analyzing component relationships...'); // Removed for production
 
     for (final component in _components.values) {
       final metrics = ComponentMetrics(
@@ -192,12 +192,12 @@ class ComponentHierarchyManager {
       _metrics[component.id] = metrics;
     }
 
-    print('✅ Component relationships analyzed');
+// print('✅ Component relationships analyzed'); // Removed for production
   }
 
   /// Optimize hierarchy
   Future<void> _optimizeHierarchy() async {
-    print('⚡ Optimizing component hierarchy...');
+// print('⚡ Optimizing component hierarchy...'); // Removed for production
 
     // Identify unused components
     final unusedComponents = _findUnusedComponents();
@@ -223,7 +223,7 @@ class ComponentHierarchyManager {
     // Suggest optimizations
     await _suggestOptimizations();
 
-    print('✅ Component hierarchy optimized');
+// print('✅ Component hierarchy optimized'); // Removed for production
   }
 
   /// Detect circular dependencies
@@ -419,37 +419,37 @@ class ComponentHierarchyManager {
 
   /// Suggest optimizations
   Future<void> _suggestOptimizations() async {
-    print('💡 Generating optimization suggestions...');
+// print('💡 Generating optimization suggestions...'); // Removed for production
 
     // Suggest merging duplicate components
     final duplicates = _findDuplicateFunctionality();
     for (final duplicate in duplicates) {
       if (duplicate.length > 1) {
-        print('💡 Consider merging duplicate components: ${duplicate.join(', ')}');
+// print('💡 Consider merging duplicate components: ${duplicate.join(', ')}'); // Removed for production
       }
     }
 
     // Suggest removing unused components
     final unused = _findUnusedComponents();
     for (final componentId in unused) {
-      print('💡 Consider removing unused component: $componentId');
+// print('💡 Consider removing unused component: $componentId'); // Removed for production
     }
 
     // Suggest optimizing high-complexity components
     for (final metrics in _metrics.values) {
       if (metrics.complexity > 5.0) {
-        print('💡 Consider refactoring high-complexity component: ${metrics.componentId}');
+// print('💡 Consider refactoring high-complexity component: ${metrics.componentId}'); // Removed for production
       }
     }
 
     // Suggest improving low-reusability components
     for (final metrics in _metrics.values) {
       if (metrics.reusability < 0.3 && metrics.dependentCount > 0) {
-        print('💡 Consider improving reusability of component: ${metrics.componentId}');
+// print('💡 Consider improving reusability of component: ${metrics.componentId}'); // Removed for production
       }
     }
 
-    print('✅ Optimization suggestions generated');
+// print('✅ Optimization suggestions generated'); // Removed for production
   }
 
   /// Get component hierarchy
@@ -548,9 +548,9 @@ class ComponentHierarchyManager {
 
   /// Dispose resources
   void dispose() {
-    print('🗑️ Disposing Component Hierarchy Manager...');
+// print('🗑️ Disposing Component Hierarchy Manager...'); // Removed for production
     _eventController.close();
-    print('✅ Component Hierarchy Manager disposed');
+// print('✅ Component Hierarchy Manager disposed'); // Removed for production
   }
 }
 
