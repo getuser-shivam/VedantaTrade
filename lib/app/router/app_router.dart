@@ -2,18 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
-import 'package:vedanta_trade/features/auth/presentation/screens/login_screen.dart';
-import 'package:vedanta_trade/features/auth/presentation/screens/register_screen.dart';
-import 'package:vedanta_trade/features/auth/presentation/screens/password_reset_screen.dart';
-import 'package:vedanta_trade/features/catalog/presentation/screens/product_catalog_screen.dart';
-import 'package:vedanta_trade/features/catalog/presentation/screens/product_detail_screen.dart';
+import 'package:vedanta_trade/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/authentication/presentation/screens/login_screen.dart';
+import 'package:vedanta_trade/features/product_catalog/presentation/screens/enhanced_product_catalog_screen.dart';
+import 'package:vedanta_trade/features/product_catalog/presentation/providers/product_catalog_provider.dart';
+import 'package:vedanta_trade/features/product_catalog/presentation/screens/product_detail_screen.dart';
 import 'package:vedanta_trade/features/cart/presentation/screens/cart_screen.dart';
 import 'package:vedanta_trade/features/profile/presentation/screens/profile_screen.dart';
 import 'package:vedanta_trade/features/orders/presentation/screens/order_history_screen.dart';
 import 'package:vedanta_trade/features/notifications/presentation/screens/notifications_screen.dart';
-import 'package:vedanta_trade/features/gallery/presentation/screens/app_gallery_screen_v2.dart';
-import 'package:vedanta_trade/data/providers/product_provider.dart';
 
 GoRouter createAppRouter() {
   return GoRouter(

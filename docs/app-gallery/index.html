@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VedantaTrade App Gallery - UI Evolution Showcase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976d2;
+            --secondary-color: #388e3c;
+            --accent-color: #d32f2f;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --dark-bg: #1a1a1a;
+            --light-bg: #ffffff;
+            --text-primary: #212121;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .hero-section {
+            padding: 80px 0;
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            animation: fadeInUp 1s ease-out 0.3s;
+        }
+
+        .version-carousel {
+            background: var(--light-bg);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carousel-container {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            flex: 0 0 auto;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .version-info {
+            text-align: center;
+        }
+
+        .version-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .version-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .version-features {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            color: var(--success-color);
+        }
+
+        .carousel-controls {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 10;
+        }
+
+        .carousel-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .carousel-btn:hover {
+            background: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        .screenshots-section {
+            padding: 80px 0;
+            background: var(--light-bg);
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .screenshot-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .screenshot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .screenshot-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .screenshot-info {
+            padding: 20px;
+        }
+
+        .screenshot-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .screenshot-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tech-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .progress-section {
+            padding: 80px 0;
+            background: var(--light-bg);
+        }
+
+        .progress-timeline {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            height: 100%;
+            background: var(--primary-color);
+            z-index: 1;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeInLeft 0.6s ease-out forwards;
+        }
+
+        .timeline-item.show {
+            opacity: 1;
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .timeline-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .timeline-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .timeline-description {
+            font-size: 1rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .full-screenshot {
+            background: var(--dark-bg);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 40px 0;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .screenshot-container {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .screenshot-img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .screenshot-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .screenshots-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .timeline-item {
+                padding-left: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#hero">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" alt="Logo" style="height: 30px; margin-right: 10px;">
+                VedantaTrade Gallery
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#hero">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#versions">Versions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#screenshots">Screenshots</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#progress">Progress</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#full-app">Full App</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title" data-aos="fade-up">VedantaTrade App Gallery</h1>
+            <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
+                Experience the evolution of our pharmaceutical distribution platform through interactive UI showcases
+            </p>
+        </div>
+    </section>
+
+    <!-- Version Carousel -->
+    <section id="versions" class="version-carousel" data-aos="fade-up">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">UI Evolution Timeline</h2>
+            
+            <div class="carousel-container">
+                <div class="carousel-track" id="carouselTrack">
+                    <!-- Version 1.0 - Initial Release -->
+                    <div class="carousel-slide">
+                        <div class="version-info">
+                            <div class="version-number">v1.0.0</div>
+                            <div class="version-date">Jan 2024</div>
+                        </div>
+                        <div class="version-features">
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-rocket"></i>
+                                <span>Initial Flutter App</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-mobile-alt"></i>
+                                <span>Basic UI Components</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 2.0 - Enhanced Features -->
+                    <div class="carousel-slide">
+                        <div class="version-info">
+                            <div class="version-number">v2.0.0</div>
+                            <div class="version-date">Feb 2024</div>
+                        </div>
+                        <div class="version-features">
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-shield-alt"></i>
+                                <span>Authentication System</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-box"></i>
+                                <span>Product Catalog</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-truck"></i>
+                                <span>Order Management</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 3.0 - Multi-Role Architecture -->
+                    <div class="carousel-slide">
+                        <div class="version-info">
+                            <div class="version-number">v3.0.0</div>
+                            <div class="version-date">May 2024</div>
+                        </div>
+                        <div class="version-features">
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-users"></i>
+                                <span>Multi-Role System</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-map-marked-alt"></i>
+                                <span>GPS Tracking</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-chart-line"></i>
+                                <span>Analytics Dashboard</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 3.4.0 - Production Hardening -->
+                    <div class="carousel-slide">
+                        <div class="version-info">
+                            <div class="version-number">v3.4.0</div>
+                            <div class="version-date">Aug 2024</div>
+                        </div>
+                        <div class="version-features">
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-cogs"></i>
+                                <span>CI/CD Pipeline</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-vial"></i>
+                                <span>Security Scanning</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-server"></i>
+                                <span>Multi-Environment</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 3.5.0 - UI/UX Redesign -->
+                    <div class="carousel-slide">
+                        <div class="version-info">
+                            <div class="version-number">v3.5.0</div>
+                            <div class="version-date">Nov 2024</div>
+                        </div>
+                        <div class="version-features">
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-palette"></i>
+                                <span>Modern Design System</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-mobile-alt"></i>
+                                <span>Responsive Design</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-hand-pointer"></i>
+                                <span>Micro-interactions</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-universal-access"></i>
+                                <span>Accessibility</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 3.6.0 - Code Review & Optimization -->
+                    <div class="carousel-slide">
+                        <div class="version-info">
+                            <div class="version-number">v3.6.0</div>
+                            <div class="version-date">Apr 2025</div>
+                        </div>
+                        <div class="version-features">
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-search"></i>
+                                <span>Code Review</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-tachometer-alt"></i>
+                                <span>Performance Optimization</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-code"></i>
+                                <span>Enhanced Services</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-shield-alt"></i>
+                                <span>Security Enhancements</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Version 3.7.0 - Latest -->
+                    <div class="carousel-slide">
+                        <div class="version-info">
+                            <div class="version-number">v3.7.0-beta</div>
+                            <div class="version-date">Current (Apr 2026)</div>
+                        </div>
+                        <div class="version-features">
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-star"></i>
+                                <span>Premium Glassmorphic Design</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fa fa-rocket"></i>
+                                <span>Enhanced CI/CD Pipeline</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="feature-icon fas fa-trophy"></i>
+                                <span>Enterprise Grade Architecture</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carousel Controls -->
+                <div class="carousel-controls">
+                    <button class="carousel-btn" onclick="previousSlide()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="carousel-btn" onclick="nextSlide()">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section id="screenshots" class="screenshots-section" data-aos="fade-up">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Interactive Screenshots</h2>
+            
+            <div class="screenshots-grid">
+                <!-- Authentication Screens -->
+                <div class="screenshot-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="screenshot-image">
+                        <img src="https://via.placeholder.com/400x200/1976d2/ffffff?text=Login+Screen" alt="Login Screen" class="img-fluid">
+                    </div>
+                    <div class="screenshot-info">
+                        <h3 class="screenshot-title">Login Screen</h3>
+                        <p class="screenshot-description">Modern authentication UI with social login integration and MFA support</p>
+                        <div class="tech-stack">
+                            <span class="tech-badge">Flutter</span>
+                            <span class="tech-badge">Material Design 3</span>
+                            <span class="tech-badge">OAuth 2.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Screen -->
+                <div class="screenshot-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="screenshot-image">
+                        <img src="https://via.placeholder.com/400x200/388e3c/ffffff?text=Dashboard+Screen" alt="Dashboard Screen" class="img-fluid">
+                    </div>
+                    <div class="screenshot-info">
+                        <h3 class="screenshot-title">Dashboard</h3>
+                        <p class="screenshot-description">Real-time analytics dashboard with customizable widgets and data visualization</p>
+                        <div class="tech-stack">
+                            <span class="tech-badge">Flutter</span>
+                            <span class="tech-badge">Charts</span>
+                            <span class="tech-badge">Responsive Grid</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Catalog -->
+                <div class="screenshot-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="screenshot-image">
+                        <img src="https://via.placeholder.com/400x200/388e3c/ffffff?text=Product+Catalog" alt="Product Catalog" class="img-fluid">
+                    </div>
+                    <div class="screenshot-info">
+                        <h3 class="screenshot-title">Product Catalog</h3>
+                        <p class="screenshot-description">Advanced product search with filtering, categorization, and barcode scanning</p>
+                        <div class="tech-stack">
+                            <span class="tech-badge">Flutter</span>
+                            <span class="tech-badge">State Management</span>
+                            <span class="tech-badge">Camera API</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Management -->
+                <div class="screenshot-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="screenshot-image">
+                        <img src="https://via.placeholder.com/400x200/388e3c/ffffff?text=Order+Management" alt="Order Management" class="img-fluid">
+                    </div>
+                    <div class="screenshot-info">
+                        <h3 class="screenshot-title">Order Management</h3>
+                        <p class="screenshot-description">Complete order lifecycle management with real-time status tracking and notifications</p>
+                        <div class="tech-stack">
+                            <span class="tech-badge">Flutter</span>
+                            <span class="tech-badge">Real-time Updates</span>
+                            <span class="tech-badge">WebSocket</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Dashboard -->
+                <div class="screenshot-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="screenshot-image">
+                        <img src="https://via.placeholder.com/400x200/388e3c/ffffff?text=Analytics+Dashboard" alt="Analytics Dashboard" class="img-fluid">
+                    </div>
+                    <div class="screenshot-info">
+                        <h3 class="screenshot-title">Analytics Dashboard</h3>
+                        <p class="screenshot-description">Comprehensive business analytics with interactive charts and real-time metrics</p>
+                        <div class="tech-stack">
+                            <span class="tech-badge">Flutter</span>
+                            <span class="tech-badge">D3.js</span>
+                            <span class="tech-badge">Custom Charts</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Screen -->
+                <div class="screenshot-card" data-aos="fade-up" data-aos-delay="600">
+                    <div class="screenshot-image">
+                        <img src="https://via.placeholder.com/400x200/388e3c/ffffff?text=Settings+Screen" alt="Settings Screen" class="img-fluid">
+                    </div>
+                    <div class="screenshot-info">
+                        <h3 class="screenshot-title">Settings</h3>
+                        <p class="screenshot-description">Comprehensive settings with theme customization and user preferences</p>
+                        <div class="tech-stack">
+                            <span class="tech-badge">Flutter</span>
+                            <span class="tech-badge">Theme System</span>
+                            <span class="tech-badge">Local Storage</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Section -->
+    <section id="progress" class="progress-section" data-aos="fade-up">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Development Progress</h2>
+            
+            <div class="progress-timeline">
+                <div class="timeline-line"></div>
+                
+                <!-- Timeline Items -->
+                <div class="timeline-item" data-aos="fade-left">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Jan 2024</div>
+                        <h3 class="timeline-title">Project Foundation</h3>
+                        <p class="timeline-description">Initial Flutter app setup with basic UI components and authentication system</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-aos="fade-left">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Feb 2024</div>
+                        <h3 class="timeline-title">Authentication System</h3>
+                        <p class="timeline-description">Multi-factor authentication with OAuth integration and secure session management</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-aos="fade-left">
+                    <div class="timeline-content">
+                        <div class="timeline-date">May 2024</div>
+                        <h3 class="timeline-title">Multi-Role Architecture</h3>
+                        <p class="timeline-description">Complete role-based system with admin, medical rep, stockist, and distributor roles</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-aos="fade-left">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Aug 2024</div>
+                        <h3 class="timeline-title">Production Hardening</h3>
+                        <p class="timeline-description">CI/CD pipeline implementation with security scanning and automated deployment</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-aos="fade-left">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Nov 2024</div>
+                        <h3 class="timeline-title">UI/UX Redesign</h3>
+                        <p class="timeline-description">Modern design system with responsive layouts and micro-interactions</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-aos="fade-left">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Apr 2025</div>
+                        <h3 class="timeline-title">Code Review & Optimization</h3>
+                        <p class="timeline-description">Comprehensive code optimization with performance improvements and redundant code removal</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item" data-aos="fade-left">
+                    <div class="timeline-content">
+                        <div class="timeline-date">Apr 2026</div>
+                        <h3 class="timeline-title">Premium Design & CI/CD</h3>
+                        <p class="timeline-description">Latest v3.7.0-beta release featuring the final premium glassmorphic UI and enhanced enterprise pipelines</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Full App Screenshot -->
+    <section id="full-app" class="full-screenshot" data-aos="fade-up">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">Complete Application</h2>
+            
+            <div class="screenshot-container" data-aos="zoom-in" data-aos-delay="200">
+                <img src="docs/app-gallery/assets/images/hero-screenshot.png" alt="Full Application" class="screenshot-img">
+                <div class="screenshot-overlay">
+                    <strong>VedantaTrade v3.7.0-beta</strong><br>
+                    Premium Pharmaceutical Distribution Platform
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>VedantaTrade</h5>
+                    <p>Enterprise Pharmaceutical Distribution Platform for Nepal Market</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2026 VedantaTrade. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.style.transform = `translateX(${(i - index) * 100}%)`;
+                slide.style.opacity = i === index ? '1' : '0.5';
+            });
+            
+            // Update timeline items
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            timelineItems.forEach((item, i) => {
+                if (i <= index) {
+                    item.classList.add('show');
+                } else {
+                    item.classList.remove('show');
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        function previousSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            showSlide(currentSlide);
+        }
+
+        // Auto-rotate carousel
+        setInterval(() => {
+            nextSlide();
+        }, 5000);
+
+        // Initialize AOS animations
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(anchor.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Interactive carousel controls
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                previousSlide();
+            } else if (e.key === 'ArrowRight') {
+                nextSlide();
+            }
+        });
+    </script>
+</body>
+</html>

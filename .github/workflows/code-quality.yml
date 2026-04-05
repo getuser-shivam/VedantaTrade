@@ -1,0 +1,431 @@
+name: Code Quality and Analysis
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+
+jobs:
+  static-analysis:
+    name: Static Code Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Flutter analyze
+        run: |
+          echo "Running Flutter analysis..."
+          flutter analyze --fatal-infos --fatal-warnings
+          echo "Flutter analysis completed"
+
+      - name: Check code formatting
+        run: |
+          echo "Checking code formatting..."
+          dart format --set-exit-if-changed .
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Code formatting issues found. Please run 'dart format .' and commit the changes."
+            exit 1
+          fi
+          echo "Code formatting check passed"
+
+      - name: Check for unused imports
+        run: |
+          echo "Checking for unused imports..."
+          dart analyze --fatal-infos --fatal-warnings | grep -i "unused_import" || true
+          if [ $? -eq 0 ]; then
+            echo "Unused imports found. Please remove them."
+            exit 1
+          fi
+          echo "No unused imports found"
+
+      - name: Check for TODO comments
+        run: |
+          echo "Checking for TODO comments..."
+          TODO_COUNT=$(grep -r "TODO" --include="*.dart" . | wc -l)
+          if [ "$TODO_COUNT" -gt 0 ]; then
+            echo "Warning: $TODO_COUNT TODO comments found. Please resolve them."
+            echo "::warning::Found $TODO_COUNT TODO comments"
+          fi
+
+      - name: Check for hardcoded values
+        run: |
+          echo "Checking for hardcoded values..."
+          if grep -r "http://" --include="*.dart" .; then
+            echo "Warning: Hardcoded URLs found. Please use environment variables."
+            echo "::warning::Hardcoded URLs found"
+          fi
+          if grep -r "password" --include="*.dart" . -i; then
+            echo "Warning: Potential hardcoded passwords found."
+            echo "::error::Potential hardcoded passwords found"
+            exit 1
+          fi
+
+      - name: Run custom linting rules
+        run: |
+          echo "Running custom linting rules..."
+          
+          # Check for long functions (>50 lines)
+          find . -name "*.dart" -exec sh -c '
+            lines=$(wc -l < "$1")
+            if [ "$lines" -gt 50 ]; then
+              echo "Warning: $1 has $lines lines (consider breaking it down)"
+              echo "::warning::Long function detected in $1"
+            fi
+          ' sh {} \;
+          
+          # Check for deep nesting (>4 levels)
+          find . -name "*.dart" -exec sh -c '
+            nesting=$(grep -o "if.*{" "$1" | wc -l)
+            if [ "$nesting" -gt 4 ]; then
+              echo "Warning: $1 has deep nesting ($nesting levels)"
+              echo "::warning::Deep nesting detected in $1"
+            fi
+          ' sh {} \;
+
+  complexity-analysis:
+    name: Code Complexity Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+
+      - name: Install complexity analyzer
+        run: |
+          dart pub global activate pana
+          dart pub global activate dart_code_metrics
+
+      - name: Run pana analysis
+        run: |
+          echo "Running pana analysis..."
+          dart pub global run pana . --json > pana-report.json || true
+          echo "Pana analysis completed"
+
+      - name: Run code metrics
+        run: |
+          echo "Running code metrics analysis..."
+          dart pub global run dart_code_metrics . --json > metrics-report.json || true
+          echo "Code metrics analysis completed"
+
+      - name: Check complexity thresholds
+        run: |
+          echo "Checking complexity thresholds..."
+          
+          # Cyclomatic complexity check
+          if [ -f metrics-report.json ]; then
+            COMPLEXITY=$(cat metrics-report.json | jq -r '.metrics.cyclomaticComplexity // 0')
+            if [ "$COMPLEXITY" -gt 10 ]; then
+              echo "Warning: High cyclomatic complexity ($COMPLEXITY) detected"
+              echo "::warning::High cyclomatic complexity: $COMPLEXITY"
+            fi
+          fi
+          
+          # Lines of code check
+          if [ -f metrics-report.json ]; then
+            LOC=$(cat metrics-report.json | jq -r '.metrics.linesOfCode // 0')
+            if [ "$LOC" -gt 500 ]; then
+              echo "Info: Large file detected ($LOC lines)"
+              echo "::notice::Large file with $LOC lines"
+            fi
+          fi
+
+      - name: Upload analysis reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-analysis-reports
+          path: |
+            pana-report.json
+            metrics-report.json
+          retention-days: 30
+
+  dependency-check:
+    name: Dependency Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check for outdated dependencies
+        run: |
+          echo "Checking for outdated dependencies..."
+          flutter pub outdated --json > outdated.json || true
+          if [ -f outdated.json ]; then
+            echo "Outdated dependencies found:"
+            cat outdated.json
+            echo "::warning::Outdated dependencies found"
+          fi
+
+      - name: Check for security advisories
+        run: |
+          echo "Checking for security advisories..."
+          flutter pub deps --json > deps.json
+          
+          # Check for known vulnerable packages
+          VULNERABLE_PACKAGES=$(cat deps.json | jq -r '.packages | keys[] as $k | $k | select(.version | startswith("1.") or .version | startswith("2.") or .version | startswith("0.")) | .name' || echo "")
+          if [ -n "$VULNERABLE_PACKAGES" ]; then
+            echo "Warning: Potentially vulnerable packages detected: $VULNERABLE_PACKAGES"
+            echo "::error::Potentially vulnerable packages: $VULNERABLE_PACKAGES"
+            exit 1
+          fi
+
+      - name: Upload dependency reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-reports
+          path: |
+            outdated.json
+            deps.json
+          retention-days: 30
+
+  performance-benchmark:
+    name: Performance Benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Build app for benchmarking
+        run: |
+          echo "Building app for benchmarking..."
+          flutter build apk --release --shrink
+
+      - name: Run performance benchmarks
+        run: |
+          echo "Running performance benchmarks..."
+          
+          # APK size check
+          APK_SIZE=$(stat -c% build/app/outputs/flutter-apk/app-release.apk)
+          echo "APK Size: $APK_SIZE bytes"
+          
+          if [ "$APK_SIZE" -gt 50000000 ]; then  # 50MB
+            echo "Warning: APK size is large ($APK_SIZE bytes)"
+            echo "::warning::Large APK size: $APK_SIZE bytes"
+          fi
+          
+          # Build time check
+          BUILD_TIME=$(date +%s)
+          echo "Build completed at: $BUILD_TIME"
+
+      - name: Compare with baseline
+        run: |
+          echo "Comparing with baseline performance..."
+          
+          # Create performance report
+          cat > performance-report.json << EOF
+          {
+            "apk_size": $APK_SIZE,
+            "build_time": $BUILD_TIME,
+            "baseline_comparison": {
+              "apk_size_threshold": 50000000,
+              "status": "$([ "$APK_SIZE" -le 50000000 ] && echo "PASS" || echo "FAIL")"
+            }
+          }
+          EOF
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-report
+          path: performance-report.json
+          retention-days: 30
+
+  documentation-check:
+    name: Documentation Quality Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check README
+        run: |
+          echo "Checking README quality..."
+          
+          if [ ! -f README.md ]; then
+            echo "Error: README.md not found"
+            echo "::error::README.md not found"
+            exit 1
+          fi
+          
+          README_SIZE=$(wc -l < README.md)
+          if [ "$README_SIZE" -lt 50 ]; then
+            echo "Warning: README.md is too short ($README_SIZE lines)"
+            echo "::warning::README.md is too short"
+          fi
+          
+          # Check for common README sections
+          if ! grep -q "## Installation" README.md; then
+            echo "Warning: README.md missing Installation section"
+            echo "::warning::README.md missing Installation section"
+          fi
+          
+          if ! grep -q "## Usage" README.md; then
+            echo "Warning: README.md missing Usage section"
+            echo "::warning::README.md missing Usage section"
+          fi
+
+      - name: Check CHANGELOG
+        run: |
+          echo "Checking CHANGELOG quality..."
+          
+          if [ ! -f CHANGELOG.md ]; then
+            echo "Warning: CHANGELOG.md not found"
+            echo "::warning::CHANGELOG.md not found"
+            exit 0
+          fi
+          
+          # Check for proper changelog format
+          if ! grep -q "## [" CHANGELOG.md; then
+            echo "Warning: CHANGELOG.md missing version sections"
+            echo "::warning::CHANGELOG.md missing version sections"
+          fi
+
+      - name: Check API documentation
+        run: |
+          echo "Checking API documentation..."
+          
+          if [ -d docs ]; then
+            DOC_FILES=$(find docs -name "*.md" | wc -l)
+            echo "Documentation files found: $DOC_FILES"
+            
+            if [ "$DOC_FILES" -lt 5 ]; then
+              echo "Warning: Limited documentation ($DOC_FILES files)"
+              echo "::warning::Limited documentation found"
+            fi
+          fi
+
+      - name: Check code comments
+        run: |
+          echo "Checking code comments..."
+          
+          # Check for public documentation comments
+          DOC_COMMENTS=$(find . -name "*.dart" -exec grep -l "///" {} \; | wc -l)
+          echo "Files with documentation comments: $DOC_COMMENTS"
+          
+          if [ "$DOC_COMMENTS" -lt 10 ]; then
+            echo "Warning: Low documentation coverage ($DOC_COMMENTS files)"
+            echo "::warning::Low documentation coverage"
+          fi
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs: [static-analysis, complexity-analysis, dependency-check]
+    if: always()
+    steps:
+      - name: Evaluate quality metrics
+        run: |
+          echo "Evaluating quality metrics..."
+          
+          # Download all reports
+          mkdir -p reports
+          
+          # Create quality summary
+          cat > reports/quality-summary.json << EOF
+          {
+            "static_analysis": {
+              "status": "${{ needs.static-analysis.result }}",
+              "passed": "${{ needs.static-analysis.result == 'success' }}"
+            },
+            "complexity_analysis": {
+              "status": "${{ needs.complexity-analysis.result }}",
+              "passed": "${{ needs.complexity-analysis.result == 'success' }}"
+            },
+            "dependency_check": {
+              "status": "${{ needs.dependency-check.result }}",
+              "passed": "${{ needs.dependency-check.result == 'success' }}"
+            }
+          }
+          EOF
+          
+          # Evaluate overall quality
+          OVERALL_STATUS="PASS"
+          if [ "${{ needs.static-analysis.result }}" != "success" ] || [ "${{ needs.complexity-analysis.result }}" != "success" ] || [ "${{ needs.dependency-check.result }}" != "success" ]; then
+            OVERALL_STATUS="FAIL"
+          fi
+          
+          echo "Overall Quality Status: $OVERALL_STATUS"
+          echo "quality_status=$OVERALL_STATUS" >> $GITHUB_ENV
+
+      - name: Create quality badge
+        run: |
+          echo "Creating quality badge..."
+          
+          if [ "${{ env.quality_status }}" == "PASS" ]; then
+            echo "✅ All quality checks passed"
+            echo "::notice::All quality checks passed"
+          else
+            echo "❌ Some quality checks failed"
+            echo "::error::Some quality checks failed"
+          fi
+
+      - name: Upload quality summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: quality-summary
+          path: reports/quality-summary.json
+          retention-days: 30
+
+      - name: Comment PR with quality results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const status = '${{ env.quality_status }}';
+            const comment = `
+            ## 🔍 Code Quality Results
+            
+            **Overall Status**: ${status === 'PASS' ? '✅ PASS' : '❌ FAIL'}
+            
+            ### Check Results:
+            - **Static Analysis**: ${{ needs.static-analysis.result }}
+            - **Complexity Analysis**: ${{ needs.complexity-analysis.result }}
+            - **Dependency Check**: ${{ needs.dependency-check.result }}
+            
+            ${status === 'PASS' ? '🎉 Great job! Your code meets all quality standards.' : '⚠️ Please address the quality issues before merging.'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

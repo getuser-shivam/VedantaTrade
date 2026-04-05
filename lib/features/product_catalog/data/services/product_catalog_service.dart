@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:vedanta_trade/core/api_config.dart';
-import 'package:vedanta_trade/features/catalog/domain/models/product.dart';
+import '../models/product_model.dart';
 
 class ProductCatalogService {
   final Dio _dio = Dio();

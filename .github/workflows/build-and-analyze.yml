@@ -1,0 +1,261 @@
+name: Build and Analyze
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'Command to run'
+        required: false
+        default: 'build'
+        type: choice
+        options:
+        - build
+        - analyze
+        - test
+        - clean
+
+env:
+  FLUTTER_VERSION: '3.16.0'
+  DART_VERSION: '3.2.0'
+
+jobs:
+  analyze:
+    name: Code Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: 'stable'
+        
+    - name: Setup Dart
+      uses: dart-lang/setup-dart@v1
+      with:
+        sdk: ${{ env.DART_VERSION }}
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Analyze code
+      run: |
+        echo "🔍 Running Flutter analyze..."
+        flutter analyze --fatal-infos
+        
+        echo "🔍 Running Dart analyze..."
+        dart analyze --fatal-infos
+        
+        echo "🔍 Running custom build analyzer..."
+        dart tools/build_scripts/build_analyzer.dart
+        
+    - name: Upload analysis reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: analysis-reports
+        path: build/reports/
+        retention-days: 30
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        test-type: [unit, widget, integration]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: 'stable'
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Run tests
+      run: |
+        echo "🧪 Running ${{ matrix.test-type }} tests..."
+        flutter test --reporter=expanded test/${{ matrix.test-type }}
+        
+    - name: Generate test coverage
+      if: matrix.test-type == 'unit'
+      run: |
+        echo "📊 Generating test coverage..."
+        flutter test --coverage test/unit
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.test-type }}
+        path: test/reports/
+        retention-days: 30
+        
+    - name: Upload coverage
+      uses: actions/upload-artifact@v4
+      if: matrix.test-type == 'unit'
+      with:
+        name: coverage-report
+        path: coverage/
+        retention-days: 30
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [analyze, test]
+    
+    strategy:
+      matrix:
+        platform: [web, apk, ios]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: 'stable'
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Build for ${{ matrix.platform }}
+      run: |
+        echo "🔨 Building for ${{ matrix.platform }}..."
+        
+        case "${{ matrix.platform }}" in
+          web)
+            flutter build web --release --web-renderer canvaskit
+            ;;
+          apk)
+            flutter build apk --release --shrink
+            ;;
+          ios)
+            flutter build ios --release --no-codesign
+            ;;
+        esac
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-${{ matrix.platform }}
+        path: |
+          build/web/
+          build/app/outputs/flutter-apk/
+          build/ios/build/Release-iphoneos/
+        retention-days: 30
+        
+    - name: Generate build report
+      run: |
+        echo "📊 Generating build report..."
+        dart tools/build_scripts/build_runner.dart build
+        
+    - name: Upload build report
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-report
+        path: build/reports/
+        retention-days: 30
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload security scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  performance-test:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: [build]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: ${{ env.FLUTTER_VERSION }}
+        channel: 'stable'
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: build-web
+        path: build/web/
+        
+    - name: Run performance tests
+      run: |
+        echo "⚡ Running performance tests..."
+        # Install performance testing tools
+        npm install -g lighthouse
+        
+        # Start web server for testing
+        dart tools/build_scripts/web_server.dart &
+        sleep 10
+        
+        # Run Lighthouse performance audit
+        lighthouse --chrome-flags="--headless" \
+                  --output=json \
+                  --output-path=./lighthouse-report \
+                  http://localhost:8080
+                  
+    - name: Upload performance report
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-report
+        path: lighthouse-report/
+        retention-days: 30
+
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [analyze, test, build]
+    if: always()
+    
+    steps:
+    - name: Notify success
+      if: ${{ needs.analyze.result == 'success' && needs.test.result == 'success' && needs.build.result == 'success' }}
+      run: |
+        echo "✅ All checks passed!"
+        # Add Slack/Discord notification here
+        
+    - name: Notify failure
+      if: ${{ needs.analyze.result == 'failure' || needs.test.result == 'failure' || needs.build.result == 'failure' }}
+      run: |
+        echo "❌ Some checks failed!"
+        # Add Slack/Discord notification here

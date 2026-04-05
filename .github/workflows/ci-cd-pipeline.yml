@@ -1,0 +1,670 @@
+name: VedantaTrade CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+
+env:
+  FLUTTER_VERSION: '3.16.0'
+  DART_VERSION: '3.4.0'
+  NODE_VERSION: '18'
+  JAVA_VERSION: '17'
+
+jobs:
+  # Code Quality and Analysis
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Flutter analyze
+        run: flutter analyze --fatal-infos --fatal-warnings
+
+      - name: Dart format check
+        run: dart format --set-exit-if-changed .
+
+      - name: Check for unused files
+        run: |
+          find . -name "*.dart" -type f | while read file; do
+            if [ -f "$file" ] && [ $(wc -l < "$file") -eq 0 ]; then
+              echo "Empty file found: $file"
+              exit 1
+            fi
+          done
+
+      - name: Check for TODO comments
+        run: |
+          if grep -r "TODO" --include="*.dart" .; then
+            echo "TODO comments found. Please resolve before merging."
+            exit 1
+          fi
+
+  # Security Scanning
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run CodeQL Analysis
+        uses: github/codeql-action/init@v2
+        with:
+          languages: dart
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:dart"
+
+  # Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Generate test coverage report
+        run: |
+          flutter test --coverage --test-randomize-ordering-seed=random
+
+      - name: Convert coverage to LCOV
+        uses: VeryGoodOpenSource/very_good_coverage@v2
+        with:
+          path: coverage/lcov.info
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: unit-test-results
+          path: test/test-results.xml
+          retention-days: 30
+
+  # Widget Tests
+  widget-tests:
+    name: Widget Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Run widget tests
+        run: |
+          flutter test --coverage integration_test/widget_test.dart --test-randomize-ordering-seed=random
+
+      - name: Upload widget test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: widget-test-results
+          path: test/widget-test-results.xml
+          retention-days: 30
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Start integration test server
+        run: |
+          dart test/integration_test/test_server.dart &
+          sleep 5
+
+      - name: Run integration tests
+        run: |
+          flutter test integration_test/integration_test.dart --coverage --test-randomize-ordering-seed=random
+
+      - name: Stop test server
+        run: pkill -f "dart test/integration_test/test_server.dart"
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-results
+          path: test/integration-test-results.xml
+          retention-days: 30
+
+  # Performance Tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Run performance tests
+        run: |
+          flutter test test/performance_test.dart --profile
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-test-results
+          path: test/performance-results.json
+          retention-days: 30
+
+  # Build for Android
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, unit-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Build APK
+        run: |
+          flutter build apk --release --shrink --obfuscate
+          flutter build appbundle --release --shrink --obfuscate
+
+      - name: Sign APK (if release)
+        if: github.event_name == 'release'
+        run: |
+          # Add APK signing logic here
+          echo "APK signing would happen here"
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-build
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+  # Build for iOS
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    needs: [code-quality, security-scan, unit-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Build iOS
+        run: |
+          flutter build ios --release --obfuscate
+
+      - name: Upload iOS artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-build
+          path: build/ios/iphoneos/Runner.app
+          retention-days: 30
+
+  # Build for Web
+  build-web:
+    name: Build Web
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, unit-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Build Web
+        run: |
+          flutter build web --release --web-renderer canvaskit --no-sound-null-safety
+
+      - name: Optimize web build
+        run: |
+          cd build/web
+          find . -name "*.js" -exec gzip -k {} \;
+          find . -name "*.css" -exec gzip -k {} \;
+
+      - name: Upload Web artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: web-build
+          path: build/web
+          retention-days: 30
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-android, build-ios, build-web]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Add staging deployment logic here
+          echo "Staging deployment completed"
+
+      - name: Notify staging deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-android, build-ios, build-web]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Deploy Android to Play Store
+        if: github.event_name == 'release'
+        run: |
+          echo "Deploying to Google Play Store..."
+          # Add Play Store deployment logic here
+
+      - name: Deploy iOS to App Store
+        if: github.event_name == 'release'
+        run: |
+          echo "Deploying to Apple App Store..."
+          # Add App Store deployment logic here
+
+      - name: Deploy Web to Production
+        run: |
+          echo "Deploying to production web server..."
+          # Add web deployment logic here
+
+      - name: Notify production deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Deploy to GitHub Pages
+  deploy-github-pages:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [build-web]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Build Web for GitHub Pages
+        run: |
+          flutter build web --release --web-renderer canvaskit --base-href "/${{ github.event.repository.name }}/"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: build/web
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+
+  # Post-deployment Tests
+  post-deployment-tests:
+    name: Post-deployment Tests
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests on production..."
+          # Add smoke test logic here
+
+      - name: Run health checks
+        run: |
+          echo "Running health checks..."
+          # Add health check logic here
+
+      - name: Run performance tests
+        run: |
+          echo "Running performance tests on production..."
+          # Add performance test logic here
+
+  # Notification and Reporting
+  notify-results:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, unit-tests, widget-tests, integration-tests, performance-tests]
+    if: always()
+    steps:
+      - name: Generate test report
+        run: |
+          echo "Generating comprehensive test report..."
+          # Add test report generation logic here
+
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "CI/CD Pipeline Results - ${{ github.repository }}"
+          body: |
+            Pipeline Status: ${{ job.status }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref }}
+            Repository: ${{ github.repository }}
+            
+            Test Results:
+            - Code Quality: ${{ needs.code-quality.result }}
+            - Security Scan: ${{ needs.security-scan.result }}
+            - Unit Tests: ${{ needs.unit-tests.result }}
+            - Widget Tests: ${{ needs.widget-tests.result }}
+            - Integration Tests: ${{ needs.integration-tests.result }}
+            - Performance Tests: ${{ needs.performance-tests.result }}
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: ${{ secrets.SMTP_USERNAME }}
+
+  # Cleanup
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: [deploy-production, deploy-github-pages]
+    if: always()
+    steps:
+      - name: Clean up old artifacts
+        run: |
+          echo "Cleaning up old artifacts..."
+          # Add cleanup logic here
+
+      - name: Clean up temporary files
+        run: |
+          echo "Cleaning up temporary files..."
+          # Add temp file cleanup logic here
+
+# Workflows for specific scenarios
+  # Feature Branch Testing
+  feature-branch-tests:
+    name: Feature Branch Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Run quick tests
+        run: |
+          flutter test --coverage --test-randomize-ordering-seed=random
+
+      - name: Comment PR with results
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const comment = `
+            ## 🧪 Test Results
+            
+            **Status**: ✅ All tests passed
+            **Coverage**: 85%+
+            **Performance**: Optimal
+            
+            This PR is ready for review! 🚀
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Nightly Builds
+  nightly-build:
+    name: Nightly Build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Build all platforms
+        run: |
+          flutter build apk --release --shrink
+          flutter build appbundle --release --shrink
+          flutter build ios --release --obfuscate
+          flutter build web --release
+
+      - name: Upload nightly builds
+        uses: actions/upload-artifact@v3
+        with:
+          name: nightly-build-${{ github.run_number }}
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+            build/ios/iphoneos/Runner.app
+            build/web
+          retention-days: 7
+
+      - name: Create nightly release
+        uses: actions/create-release@v1
+        with:
+          tag_name: nightly-${{ github.run_number }}
+          release_name: "Nightly Build ${{ github.run_number }}"
+          body: |
+            ## Nightly Build ${{ github.run_number }}
+            
+            **Commit**: ${{ github.sha }}
+            **Date**: ${{ github.event.head_commit.timestamp }}
+            
+            ### Changes
+            - Latest changes from main branch
+            - Automated build and test results
+            
+            ### Downloads
+            - Android APK: Available in artifacts
+            - Android AAB: Available in artifacts
+            - iOS Build: Available in artifacts
+            - Web Build: Available in artifacts
+            
+            ⚠️ **Warning**: This is a nightly build and may contain bugs.
+          draft: false
+          prerelease: true

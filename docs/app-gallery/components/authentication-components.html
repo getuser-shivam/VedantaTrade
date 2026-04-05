@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Components - VedantaTrade App Gallery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1976D2;
+            --secondary-color: #388E3C;
+            --accent-color: #D32F2F;
+            --dark-bg: #121212;
+            --light-bg: #F5F5F5;
+            --text-dark: #212121;
+            --text-light: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light-bg) 0%, #E3F2FD 100%);
+            min-height: 100vh;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #42A5F5 100%);
+            color: white;
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .component-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #E0E0E0;
+        }
+
+        .component-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+        }
+
+        .component-preview {
+            height: 300px;
+            background: #FAFAFA;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .component-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--secondary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #F0F0F0;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list i {
+            color: var(--primary-color);
+            width: 20px;
+            margin-right: 12px;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .tech-badge {
+            background: #E3F2FD;
+            color: var(--primary-color);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .demo-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .demo-button:hover {
+            background: #1565C0;
+            transform: translateY(-2px);
+        }
+
+        .accessibility-indicator {
+            display: inline-flex;
+            align-items: center;
+            background: #E8F5E8;
+            color: var(--secondary-color);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .code-preview {
+            background: #1E1E1E;
+            color: #D4D4D4;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+
+        .interactive-demo {
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 24px;
+            background: white;
+            margin: 16px 0;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        .social-login-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+
+        .social-login-btn:hover {
+            background: #F5F5F5;
+            transform: translateY(-1px);
+        }
+
+        .mfa-input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #E0E0E0;
+            border-radius: 8px;
+            margin: 0 4px;
+            transition: all 0.3s ease;
+        }
+
+        .mfa-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        .loading-spinner {
+            border: 3px solid #E0E0E0;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #FFEBEE;
+            color: var(--accent-color);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            margin: 12px 0;
+        }
+
+        .success-message {
+            background: #E8F5E8;
+            color: var(--secondary-color);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+            margin: 12px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h1 class="display-4 fw-bold mb-4">Authentication Components</h1>
+                    <p class="lead mb-4">Enterprise-grade authentication system with multi-factor authentication, OAuth integration, and comprehensive security features.</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <span class="accessibility-indicator">
+                            <i class="fas fa-universal-access me-2"></i>WCAG AAA Compliant
+                        </span>
+                        <span class="accessibility-indicator">
+                            <i class="fas fa-shield-alt me-2"></i>Enterprise Security
+                        </span>
+                        <span class="accessibility-indicator">
+                            <i class="fas fa-mobile-alt me-2"></i>Biometric Support
+                        </span>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="text-center">
+                        <i class="fas fa-user-shield" style="font-size: 120px; opacity: 0.8;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Components Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row">
+                <!-- Login Form Component -->
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="component-card">
+                        <div class="component-preview">
+                            <span class="component-badge">Core Component</span>
+                            <div class="p-4">
+                                <h5 class="text-center mb-4">Sign In</h5>
+                                <div class="interactive-demo">
+                                    <input type="email" class="form-input mb-3" placeholder="Email address">
+                                    <input type="password" class="form-input mb-3" placeholder="Password">
+                                    <div class="form-check mb-3">
+                                        <input type="checkbox" class="form-check-input" id="rememberMe">
+                                        <label class="form-check-label" for="rememberMe">Remember me</label>
+                                    </div>
+                                    <button class="demo-button w-100">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                                    </button>
+                                    <div class="text-center mt-3">
+                                        <a href="#" class="text-decoration-none">Forgot Password?</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="mb-3">Login Form</h5>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-check"></i> Email & Password Authentication</li>
+                                <li><i class="fas fa-check"></i> Remember Me Functionality</li>
+                                <li><i class="fas fa-check"></i> Password Recovery</li>
+                                <li><i class="fas fa-check"></i> Form Validation</li>
+                                <li><i class="fas fa-check"></i> Loading States</li>
+                            </ul>
+                            <div class="tech-stack">
+                                <span class="tech-badge">Flutter</span>
+                                <span class="tech-badge">Material Design 3</span>
+                                <span class="tech-badge">Provider</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Login Component -->
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="component-card">
+                        <div class="component-preview">
+                            <span class="component-badge">OAuth Integration</span>
+                            <div class="p-4">
+                                <h5 class="text-center mb-4">Or continue with</h5>
+                                <div class="interactive-demo">
+                                    <a href="#" class="social-login-btn">
+                                        <i class="fab fa-google me-3" style="color: #4285F4;"></i>
+                                        Sign in with Google
+                                    </a>
+                                    <a href="#" class="social-login-btn">
+                                        <i class="fab fa-facebook me-3" style="color: #1877F2;"></i>
+                                        Sign in with Facebook
+                                    </a>
+                                    <a href="#" class="social-login-btn">
+                                        <i class="fab fa-apple me-3" style="color: #000000;"></i>
+                                        Sign in with Apple
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="mb-3">Social Authentication</h5>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-check"></i> Google OAuth 2.0</li>
+                                <li><i class="fas fa-check"></i> Facebook Login</li>
+                                <li><i class="fas fa-check"></i> Apple Sign In</li>
+                                <li><i class="fas fa-check"></i> Token Management</li>
+                                <li><i class="fas fa-check"></i> Account Linking</li>
+                            </ul>
+                            <div class="tech-stack">
+                                <span class="tech-badge">OAuth 2.0</span>
+                                <span class="tech-badge">JWT</span>
+                                <span class="tech-badge">Firebase Auth</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MFA Component -->
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="component-card">
+                        <div class="component-preview">
+                            <span class="component-badge">Security Feature</span>
+                            <div class="p-4">
+                                <h5 class="text-center mb-4">Two-Factor Authentication</h5>
+                                <div class="interactive-demo">
+                                    <p class="text-center mb-3">Enter verification code</p>
+                                    <div class="d-flex justify-content-center mb-3">
+                                        <input type="text" class="mfa-input" maxlength="1">
+                                        <input type="text" class="mfa-input" maxlength="1">
+                                        <input type="text" class="mfa-input" maxlength="1">
+                                        <input type="text" class="mfa-input" maxlength="1">
+                                        <input type="text" class="mfa-input" maxlength="1">
+                                        <input type="text" class="mfa-input" maxlength="1">
+                                    </div>
+                                    <div class="text-center">
+                                        <button class="demo-button">
+                                            <i class="fas fa-shield-alt me-2"></i>Verify
+                                        </button>
+                                        <a href="#" class="d-block mt-2 text-decoration-none">Resend code</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="mb-3">Multi-Factor Auth</h5>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-check"></i> TOTP Support</li>
+                                <li><i class="fas fa-check"></i> SMS Verification</li>
+                                <li><i class="fas fa-check"></i> Email Verification</li>
+                                <li><i class="fas fa-check"></i> Backup Codes</li>
+                                <li><i class="fas fa-check"></i> QR Code Setup</li>
+                            </ul>
+                            <div class="tech-stack">
+                                <span class="tech-badge">TOTP</span>
+                                <span class="tech-badge">SMS Gateway</span>
+                                <span class="tech-badge">QR Code</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Biometric Component -->
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="component-card">
+                        <div class="component-preview">
+                            <span class="component-badge">Biometric Auth</span>
+                            <div class="p-4">
+                                <h5 class="text-center mb-4">Biometric Login</h5>
+                                <div class="interactive-demo text-center">
+                                    <i class="fas fa-fingerprint" style="font-size: 60px; color: var(--primary-color); margin-bottom: 20px;"></i>
+                                    <p class="mb-3">Use your fingerprint to sign in</p>
+                                    <button class="demo-button">
+                                        <i class="fas fa-fingerprint me-2"></i>Authenticate
+                                    </button>
+                                    <div class="mt-3">
+                                        <small class="text-muted">Face ID and Fingerprint supported</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="mb-3">Biometric Security</h5>
+                            <ul class="feature-list">
+                                <li><i class="fas fa-check"></i> Fingerprint Authentication</li>
+                                <li><i class="fas fa-check"></i> Face Recognition</li>
+                                <li><i class="fas fa-check"></i> Device Binding</li>
+                                <li><i class="fas fa-check"></i> Secure Storage</li>
+                                <li><i class="fas fa-check"></i> Fallback Options</li>
+                            </ul>
+                            <div class="tech-stack">
+                                <span class="tech-badge">Local Auth</span>
+                                <span class="tech-badge">Secure Storage</span>
+                                <span class="tech-badge">Device Security</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Code Examples Section -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h3 class="mb-4" data-aos="fade-up">Implementation Examples</h3>
+                </div>
+                
+                <div class="col-lg-6 mb-4" data-aos="fade-up">
+                    <div class="component-card">
+                        <div class="p-4">
+                            <h5 class="mb-3">Authentication Provider Setup</h5>
+                            <div class="code-preview">
+// Initialize Authentication Provider
+final authProvider = AuthenticationProvider(
+  repository: AuthenticationRepositoryImpl(),
+);
+
+// Sign in with email and password
+await authProvider.signIn(
+  'user@example.com',
+  'password123',
+);
+
+// Check authentication status
+if (authProvider.isAuthenticated) {
+  // Navigate to dashboard
+}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-4" data-aos="fade-up">
+                    <div class="component-card">
+                        <div class="p-4">
+                            <h5 class="mb-3">MFA Verification</h5>
+                            <div class="code-preview">
+// Enable MFA for user
+await authProvider.enableMfa(userId);
+
+// Verify MFA token
+await authProvider.verifyMfaToken('123456');
+
+// Check if MFA is required
+if (authProvider.isMfaRequired) {
+  // Show MFA dialog
+}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Features Section -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <h3 class="mb-4" data-aos="fade-up">Security Features</h3>
+                </div>
+                
+                <div class="col-lg-4 mb-4" data-aos="fade-up">
+                    <div class="component-card">
+                        <div class="p-4 text-center">
+                            <i class="fas fa-lock" style="font-size: 48px; color: var(--primary-color); margin-bottom: 20px;"></i>
+                            <h5 class="mb-3">Rate Limiting</h5>
+                            <p>Prevents brute force attacks with configurable rate limits and automatic account locking.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 mb-4" data-aos="fade-up">
+                    <div class="component-card">
+                        <div class="p-4 text-center">
+                            <i class="fas fa-history" style="font-size: 48px; color: var(--primary-color); margin-bottom: 20px;"></i>
+                            <h5 class="mb-3">Session Management</h5>
+                            <p>Secure session handling with device tracking and remote logout capabilities.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 mb-4" data-aos="fade-up">
+                    <div class="component-card">
+                        <div class="p-4 text-center">
+                            <i class="fas fa-shield-alt" style="font-size: 48px; color: var(--primary-color); margin-bottom: 20px;"></i>
+                            <h5 class="mb-3">Audit Logging</h5>
+                            <p>Complete authentication event logging for security monitoring and compliance.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+
+        // Interactive demo functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // MFA input auto-focus
+            const mfaInputs = document.querySelectorAll('.mfa-input');
+            mfaInputs.forEach((input, index) => {
+                input.addEventListener('input', function(e) {
+                    if (e.target.value.length === 1 && index < mfaInputs.length - 1) {
+                        mfaInputs[index + 1].focus();
+                    }
+                });
+                
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+                        mfaInputs[index - 1].focus();
+                    }
+                });
+            });
+
+            // Form validation demo
+            const formInputs = document.querySelectorAll('.form-input');
+            formInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.borderColor = 'var(--primary-color)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.style.borderColor = '#E0E0E0';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

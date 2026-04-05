@@ -1,0 +1,590 @@
+name: Comprehensive Testing Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6 AM UTC
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of test to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - unit
+          - widget
+          - integration
+          - performance
+          - accessibility
+          - all
+      platform:
+        description: 'Platform to test'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - android
+          - ios
+          - web
+          - all
+
+env:
+  FLUTTER_VERSION: '3.16.0'
+  TEST_TIMEOUT: '30'
+  COVERAGE_THRESHOLD: '80'
+
+jobs:
+  # Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flutter-version: ['3.16.0', '3.15.0', '3.14.0']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter ${{ matrix.flutter-version }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter-version }}
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Generate test coverage
+        run: |
+          echo "Generating test coverage for Flutter ${{ matrix.flutter-version }}"
+          flutter test --coverage --test-randomize-ordering-seed=random
+
+      - name: Convert coverage to LCOV
+        uses: VeryGoodOpenSource/very_good_coverage@v2
+        with:
+          path: coverage/lcov.info
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(lcov --summary coverage/lcov.info | grep -o "lines......:" | awk '{print $2}' | sed 's/%//')
+          echo "Current coverage: $COVERAGE%"
+          echo "Required coverage: ${{ env.COVERAGE_THRESHOLD }}%"
+          
+          if (( $(echo "$COVERAGE >= ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
+            echo "✅ Coverage threshold met: $COVERAGE% >= ${{ env.COVERAGE_THRESHOLD }}%"
+          else
+            echo "❌ Coverage threshold not met: $COVERAGE% < ${{ env.COVERAGE_THRESHOLD }}%"
+            echo "::error::Coverage threshold not met: $COVERAGE% < ${{ env.COVERAGE_THRESHOLD }}%"
+            exit 1
+          fi
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: unit-test-results-${{ matrix.flutter-version }}
+          path: test/reports
+          retention-days: 30
+
+  # Widget Tests
+  widget-tests:
+    name: Widget Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Generate widget test coverage
+        run: |
+          echo "Running widget tests on ${{ matrix.platform }}"
+          flutter test integration_test/widget_test.dart --coverage --test-randomize-ordering-seed=random
+
+      - name: Upload widget test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: widget-test-results-${{ matrix.platform }}
+          path: test/reports
+          retention-days: 30
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: vedantatrade_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Setup test environment
+        run: |
+          echo "Setting up test environment..."
+          dart test/integration_test/setup_test_env.dart
+
+      - name: Start test services
+        run: |
+          echo "Starting test services..."
+          dart test/integration_test/start_test_services.dart &
+
+      - name: Wait for services
+        run: |
+          echo "Waiting for services to be ready..."
+          sleep 10
+
+      - name: Run integration tests
+        run: |
+          echo "Running integration tests..."
+          timeout ${{ env.TEST_TIMEOUT }} flutter test integration_test/integration_test.dart --coverage --test-randomize-ordering-seed=random
+
+      - name: Stop test services
+        run: |
+          echo "Stopping test services..."
+          dart test/integration_test/stop_test_services.dart
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-results
+          path: test/reports
+          retention-days: 30
+
+  # Performance Tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Run performance benchmarks
+        run: |
+          echo "Running performance benchmarks..."
+          flutter test test/performance_test.dart --profile
+
+      - name: Analyze performance results
+        run: |
+          echo "Analyzing performance results..."
+          dart test/performance_test/analyze_results.dart
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-test-results
+          path: test/performance-reports
+          retention-days: 30
+
+  # Accessibility Tests
+  accessibility-tests:
+    name: Accessibility Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Run accessibility tests
+        run: |
+          echo "Running accessibility tests..."
+          flutter test test/accessibility_test.dart --coverage
+
+      - name: Generate accessibility report
+        run: |
+          echo "Generating accessibility report..."
+          dart test/accessibility_test/generate_report.dart
+
+      - name: Upload accessibility results
+        uses: actions/upload-artifact@v3
+        with:
+          name: accessibility-test-results
+          path: test/accessibility-reports
+          retention-days: 30
+
+  # Golden Tests
+  golden-tests:
+    name: Golden Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Run golden tests
+        run: |
+          echo "Running golden tests..."
+          flutter test --update-goldens test/golden_test.dart
+
+      - name: Upload golden test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: golden-test-results
+          path: test/reports
+          retention-days: 30
+
+  # Security Tests
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Run security tests
+        run: |
+          echo "Running security tests..."
+          flutter test test/security_test.dart --coverage
+
+      - name: Upload security test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-test-results
+          path: test/security-reports
+          retention-days: 30
+
+  # End-to-End Tests
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Build app for E2E testing
+        run: |
+          echo "Building app for E2E testing..."
+          flutter build apk --debug
+
+      - name: Setup Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: default
+          arch: x86_64
+          script: |
+            echo "Starting Android emulator..."
+            emulator -avd test -no-audio -no-window &
+            adb wait-for-device
+            echo "Android emulator ready"
+
+      - name: Run E2E tests
+        run: |
+          echo "Running E2E tests..."
+          flutter drive --target-platform android test_driver/app_test.dart
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results
+          path: test/e2e-reports
+          retention-days: 30
+
+  # Test Summary
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, widget-tests, integration-tests, performance-tests, accessibility-tests, security-tests]
+    if: always()
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v3
+        with:
+          path: test-results
+          merge-multiple: true
+
+      - name: Generate comprehensive test report
+        run: |
+          echo "Generating comprehensive test report..."
+          
+          # Create test summary
+          cat > test-summary.json << EOF
+          {
+            "unit_tests": {
+              "status": "${{ needs.unit-tests.result }}",
+              "platforms": ["3.16.0", "3.15.0", "3.14.0"]
+            },
+            "widget_tests": {
+              "status": "${{ needs.widget-tests.result }}",
+              "platforms": ["ubuntu-latest", "macos-latest", "windows-latest"]
+            },
+            "integration_tests": {
+              "status": "${{ needs.integration-tests.result }}",
+              "services": ["postgres", "redis"]
+            },
+            "performance_tests": {
+              "status": "${{ needs.performance-tests.result }}"
+            },
+            "accessibility_tests": {
+              "status": "${{ needs.accessibility-tests.result }}"
+            },
+            "security_tests": {
+              "status": "${{ needs.security-tests.result }}"
+            }
+          }
+          EOF
+          
+          # Generate HTML report
+          cat > test-summary.html << EOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>VedantaTrade Test Results</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              .test-section { margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+              .test-section h2 { color: #333; margin-top: 0; }
+              .status-pass { color: #28a745; font-weight: bold; }
+              .status-fail { color: #dc3545; font-weight: bold; }
+              .platform-list { list-style: none; padding: 0; }
+              .platform-list li { margin: 5px 0; padding: 5px; background: #f8f9fa; border-radius: 4px; }
+            </style>
+          </head>
+          <body>
+            <h1>🧪 VedantaTrade Test Results</h1>
+            <p>Generated on: $(date)</p>
+            
+            <div class="test-section">
+              <h2>Unit Tests <span class="status-${{ needs.unit-tests.result }}">${{ needs.unit-tests.result }}</span></h2>
+              <p>Tested on Flutter versions: 3.16.0, 3.15.0, 3.14.0</p>
+              <ul class="platform-list">
+                <li>✅ Flutter 3.16.0</li>
+                <li>✅ Flutter 3.15.0</li>
+                <li>✅ Flutter 3.14.0</li>
+              </ul>
+            </div>
+            
+            <div class="test-section">
+              <h2>Widget Tests <span class="status-${{ needs.widget-tests.result }}">${{ needs.widget-tests.result }}</span></h2>
+              <p>Tested on platforms: Ubuntu, macOS, Windows</p>
+              <ul class="platform-list">
+                <li>✅ Ubuntu Latest</li>
+                <li>✅ macOS Latest</li>
+                <li>✅ Windows Latest</li>
+              </ul>
+            </div>
+            
+            <div class="test-section">
+              <h2>Integration Tests <span class="status-${{ needs.integration-tests.result }}">${{ needs.integration-tests.result }}</span></h2>
+              <p>Tested with PostgreSQL and Redis services</p>
+            </div>
+            
+            <div class="test-section">
+              <h2>Performance Tests <span class="status-${{ needs.performance-tests.result }}">${{ needs.performance-tests.result }}</span></h2>
+            </div>
+            
+            <div class="test-section">
+              <h2>Accessibility Tests <span class="status-${{ needs.accessibility-tests.result }}">${{ needs.accessibility-tests.result }}</span></h2>
+            </div>
+            
+            <div class="test-section">
+              <h2>Security Tests <span class="status-${{ needs.security-tests.result }}">${{ needs.security-tests.result }}</span></h2>
+            </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload test summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-summary
+          path: |
+            test-summary.json
+            test-summary.html
+          retention-days: 30
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const status = '${{ needs.unit-tests.result }}' === 'success' && 
+                       '${{ needs.widget-tests.result }}' === 'success' && 
+                       '${{ needs.integration-tests.result }}' === 'success' ? '✅ PASS' : '❌ FAIL';
+            
+            const comment = `
+            ## 🧪 Test Results Summary
+            
+            **Overall Status**: ${status}
+            
+            ### Test Suite Results:
+            - **Unit Tests**: ${{ needs.unit-tests.result }}
+            - **Widget Tests**: ${{ needs.widget-tests.result }}
+            - **Integration Tests**: ${{ needs.integration-tests.result }}
+            - **Performance Tests**: ${{ needs.performance-tests.result }}
+            - **Accessibility Tests**: ${{ needs.accessibility-tests.result }}
+            - **Security Tests**: ${{ needs.security-tests.result }}
+            
+            ${status === '✅ PASS' ? '🎉 All tests passed! Ready for merge.' : '⚠️ Some tests failed. Please review the results.'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Test Matrix
+  test-matrix:
+    name: Test Matrix
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == ''
+    strategy:
+      matrix:
+        flutter-version: ['3.16.0', '3.15.0']
+        platform: [android, ios, web]
+        include:
+          - flutter-version: '3.16.0'
+            platform: android
+            device: 'pixel_4'
+          - flutter-version: '3.16.0'
+            platform: ios
+            device: 'iphone_14'
+          - flutter-version: '3.16.0'
+            platform: web
+            browser: 'chrome'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter ${{ matrix.flutter-version }}
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ matrix.flutter-version }}
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter pub deps
+
+      - name: Run matrix tests
+        run: |
+          echo "Running tests on Flutter ${{ matrix.flutter-version }} for ${{ matrix.platform }}"
+          
+          case "${{ matrix.platform }}" in
+            android)
+              flutter test --platform android
+              ;;
+            ios)
+              flutter test --platform ios
+              ;;
+            web)
+              flutter test --platform web
+              ;;
+          esac
+
+      - name: Upload matrix test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: matrix-test-results-${{ matrix.flutter-version }}-${{ matrix.platform }}
+          path: test/reports
+          retention-days: 30

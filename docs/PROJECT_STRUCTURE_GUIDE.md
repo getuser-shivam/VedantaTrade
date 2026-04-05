@@ -1,58 +1,194 @@
-# VedantaTrade - Project Structure Guide
+# VedantaTrade - Standardized Project Structure Guide
 
-## 📁 Standardized Directory Structure
+## 📋 Overview
 
-This document outlines the standardized directory structure and naming conventions for the VedantaTrade project to ensure maintainability, scalability, and team collaboration.
+This document outlines the standardized directory structure and naming conventions for the VedantaTrade pharmaceutical distribution platform. The structure is designed to promote maintainability, scalability, and collaboration while following Flutter/Dart best practices.
 
-## 🏗️ Overall Structure
+## 🏗️ Core Principles
 
-```
-vedanta_trade/
-├── lib/                          # Main application source code
-│   ├── main.dart                 # Application entry point
-│   ├── app/                      # App-level configuration
-│   ├── core/                     # Core shared functionality
-│   ├── shared/                   # Shared utilities and widgets
-│   ├── features/                 # Feature-based modules
-│   └── data/                     # Data layer (models, services)
-├── test/                         # Test files
-├── assets/                       # Static assets
-├── docs/                         # Documentation
-├── scripts/                      # Build and automation scripts
-├── tools/                        # Development tools
-├── .github/                      # GitHub workflows and templates
-├── android/                      # Android platform code
-├── ios/                          # iOS platform code
-└── web/                          # Web platform code
-```
+### 1. Separation of Concerns
+- **Domain Layer**: Business logic and entities
+- **Data Layer**: Data sources and repositories
+- **Presentation Layer**: UI components and state management
+- **Shared Layer**: Reusable components and utilities
 
-## 📋 Naming Conventions
+### 2. Feature-Based Organization
+- Each feature is self-contained with its own domain, data, and presentation layers
+- Features are independent and can be developed in parallel
+- Clear boundaries between features reduce coupling
 
-### Files and Directories
-- **snake_case** for files and directories: `user_profile.dart`, `order_management/`
-- **PascalCase** for classes: `UserProfile`, `OrderManagementService`
-- **camelCase** for variables and functions: `userName`, `getUserProfile()`
-- **SCREAMING_SNAKE_CASE** for constants: `API_BASE_URL`, `MAX_RETRY_COUNT`
-- **kebab-case** for package names: `vedanta_trade`
+### 3. Consistent Naming Conventions
+- **Files**: `snake_case.dart` for Dart files
+- **Directories**: `snake_case` for folders
+- **Classes**: `PascalCase` for class names
+- **Variables**: `camelCase` for variable names
 
-### Feature Module Structure
-Each feature follows a consistent structure:
+## 📁 Project Structure
 
 ```
-feature_name/
-├── data/
-│   ├── models/                   # Data models
-│   ├── repositories/             # Repository implementations
-│   ├── services/                 # API and external services
-│   └── datasources/              # Local and remote data sources
-├── domain/
-│   ├── entities/                 # Business entities
-│   ├── repositories/             # Repository interfaces
-│   └── usecases/                 # Business logic use cases
-├── presentation/
-│   ├── pages/                    # Full-screen pages
-│   ├── widgets/                  # Reusable UI components
-│   ├── providers/                # State management
+VedantaTrade/
+├── README.md                           # Project overview and setup instructions
+├── CHANGELOG.md                        # Version history and changes
+├── pubspec.yaml                        # Flutter dependencies and configuration
+├── analysis_options.yaml              # Dart analysis configuration
+├── .gitignore                          # Git ignore patterns
+├── .github/                           # GitHub Actions and CI/CD
+│   └── workflows/                      # Workflow definitions
+├── docs/                              # Documentation
+│   ├── PROJECT_STRUCTURE_GUIDE.md      # This file
+│   ├── DEVELOPMENT_GUIDE.md           # Development guidelines
+│   ├── API_DOCUMENTATION.md            # API documentation
+│   ├── DEPLOYMENT_GUIDE.md           # Deployment instructions
+│   └── USER_GUIDE.md                 # User documentation
+├── lib/                               # Main application source code
+│   ├── app/                           # Application entry point
+│   │   ├── main.dart                 # Main application file
+│   │   ├── app.dart                   # App widget configuration
+│   │   ├── routes/                   # Route definitions
+│   │   │   ├── app_router.dart      # Main router
+│   │   │   └── route_names.dart    # Route constants
+│   │   └── theme/                    # App theme configuration
+│   │       ├── app_theme.dart        # Main theme
+│   │       └── theme_extensions.dart # Theme extensions
+│   ├── core/                          # Core shared functionality
+│   │   ├── constants/                # App-wide constants
+│   │   │   ├── app_constants.dart   # General constants
+│   │   │   ├── api_constants.dart    # API endpoints
+│   │   │   ├── storage_constants.dart # Storage keys
+│   │   │   └── validation_constants.dart # Validation rules
+│   │   ├── errors/                   # Error handling
+│   │   │   ├── app_exceptions.dart  # Custom exceptions
+│   │   │   ├── error_handler.dart    # Error handling logic
+│   │   │   └── failure_types.dart   # Failure type definitions
+│   │   ├── utils/                    # Utility functions
+│   │   │   ├── app_utils.dart       # General utilities
+│   │   │   ├── date_utils.dart      # Date utilities
+│   │   │   ├── formatters.dart      # Data formatters
+│   │   │   ├── validators.dart       # Input validators
+│   │   │   └── crypto_utils.dart    # Cryptography utilities
+│   │   ├── services/                 # Core services
+│   │   │   ├── storage_service.dart # Storage service
+│   │   │   ├── network_service.dart # Network service
+│   │   │   ├── notification_service.dart # Notifications
+│   │   │   └── analytics_service.dart # Analytics service
+│   │   ├── extensions/                # Dart extensions
+│   │   │   ├── string_extensions.dart # String extensions
+│   │   │   ├── datetime_extensions.dart # DateTime extensions
+│   │   │   └── num_extensions.dart   # Number extensions
+│   │   └── widgets/                  # Shared widgets
+│   │       ├── enhanced_app_theme.dart # Theme system
+│   │       ├── loading_overlay.dart   # Loading overlay
+│   │       ├── error_widget.dart     # Error display
+│   │       ├── empty_state_widget.dart # Empty state
+│   │       └── responsive_layout.dart # Responsive layout
+│   └── features/                      # Feature modules
+│       ├── authentication/              # Authentication feature
+│       │   ├── domain/              # Domain layer
+│       │   │   ├── entities/        # Data entities
+│       │   │   │   ├── auth_user_entity.dart
+│       │   │   │   ├── user_session_entity.dart
+│       │   │   │   └── security_settings_entity.dart
+│       │   │   └── repositories/     # Repository interfaces
+│       │   │       └── authentication_repository.dart
+│       │   └── data/                # Data layer
+│       │       ├── datasources/     # Data sources
+│       │       │   ├── auth_local_datasource.dart
+│       │       │   └── auth_remote_datasource.dart
+│       │       ├── models/           # Data models
+│       │       │   ├── auth_models.dart
+│       │       │   └── token_models.dart
+│       │       └── repositories/     # Repository implementations
+│       │           └── authentication_repository_impl.dart
+│       │       └── presentation/      # Presentation layer
+│       │           ├── providers/       # State management
+│       │           │   └── authentication_provider.dart
+│       │           ├── screens/         # UI screens
+│       │           │   ├── login_screen.dart
+│       │           │   ├── register_screen.dart
+│       │           │   └── profile_screen.dart
+│       │           └── widgets/         # Reusable widgets
+│       │               ├── auth_form_field.dart
+│       │               ├── auth_button.dart
+│       │               └── social_login_buttons.dart
+│       ├── product_catalog/             # Product catalog feature
+│       │   ├── domain/              # Domain layer
+│       │   │   ├── entities/        # Product entities
+│       │   │   │   ├── product_entity.dart
+│       │   │   │   ├── product_variant_entity.dart
+│       │   │   │   ├── product_category_entity.dart
+│       │   │   │   └── product_filter_entity.dart
+│       │   │   └── repositories/     # Repository interfaces
+│       │   │       └── product_catalog_repository.dart
+│       │   └── data/                # Data layer
+│       │       ├── datasources/     # Data sources
+│       │       │   ├── product_local_datasource.dart
+│       │       │   └── product_remote_datasource.dart
+│       │       ├── models/           # Data models
+│       │       │   └── product_models.dart
+│       │       └── repositories/     # Repository implementations
+│       │           └── product_catalog_repository_impl.dart
+│       │       └── presentation/      # Presentation layer
+│       │           ├── providers/       # State management
+│       │           │   └── product_catalog_provider.dart
+│       │           ├── screens/         # UI screens
+│       │           │   ├── enhanced_product_catalog_screen.dart
+│       │           │   ├── product_detail_screen.dart
+│       │           │   └── product_comparison_screen.dart
+│       │           └── widgets/         # Reusable widgets
+│       │               ├── enhanced_product_card.dart
+│       │               ├── enhanced_search_filter_bar.dart
+│       │               └── category_chips.dart
+│       ├── distribution/               # Distribution management
+│       │   ├── domain/              # Domain layer
+│       │   │   ├── entities/        # Distribution entities
+│       │   │   │   ├── distribution_entity.dart
+│       │   │   │   ├── marketing_campaign_entity.dart
+│       │   │   │   └── warehouse_inventory_entity.dart
+│       │   │   └── repositories/     # Repository interfaces
+│       │   │       └── distribution_repository.dart
+│       │   └── data/                # Data layer
+│       │       ├── datasources/     # Data sources
+│       │       │   ├── distribution_local_datasource.dart
+│       │       │   └── distribution_remote_datasource.dart
+│       │       ├── models/           # Data models
+│       │       │   └── distribution_models.dart
+│       │       └── repositories/     # Repository implementations
+│       │           └── distribution_repository_impl.dart
+│       │       └── presentation/      # Presentation layer
+│       │           ├── providers/       # State management
+│       │           │   └── distribution_provider.dart
+│       │           ├── screens/         # UI screens
+│       │           │   ├── distribution_dashboard_screen.dart
+│       │           │   ├── order_management_screen.dart
+│       │           │   └── route_optimization_screen.dart
+│       │           └── widgets/         # Reusable widgets
+│       │               ├── distribution_overview_card.dart
+│       │               └── route_optimization_panel.dart
+│       └── shared/                    # Shared features
+│           ├── shared_widgets/         # Common widgets
+│           ├── shared_services/         # Common services
+│           └── shared_models/           # Common models
+├── test/                              # Test files
+│   ├── unit/                        # Unit tests
+│   ├── widget/                       # Widget tests
+│   ├── integration/                  # Integration tests
+│   └── e2e/                         # End-to-end tests
+├── assets/                            # Static assets
+│   ├── images/                       # Image assets
+│   │   ├── logos/                  # Logo files
+│   │   ├── icons/                  # Icon files
+│   │   └── products/               # Product images
+│   ├── fonts/                        # Font files
+│   └── data/                         # Static data files
+├── tools/                             # Development tools
+│   ├── scripts/                       # Build and deployment scripts
+│   ├── generators/                    # Code generators
+│   └── linters/                      # Custom linters
+└── backend/                            # Backend code (if applicable)
+    ├── src/                           # Source code
+    ├── prisma/                        # Database schema
+    ├── tests/                          # Backend tests
+    └── docs/                           # Backend documentation
 │   └── routes/                   # Navigation routes
 └── feature_name.dart             # Barrel export file
 ```
