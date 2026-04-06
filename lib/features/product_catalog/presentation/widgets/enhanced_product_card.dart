@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../domain/entities/product_entity.dart';
+import '../../data/models/product_model.dart';
 import '../../../shared/theme/enhanced_app_theme.dart';
 import '../../../shared/widgets/loading_shimmer.dart';
-import '../../../shared/utils/app_utils.dart';
 
 /// Enhanced Product Card
 /// Comprehensive product card with all relevant information and interactive elements
 class EnhancedProductCard extends StatefulWidget {
-  final ProductEntity product;
+  final Product product;
   final VoidCallback? onTap;
   final VoidCallback? onFavorite;
   final VoidCallback? onCompare;
@@ -562,11 +561,11 @@ class _EnhancedProductCardState extends State<EnhancedProductCard>
 /// Product Card Grid
 /// Grid layout for product cards with responsive design
 class ProductCardGrid extends StatelessWidget {
-  final List<ProductEntity> products;
-  final Function(ProductEntity)? onProductTap;
-  final Function(ProductEntity)? onProductFavorite;
-  final Function(ProductEntity)? onProductCompare;
-  final Function(ProductEntity)? onProductQuickView;
+  final List<Product> products;
+  final Function(Product)? onProductTap;
+  final Function(Product)? onProductFavorite;
+  final Function(Product)? onProductCompare;
+  final Function(Product)? onProductQuickView;
   final bool showFavoriteButton;
   final bool showCompareButton;
   final bool showQuickViewButton;
@@ -695,16 +694,19 @@ class ProductCardGrid extends StatelessWidget {
     );
   }
 
-  ProductEntity _getMockProduct() {
-    return ProductEntity(
+  Product _getMockProduct() {
+    return Product(
       id: 'mock',
       name: 'Mock Product',
+      genericName: 'Mock Generic Name',
       description: 'Mock Description',
       category: 'Mock Category',
       brand: 'Mock Brand',
       manufacturer: 'Mock Manufacturer',
       dosage: 'Mock Dosage',
       formulation: 'Mock Formulation',
+      dosageForm: 'Mock Form',
+      strength: 'Mock Strength',
       imageUrl: '',
       price: 0.0,
       stockQuantity: 0,
@@ -712,24 +714,7 @@ class ProductCardGrid extends StatelessWidget {
       sku: 'MOCK-001',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
-      preferences: const UserPreferences(),
-      securitySettings: const SecuritySettings(
-        twoFactorEnabled: false,
-        twoFactorMethod: TwoFactorMethod.none,
-        sessionTimeoutEnabled: true,
-        sessionTimeoutMinutes: 30,
-        ipWhitelistEnabled: false,
-        whitelistedIps: [],
-        deviceTrackingEnabled: true,
-        maxConcurrentSessions: 3,
-        passwordComplexityEnabled: true,
-        passwordMinLength: 8,
-        passwordHistoryCount: 5,
-        loginAttemptLimitEnabled: true,
-        maxLoginAttempts: 5,
-        lockoutDurationMinutes: 15,
-        suspiciousActivityDetection: true,
-      ),
+      expiryDate: DateTime.now().add(const Duration(days: 365)),
     );
   }
 }

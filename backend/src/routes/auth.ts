@@ -31,32 +31,9 @@ const SECURITY_CONFIG = {
 const loginAttempts = new Map<string, { count: number; lastAttempt: Date; lockedUntil?: Date }>();
 
 // POST /api/auth/login
-router.post('/login', rateLimitLogin(), validateLogin, async (req, res) => {
+router.post('/login', validateLogin, async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ success: false, message: 'Email and password required' });
-    }
-
-    // DEV BYPASS: Allow login with seed credentials even if DB is offline
-    const seedEmails: any = {
-      'admin@vedanta.com': { user_id: 1, role: 'ADMIN', name: 'Vedanta Admin' },
-      'mr@vedanta.com': { user_id: 2, role: 'MEDICAL_REP', name: 'Ramesh Kumar (MR)', mrProfile: { territory: 'Mumbai' } },
-
-
-
-      'accountant@vedanta.com': { user_id: 3, role: 'ACCOUNTANT', name: 'Priya Sharma (Accountant)' },
-      'doctor@vedanta.com': { user_id: 4, role: 'DOCTOR', name: 'Dr. Anil Verma', doctorProfile: {} },
-      'stockist@vedanta.com': { user_id: 5, role: 'STOCKIST', name: 'Mahesh Distributors', stockistProfile: {} },
-      'retailer@vedanta.com': { user_id: 6, role: 'RETAILER', name: 'City Pharmacy', retailerProfile: {} },
-    };
-
-    if (seedEmails[email.toLowerCase()]) {
-      const mockUser = seedEmails[email.toLowerCase()];
-      const token = jwt.sign({ id: mockUser.user_id, role: mockUser.role, email: email.toLowerCase() }, JWT_SECRET, { expiresIn: '7d' });
-      return res.json({ success: true, token, user: mockUser });
-    }
-
     const user = await prisma.user.findUnique({
       where: { username: email.toLowerCase() },
       include: {
@@ -67,21 +44,76 @@ router.post('/login', rateLimitLogin(), validateLogin, async (req, res) => {
       },
     });
 
-    if (!user || user.is_active === false) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials or account inactive' });
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    // Check account locking
+    if (user.account_locked_until && user.account_locked_until > new Date()) {
+      const remainingTime = Math.ceil((user.account_locked_until.getTime() - Date.now()) / 1000 / 60);
+      return res.status(423).json({ 
+        success: false, 
+        message: `Account is locked. Please try again in ${remainingTime} minutes.` 
+      });
     }
 
     const isValid = await bcrypt.compare(password, user.password_hash);
+    
     if (!isValid) {
+      // Increment failed attempts
+      const failedAttempts = (user.failed_login_attempts || 0) + 1;
+      const data: any = { failed_login_attempts: failedAttempts };
+      
+      if (failedAttempts >= SECURITY_CONFIG.maxLoginAttempts) {
+        data.account_locked_until = new Date(Date.now() + SECURITY_CONFIG.lockoutDuration);
+        data.failed_login_attempts = 0; // Reset after locking
+      }
+      
+      await prisma.user.update({
+        where: { user_id: user.user_id },
+        data
+      });
+
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    // Reset failed attempts on success
+    await prisma.user.update({
+      where: { user_id: user.user_id },
+      data: { failed_login_attempts: 0, account_locked_until: null, last_login: new Date() }
+    });
+
+    // Check if MFA is required
+    if (user.mfa_enabled) {
+      // Generate a temporary MFA session token
+      const mfaSessionToken = jwt.sign(
+        { id: user.user_id, purpose: 'mfa_verification' }, 
+        JWT_SECRET, 
+        { expiresIn: '10m' }
+      );
+      
+      return res.json({ 
+        success: true, 
+        requiresMfa: true, 
+        mfaToken: mfaSessionToken,
+        mfaMethod: user.mfa_method 
+      });
     }
 
     const token = jwt.sign({ id: user.user_id, role: user.role, email: user.username }, JWT_SECRET, { expiresIn: '7d' });
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
-    // SQL Server session creation
-    await prisma.session.create({ data: { user_id: user.user_id, token, expiresAt } });
+    // Create session
+    await prisma.session.create({ 
+      data: { 
+        user_id: user.user_id, 
+        token, 
+        expiresAt,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent']
+      } 
+    });
 
     const safeUser = {
       id: user.user_id.toString(),
@@ -89,19 +121,20 @@ router.post('/login', rateLimitLogin(), validateLogin, async (req, res) => {
       email: user.username,
       phone: user.phone || '',
       role: user.role,
-      createdAt: user.created_at,
-      lastLogin: new Date().toISOString(), // Fallback
+      mfaEnabled: user.mfa_enabled,
       mrProfile: user.mrProfile,
       doctorProfile: user.doctorProfile,
       stockistProfile: user.stockistProfile,
       retailerProfile: user.retailerProfile,
     };
+    
     return res.json({ success: true, token, user: safeUser });
   } catch (error) {
     console.error('Login error:', error);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
 
 // POST /api/auth/logout
 router.post('/logout', async (req, res) => {
@@ -405,13 +438,13 @@ router.post('/mfa/verify', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid verification code' });
     }
 
-    // Enable MFA for user (in production, store encrypted secret in database)
-    // For now, we'll store it in a simple way
+    // Enable MFA for user
     await prisma.user.update({
       where: { user_id: user.user_id },
       data: { 
-        // Note: In production, add mfa_secret field to database schema
-        // For now, we'll use a session-based approach
+        mfa_enabled: true,
+        mfa_secret: secret,
+        mfa_setup_at: new Date()
       }
     });
 
@@ -424,6 +457,82 @@ router.post('/mfa/verify', async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
+// POST /api/auth/mfa/login-verify - Verify MFA during login
+router.post('/mfa/login-verify', async (req, res) => {
+  try {
+    const { mfaToken, otp } = req.body;
+    if (!mfaToken || !otp) {
+      return res.status(400).json({ success: false, message: 'MFA token and OTP required' });
+    }
+
+    // Verify the temporary MFA session token
+    const decoded = jwt.verify(mfaToken, JWT_SECRET) as any;
+    if (decoded.purpose !== 'mfa_verification') {
+      return res.status(401).json({ success: false, message: 'Invalid MFA session' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { user_id: decoded.id },
+      include: {
+        mrProfile: true,
+        doctorProfile: true,
+        stockistProfile: true,
+        retailerProfile: true,
+      }
+    });
+
+    if (!user || !user.mfa_secret) {
+      return res.status(404).json({ success: false, message: 'User or MFA not found' });
+    }
+
+    // Verify OTP
+    const verified = speakeasy.totp.verify({
+      secret: user.mfa_secret,
+      encoding: 'base32',
+      token: otp,
+      window: 2
+    });
+
+    if (!verified) {
+      return res.status(400).json({ success: false, message: 'Invalid verification code' });
+    }
+
+    // Generate final login token
+    const token = jwt.sign({ id: user.user_id, role: user.role, email: user.username }, JWT_SECRET, { expiresIn: '7d' });
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    await prisma.session.create({ 
+      data: { 
+        user_id: user.user_id, 
+        token, 
+        expiresAt,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent']
+      } 
+    });
+
+    const safeUser = {
+      id: user.user_id.toString(),
+      name: user.name || '',
+      email: user.username,
+      phone: user.phone || '',
+      role: user.role,
+      mfaEnabled: true,
+      mrProfile: user.mrProfile,
+      doctorProfile: user.doctorProfile,
+      stockistProfile: user.stockistProfile,
+      retailerProfile: user.retailerProfile,
+    };
+
+    return res.json({ success: true, token, user: safeUser });
+  } catch (error) {
+    console.error('MFA login verification error:', error);
+    return res.status(401).json({ success: false, message: 'MFA session expired or invalid' });
+  }
+});
+
 
 // POST /api/auth/mfa/disable - Disable MFA
 router.post('/mfa/disable', async (req, res) => {
@@ -449,16 +558,28 @@ router.post('/mfa/disable', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid password' });
     }
 
-    // Verify MFA token (in production, get secret from database)
-    // For now, we'll assume verification passes
+    // Verify MFA token
+    const verified = speakeasy.totp.verify({
+      secret: user.mfa_secret!,
+      encoding: 'base32',
+      token: mfaToken,
+      window: 1
+    });
+
+    if (!verified) {
+      return res.status(400).json({ success: false, message: 'Invalid MFA code' });
+    }
 
     // Disable MFA
     await prisma.user.update({
       where: { user_id: user.user_id },
       data: {
-        // Note: In production, remove mfa_secret from database
+        mfa_enabled: false,
+        mfa_secret: null,
+        mfa_setup_at: null
       }
     });
+
 
     return res.json({
       success: true,

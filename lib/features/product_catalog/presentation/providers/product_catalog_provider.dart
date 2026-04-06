@@ -1,10 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/product_model.dart';
-import '../../data/services/product_service.dart';
+import '../../data/services/product_catalog_service.dart';
+import '../../domain/entities/product_filter_entity.dart';
+
+enum ViewMode { grid, list }
 
 class ProductCatalogProvider extends ChangeNotifier {
-  final ProductService _productService = ProductService();
+  final ProductCatalogService _productService = ProductCatalogService();
 
   // State management
   List<Product> _products = [];
@@ -19,17 +22,19 @@ class ProductCatalogProvider extends ChangeNotifier {
   bool _isLoadingMore = false;
   
   // Search and filter
-  String _searchQuery = '';
-  String _sortBy = 'name';
-  String _filterByCategory = '';
-  bool _showInStockOnly = false;
-  bool _showExpiringSoonOnly = false;
+  ProductFilterEntity _filter = const ProductFilterEntity();
   
+  // Favorites and Comparison
+  final List<String> _favoriteProductIds = [];
+  final List<String> _comparisonProductIds = [];
+
   // Pagination
   int _currentPage = 1;
   int _totalPages = 1;
   final int _pageSize = 20;
   bool _hasMore = true;
+  ViewMode _viewMode = ViewMode.grid;
+  int _currentTabIndex = 0;
 
   // Getters
   List<Product> get products => _filteredProducts.isEmpty ? _products : _filteredProducts;
@@ -39,23 +44,28 @@ class ProductCatalogProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isLoadingCategories => _isLoadingCategories;
   bool get isLoadingMore => _isLoadingMore;
-  String get searchQuery => _searchQuery;
-  String get sortBy => _sortBy;
-  String get filterByCategory => _filterByCategory;
-  bool get showInStockOnly => _showInStockOnly;
-  bool get showExpiringSoonOnly => _showExpiringSoonOnly;
+  
+  ProductFilterEntity get filter => _filter;
+  bool get hasActiveFilters => _filter.hasActiveFilters;
+  
   int get currentPage => _currentPage;
   int get totalPages => _totalPages;
   bool get hasMore => _hasMore;
+  ViewMode get viewMode => _viewMode;
+  int get currentTabIndex => _currentTabIndex;
 
   // Computed properties
-  List<Product> get featuredProducts => _products.where((p) => p.rating >= 4.5).take(6).toList();
+  List<Product> get featuredProducts => _products.where((p) => p.rating >= 4.5).toList();
   List<Product> get lowStockProducts => _products.where((p) => p.isLowStock).toList();
   List<Product> get expiringSoonProducts => _products.where((p) => p.isExpiringSoon).toList();
   List<Product> get outOfStockProducts => _products.where((p) => p.stockQuantity == 0).toList();
+  List<Product> get favoriteProducts => _products.where((p) => _favoriteProductIds.contains(p.id)).toList();
   
   int get totalProducts => _products.length;
   int get filteredProductsCount => _filteredProducts.length;
+  bool get hasError => _errorMessage != null;
+  String? get errorMessage => _errorMessage;
+
   double get averageRating => _products.isEmpty ? 0.0 : 
       _products.map((p) => p.rating).reduce((a, b) => a + b) / _products.length;
 
@@ -78,16 +88,13 @@ class ProductCatalogProvider extends ChangeNotifier {
     if (_isLoading && !refresh) return;
 
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      final newProducts = await _productService.getProducts(
-        category: _filterByCategory.isNotEmpty ? _filterByCategory : null,
-        search: _searchQuery.isNotEmpty ? _searchQuery : null,
-        sortBy: _sortBy,
-        inStock: _showInStockOnly ? true : null,
-        page: _currentPage,
-        limit: _pageSize,
+      final newProducts = await _productService.loadRegisteredProducts(
+        category: _filter.categories.isNotEmpty ? _filter.categories.first : null,
+        token: null, // TODO: Get from AuthProvider
       );
 
       if (refresh) {
@@ -117,23 +124,21 @@ class ProductCatalogProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final newProducts = await _productService.getProducts(
-        category: _filterByCategory.isNotEmpty ? _filterByCategory : null,
-        search: _searchQuery.isNotEmpty ? _searchQuery : null,
-        sortBy: _sortBy,
-        inStock: _showInStockOnly ? true : null,
-        page: _currentPage,
+      final newProducts = await _productService.loadMoreProducts(
+        category: _filter.categories.isNotEmpty ? _filter.categories.first : null,
+        searchQuery: _filter.searchQuery,
+        sortOption: _filter.sortBy,
+        startIndex: _products.length,
         limit: _pageSize,
       );
 
       _products.addAll(newProducts);
-      _currentPage++;
       _hasMore = newProducts.length == _pageSize;
       _totalPages = (_products.length / _pageSize).ceil();
 
       _applyFilters();
     } catch (e) {
-      debugPrint('Error loading more products: $e');
+      _errorMessage = 'Error loading more products: $e';
     } finally {
       _isLoadingMore = false;
       notifyListeners();
@@ -155,115 +160,154 @@ class ProductCatalogProvider extends ChangeNotifier {
     }
   }
 
-  // Search products
-  Future<void> searchProducts(String query) async {
-    if (_searchQuery == query) return;
-
-    _searchQuery = query;
-    _currentPage = 1;
-    _hasMore = true;
-    _products.clear();
-    _filteredProducts.clear();
-
-    if (query.isNotEmpty) {
-      _isLoading = true;
-      notifyListeners();
-
-      try {
-        final searchResults = await _productService.searchProducts(query);
-        _products = searchResults;
-        _applyFilters();
-      } catch (e) {
-        debugPrint('Error searching products: $e');
-      } finally {
-        _isLoading = false;
-        notifyListeners();
-      }
-    } else {
-      await loadProducts(refresh: true);
-    }
-  }
-
   // Filter products
-  void filterByCategory(String category) {
-    _filterByCategory = category;
-    _selectedCategory = _categories.firstWhere(
-      (cat) => cat.name == category,
-      orElse: () => _categories.first,
-    );
+  void updateFilters(ProductFilterEntity newFilter) {
+    _filter = newFilter;
     _currentPage = 1;
     _hasMore = true;
-    loadProducts(refresh: true);
+    _applyFilters();
+    notifyListeners();
   }
 
-  void sortByProducts(String sortBy) {
-    _sortBy = sortBy;
+  void selectCategory(String categoryName) {
+    if (categoryName == 'All') {
+      _filter = _filter.copyWith(categories: []);
+    } else {
+      _filter = _filter.copyWith(categories: [categoryName]);
+    }
     _currentPage = 1;
     _hasMore = true;
-    loadProducts(refresh: true);
+    _applyFilters();
+    notifyListeners();
   }
 
-  void toggleInStockFilter() {
-    _showInStockOnly = !_showInStockOnly;
-    _currentPage = 1;
-    _hasMore = true;
-    loadProducts(refresh: true);
+  void setViewMode(ViewMode mode) {
+    _viewMode = mode;
+    notifyListeners();
   }
 
-  void toggleExpiringSoonFilter() {
-    _showExpiringSoonOnly = !_showExpiringSoonOnly;
-    _currentPage = 1;
-    _hasMore = true;
-    loadProducts(refresh: true);
+  void setTab(int index) {
+    _currentTabIndex = index;
+    _applyFilters();
+    notifyListeners();
   }
 
   void clearFilters() {
-    _searchQuery = '';
-    _filterByCategory = '';
-    _sortBy = 'name';
-    _showInStockOnly = false;
-    _showExpiringSoonOnly = false;
-    _selectedCategory = null;
-    _filteredProducts.clear();
+    _filter = const ProductFilterEntity();
     _currentPage = 1;
     _hasMore = true;
-    loadProducts(refresh: true);
+    _applyFilters();
+    notifyListeners();
   }
+
+  void toggleFavorite(Product product) {
+    if (_favoriteProductIds.contains(product.id)) {
+      _favoriteProductIds.remove(product.id);
+    } else {
+      _favoriteProductIds.add(product.id);
+    }
+    notifyListeners();
+  }
+
+  void toggleComparison(Product product) {
+    if (_comparisonProductIds.contains(product.id)) {
+      _comparisonProductIds.remove(product.id);
+    } else {
+      _comparisonProductIds.add(product.id);
+    }
+    notifyListeners();
+  }
+
+  bool isFavorite(String productId) => _favoriteProductIds.contains(productId);
+  bool isCompared(String productId) => _comparisonProductIds.contains(productId);
 
   // Apply filters
   void _applyFilters() {
     _filteredProducts = List.from(_products);
 
     // Apply category filter
-    if (_filterByCategory.isNotEmpty) {
+    if (_filter.categories.isNotEmpty) {
       _filteredProducts = _filteredProducts
-          .where((product) => product.category == _filterByCategory)
+          .where((product) => _filter.categories.contains(product.category))
           .toList();
     }
 
     // Apply stock filter
-    if (_showInStockOnly) {
+    if (_filter.inStockOnly == true) {
       _filteredProducts = _filteredProducts
           .where((product) => product.stockQuantity > 0)
           .toList();
     }
 
-    // Apply expiry filter
-    if (_showExpiringSoonOnly) {
+    // Apply price range
+    if (_filter.minPrice != null) {
       _filteredProducts = _filteredProducts
-          .where((product) => product.isExpiringSoon)
+          .where((product) => product.finalPrice >= _filter.minPrice!)
+          .toList();
+    }
+    if (_filter.maxPrice != null) {
+      _filteredProducts = _filteredProducts
+          .where((product) => product.finalPrice <= _filter.maxPrice!)
+          .toList();
+    }
+
+    // Apply rating filter
+    if (_filter.minRating != null) {
+      _filteredProducts = _filteredProducts
+          .where((product) => product.rating >= _filter.minRating!)
           .toList();
     }
 
     // Apply search filter
-    if (_searchQuery.isNotEmpty) {
+    if (_filter.searchQuery != null && _filter.searchQuery!.isNotEmpty) {
+      final query = _filter.searchQuery!.toLowerCase();
       _filteredProducts = _filteredProducts
           .where((product) =>
-              product.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              product.genericName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              product.manufacturer.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              product.description.toLowerCase().contains(_searchQuery.toLowerCase()))
+              product.name.toLowerCase().contains(query) ||
+              product.genericName.toLowerCase().contains(query) ||
+              product.manufacturer.toLowerCase().contains(query) ||
+              product.description.toLowerCase().contains(query))
           .toList();
+    }
+
+    // Apply tab filtering
+    switch (_currentTabIndex) {
+      case 1: // Featured
+        _filteredProducts = _filteredProducts.where((p) => p.rating >= 4.5).toList();
+        break;
+      case 2: // On Sale
+        _filteredProducts = _filteredProducts.where((p) => p.isOnSale).toList();
+        break;
+      case 3: // New Arrivals
+        _filteredProducts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+    }
+
+    // Apply sorting
+    if (_filter.sortBy != null) {
+      switch (_filter.sortBy) {
+        case 'price':
+          if (_filter.sortOrder == 'asc') {
+            _filteredProducts.sort((a, b) => a.finalPrice.compareTo(b.finalPrice));
+          } else {
+            _filteredProducts.sort((a, b) => b.finalPrice.compareTo(a.finalPrice));
+          }
+          break;
+        case 'rating':
+          _filteredProducts.sort((a, b) => b.rating.compareTo(a.rating));
+          break;
+        case 'createdAt':
+          _filteredProducts.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          break;
+        case 'name':
+        default:
+          if (_filter.sortOrder == 'desc') {
+            _filteredProducts.sort((a, b) => b.name.compareTo(a.name));
+          } else {
+            _filteredProducts.sort((a, b) => a.name.compareTo(b.name));
+          }
+          break;
+      }
     }
 
     notifyListeners();

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
-import 'package:vedanta_trade/features/catalog/domain/entities/product_entity.dart';
+import 'package:vedanta_trade/features/product_catalog/domain/entities/product_entity.dart';
 
 /// Enhanced Product Card with smooth animations and micro-interactions
 class EnhancedProductCard extends StatefulWidget {

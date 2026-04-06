@@ -2,25 +2,25 @@ import '../models/product_entity.dart';
 import '../models/product_filter.dart';
 
 abstract class ProductRepository {
-  Future<List<ProductEntity>> getProducts({
+  Future<List<Product>> getProducts({
     ProductFilter? filter,
     int page = 1,
     int limit = 20,
   });
 
-  Future<ProductEntity?> getProductById(String id);
+  Future<Product?> getProductById(String id);
   
-  Future<List<ProductEntity>> getProductsByCategory(String category);
+  Future<List<Product>> getProductsByCategory(String category);
   
-  Future<List<ProductEntity>> searchProducts(String query);
+  Future<List<Product>> searchProducts(String query);
   
-  Future<List<ProductEntity>> getFeaturedProducts();
+  Future<List<Product>> getFeaturedProducts();
   
-  Future<List<ProductEntity>> getDiscountedProducts();
+  Future<List<Product>> getDiscountedProducts();
   
-  Future<List<ProductEntity>> getExpiringSoonProducts();
+  Future<List<Product>> getExpiringSoonProducts();
   
-  Future<List<ProductEntity>> getLowStockProducts();
+  Future<List<Product>> getLowStockProducts();
   
   Future<List<String>> getCategories();
   
@@ -28,19 +28,19 @@ abstract class ProductRepository {
   
   Future<List<String>> getTags();
   
-  Future<List<ProductEntity>> getRelatedProducts(String productId);
+  Future<List<Product>> getRelatedProducts(String productId);
   
   Future<void> addToFavorites(String productId);
   Future<void> removeFromFavorites(String productId);
-  Future<List<ProductEntity>> getFavoriteProducts();
+  Future<List<Product>> getFavoriteProducts();
   Future<bool> isFavorite(String productId);
   
   Future<void> addToRecentlyViewed(String productId);
-  Future<List<ProductEntity>> getRecentlyViewedProducts();
+  Future<List<Product>> getRecentlyViewedProducts();
   
   Future<void> rateProduct(String productId, double rating, String? review);
   
-  Future<List<ProductEntity>> getProductsByManufacturer(String manufacturer);
+  Future<List<Product>> getProductsByManufacturer(String manufacturer);
   
   Future<void> trackProductView(String productId);
   

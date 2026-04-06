@@ -6,7 +6,7 @@ This gallery showcases the evolution of VedantaTrade's user interface across dif
 
 ## 📱 Version History
 
-### Version 3.7.0 - Premium Glassmorphic Design
+### Version 3.7.0-beta - Premium Glassmorphic Design
 **Release Date**: April 2026
 
 #### Key Updates:
@@ -249,11 +249,12 @@ To integrate with analytics services:
 
 ## 🔄 Version History
 
-### v3.4.0 (Current)
-- Comprehensive testing suite showcase
-- Enhanced CI/CD pipeline features
-- Complete accounting system demonstrations
-- Premium glassmorphic UI examples
+### v3.7.0-beta (Current)
+- Final architectural consolidation (auth, catalog, accounting modules)
+- Robust product catalog with advanced search and dual-source data (JSON fallback)
+- Premium glassmorphic UI system hardened for production
+- Enterprise CI/CD and security pipelines finalized
+- Consolidated IRDN-compliant accounting infrastructure
 
 ### v3.3.0
 - CI/CD pipeline implementation

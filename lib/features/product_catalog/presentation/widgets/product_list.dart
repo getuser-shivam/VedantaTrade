@@ -440,7 +440,7 @@ class ProductList extends StatelessWidget {
     );
   }
 
-  void _showProductDetails(BuildContext context, ProductEntity product) {
+  void _showProductDetails(BuildContext context, Product product) {
     Navigator.push(
       context,
       MaterialPageRoute(

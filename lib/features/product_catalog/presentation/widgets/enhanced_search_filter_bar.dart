@@ -39,9 +39,9 @@ class _EnhancedSearchFilterBarState extends State<EnhancedSearchFilterBar>
     with TickerProviderStateMixin {
   late TextEditingController _searchController;
   late AnimationController _filterPanelController;
-  late AnimationController _searchController;
+  late AnimationController _searchAnimationController;
   late Animation<double> _filterPanelAnimation;
-  late Animation<Offset> _searchAnimation;
+  late Animation<double> _searchAnimation;
   
   bool _isFilterPanelOpen = false;
   bool _isSearching = false;
@@ -58,7 +58,7 @@ class _EnhancedSearchFilterBarState extends State<EnhancedSearchFilterBar>
       vsync: this,
     );
     
-    _searchController = AnimationController(
+    _searchAnimationController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
@@ -68,11 +68,11 @@ class _EnhancedSearchFilterBarState extends State<EnhancedSearchFilterBar>
       curve: Curves.easeInOut,
     );
 
-    _searchAnimation = Tween<Offset>(
-      begin: const Offset(0, 0),
-      end: const Offset(0, 0.1),
+    _searchAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.05,
     ).animate(CurvedAnimation(
-      parent: _searchController,
+      parent: _searchAnimationController,
       curve: Curves.easeInOut,
     ));
 
@@ -88,8 +88,22 @@ class _EnhancedSearchFilterBarState extends State<EnhancedSearchFilterBar>
   void dispose() {
     _searchController.dispose();
     _filterPanelController.dispose();
-    _searchController.dispose();
+    _searchAnimationController.dispose();
     super.dispose();
+  }
+
+  void _applyFilters() {
+    final provider = context.read<ProductCatalogProvider>();
+    provider.updateFilters(_currentFilters);
+    widget.onFiltersChanged?.call(_currentFilters);
+  }
+
+  void _handleSearch(String query) {
+    if (_lastSearchQuery == query) return;
+    _lastSearchQuery = query;
+    _currentFilters = _currentFilters.copyWith(searchQuery: query);
+    _applyFilters();
+    widget.onSearch?.call(query);
   }
 
   void _toggleFilterPanel() {

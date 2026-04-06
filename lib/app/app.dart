@@ -3,12 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
-import 'package:vedanta_trade/shared/theme/enhanced_theme.dart';
-import 'package:vedanta_trade/shared/widgets/performance/performance_optimizer.dart';
+import 'package:vedanta_trade/features/authentication/presentation/providers/auth_provider.dart';
+import 'package:vedanta_trade/app/theme/app_theme.dart';
+
 // Screens
-import 'package:vedanta_trade/features/auth/presentation/screens/login_screen.dart';
-import 'package:vedanta_trade/features/auth/presentation/screens/password_reset_screen.dart';
+import 'package:vedanta_trade/features/authentication/presentation/screens/login_screen.dart';
+import 'package:vedanta_trade/features/authentication/presentation/screens/password_reset_screen.dart';
 import 'package:vedanta_trade/features/splash/splash_screen.dart';
 import 'package:vedanta_trade/features/admin/admin_dashboard.dart';
 import 'package:vedanta_trade/features/admin/map_master_screen.dart';
@@ -19,10 +19,7 @@ import 'package:vedanta_trade/features/mr/mr_dashboard.dart';
 import 'package:vedanta_trade/features/mr/visit_log_screen.dart';
 import 'package:vedanta_trade/features/mr/tour_plan_screen.dart';
 import 'package:vedanta_trade/features/mr/expense_screen.dart';
-import 'package:vedanta_trade/features/accounting/accountant_dashboard.dart';
-import 'package:vedanta_trade/features/accounting/invoice_screen.dart';
-import 'package:vedanta_trade/features/accounting/ledger_screen.dart';
-import 'package:vedanta_trade/features/accounting/vat_screen.dart';
+import 'package:vedanta_trade/features/accounting/accounting_feature.dart';
 import 'package:vedanta_trade/features/doctor/doctor_dashboard.dart';
 import 'package:vedanta_trade/features/stockist/stockist_dashboard.dart';
 import 'package:vedanta_trade/features/retailer/retailer_dashboard.dart';
@@ -30,7 +27,7 @@ import 'package:vedanta_trade/features/products/products_screen.dart';
 import 'package:vedanta_trade/features/doctors_list/doctors_list_screen.dart';
 import 'package:vedanta_trade/features/orders/orders_screen.dart';
 import 'package:vedanta_trade/features/profile/profile_screen.dart';
-import 'package:vedanta_trade/features/catalog/presentation/screens/product_catalog_screen.dart';
+import 'package:vedanta_trade/features/product_catalog/presentation/screens/product_catalog_screen.dart';
 
 class VedantaTradeApp extends StatelessWidget {
   const VedantaTradeApp({super.key});
@@ -39,21 +36,18 @@ class VedantaTradeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
-        return Consumer(
-          builder: (context, _, __) {
-            return MaterialApp.router(
-              title: 'VedantaTrade',
-              debugShowCheckedModeBanner: false,
-              theme: EnhancedTheme.lightTheme,
-              darkTheme: EnhancedTheme.darkTheme,
-              themeMode: ThemeMode.system,
-              routerConfig: _buildRouter(auth),
-            );
-          },
+        return MaterialApp.router(
+          title: 'VedantaTrade',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.darkTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.dark,
+          routerConfig: _buildRouter(auth),
         );
       },
     );
   }
+
 
   GoRouter _buildRouter(AuthProvider auth) {
     return GoRouter(
@@ -91,7 +85,7 @@ class VedantaTradeApp extends StatelessWidget {
         GoRoute(path: '/mr/expenses', builder: (c, s) => const ExpenseScreen()),
 
         // Accounting routes
-        GoRoute(path: '/accounting', builder: (c, s) => const AccountantDashboard()),
+        GoRoute(path: '/accounting', builder: (c, s) => const AccountingDashboard()),
         GoRoute(path: '/accounting/invoices', builder: (c, s) => const InvoiceScreen()),
         GoRoute(path: '/accounting/ledger', builder: (c, s) => const LedgerScreen()),
         GoRoute(path: '/accounting/vat', builder: (c, s) => const VatScreen()),

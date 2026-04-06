@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import 'package:vedanta_trade/features/auth/presentation/providers/auth_provider.dart';
+import 'package:vedanta_trade/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:vedanta_trade/app/theme/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {

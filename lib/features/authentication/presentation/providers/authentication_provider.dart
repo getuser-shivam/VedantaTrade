@@ -124,6 +124,39 @@ class AuthenticationProvider extends ChangeNotifier {
     }
   }
 
+  /// Verify MFA Login
+  Future<void> verifyMfaCode({
+    required String identifier,
+    required String mfaToken,
+    required String mfaCode,
+  }) async {
+    _emitState(state.copyWith(isLoading: true, errorMessage: null));
+
+    try {
+      final result = await _repository.verifyMfaLogin(
+        identifier: identifier,
+        mfaToken: mfaToken,
+        mfaCode: mfaCode,
+      );
+
+      if (result.isLeft()) {
+        _emitState(state.copyWith(
+          isLoading: false,
+          errorMessage: result.fold((l) => l, (r) => 'MFA verification failed'),
+        ));
+        return;
+      }
+
+      final authResult = result.fold((l) => throw Exception(l), (r) => r);
+      _emitState(AuthenticationState.authenticated(user: authResult.user));
+    } catch (e) {
+      _emitState(state.copyWith(
+        isLoading: false,
+        errorMessage: 'MFA verification failed: ${e.toString()}',
+      ));
+    }
+  }
+
   /// OAuth login
   Future<void> loginWithOAuth({
     required OAuthProvider provider,

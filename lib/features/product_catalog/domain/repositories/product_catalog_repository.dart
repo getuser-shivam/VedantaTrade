@@ -13,7 +13,7 @@ abstract class ProductCatalogRepository {
   });
 
   /// Get product by ID
-  Future<Either<String, ProductEntity>> getProductById(String id);
+  Future<Either<String, Product>> getProductById(String id);
 
   /// Search products by query
   Future<Either<String, ProductSearchResult>> searchProducts(
@@ -40,19 +40,19 @@ abstract class ProductCatalogRepository {
   });
 
   /// Get featured products
-  Future<Either<String, List<ProductEntity>>> getFeaturedProducts({int limit = 10});
+  Future<Either<String, List<Product>>> getFeaturedProducts({int limit = 10});
 
   /// Get trending products
-  Future<Either<String, List<ProductEntity>>> getTrendingProducts({int limit = 10});
+  Future<Either<String, List<Product>>> getTrendingProducts({int limit = 10});
 
   /// Get related products
-  Future<Either<String, List<ProductEntity>>> getRelatedProducts(
+  Future<Either<String, List<Product>>> getRelatedProducts(
     String productId, {
     int limit = 5,
   });
 
   /// Get recently viewed products
-  Future<Either<String, List<ProductEntity>>> getRecentlyViewedProducts({
+  Future<Either<String, List<Product>>> getRecentlyViewedProducts({
     int limit = 10,
   });
 
@@ -70,13 +70,13 @@ abstract class ProductCatalogRepository {
   });
 
   /// Get expiring soon products
-  Future<Either<String, List<ProductEntity>>> getExpiringSoonProducts({
+  Future<Either<String, List<Product>>> getExpiringSoonProducts({
     int days = 30,
     int limit = 20,
   });
 
   /// Get low stock products
-  Future<Either<String, List<ProductEntity>>> getLowStockProducts({
+  Future<Either<String, List<Product>>> getLowStockProducts({
     int threshold = 10,
     int limit = 20,
   });
@@ -94,7 +94,7 @@ abstract class ProductCatalogRepository {
   Future<Either<String, void>> removeFromFavorites(String productId);
 
   /// Get favorite products
-  Future<Either<String, List<ProductEntity>>> getFavoriteProducts({
+  Future<Either<String, List<Product>>> getFavoriteProducts({
     int page = 1,
     int limit = 20,
   });
@@ -165,7 +165,7 @@ abstract class ProductCatalogRepository {
   Future<Either<String, List<ProductVariant>>> getProductVariants(String productId);
 
   /// Get product comparison
-  Future<Either<String, List<ProductEntity>>> getProductComparison(
+  Future<Either<String, List<Product>>> getProductComparison(
     List<String> productIds,
   );
 
@@ -176,7 +176,7 @@ abstract class ProductCatalogRepository {
   Future<Either<String, void>> removeFromComparison(String productId);
 
   /// Get comparison list
-  Future<Either<String, List<ProductEntity>>> getComparisonList();
+  Future<Either<String, List<Product>>> getComparisonList();
 
   /// Clear comparison list
   Future<Either<String, void>> clearComparisonList();
@@ -186,7 +186,7 @@ abstract class ProductCatalogRepository {
 
   Future<Either<String, void>> bulkRemoveFromFavorites(List<String> productIds);
 
-  Future<Either<String, List<ProductEntity>>> bulkGetProducts(List<String> productIds);
+  Future<Either<String, List<Product>>> bulkGetProducts(List<String> productIds);
 
   /// Cache management
   Future<Either<String, void>> clearProductCache();
@@ -273,25 +273,25 @@ abstract class ProductCatalogRepository {
   });
 
   /// Get new arrivals
-  Future<Either<String, List<ProductEntity>>> getNewArrivals({int limit = 10});
+  Future<Either<String, List<Product>>> getNewArrivals({int limit = 10});
 
   /// Get best sellers
-  Future<Either<String, List<ProductEntity>>> getBestSellers({int limit = 10});
+  Future<Either<String, List<Product>>> getBestSellers({int limit = 10});
 
   /// Get recommended products
-  Future<Either<String, List<ProductEntity>>> getRecommendedProducts({
+  Future<Either<String, List<Product>>> getRecommendedProducts({
     String? userId,
     int limit = 10,
   });
 
   /// Get similar products
-  Future<Either<String, List<ProductEntity>>> getSimilarProducts(
+  Future<Either<String, List<Product>>> getSimilarProducts(
     String productId, {
     int limit = 5,
   });
 
   /// Get frequently bought together products
-  Future<Either<String, List<ProductEntity>>> getFrequentlyBoughtTogether(
+  Future<Either<String, List<Product>>> getFrequentlyBoughtTogether(
     String productId, {
     int limit = 5,
   });
@@ -357,7 +357,7 @@ abstract class ProductCatalogRepository {
 
   /// Bulk update products
   Future<Either<String, void>> bulkUpdateProducts(
-    List<ProductEntity> products,
+    List<Product> products,
   );
 
   /// Bulk delete products
@@ -712,7 +712,7 @@ enum ValidationErrorType {
 
 /// Product Search Result
 class ProductSearchResult {
-  final List<ProductEntity> products;
+  final List<Product> products;
   final int totalCount;
   final int currentPage;
   final int totalPages;

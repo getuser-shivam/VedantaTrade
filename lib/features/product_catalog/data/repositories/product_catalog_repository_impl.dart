@@ -125,7 +125,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, ProductEntity>> getProductById(String id) async {
+  Future<Either<String, Product>> getProductById(String id) async {
     try {
       // Check cache first
       final cachedProduct = await _localDataSource.getCachedProductById(id);
@@ -208,7 +208,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getFeaturedProducts({int limit = 10}) async {
+  Future<Either<String, List<Product>>> getFeaturedProducts({int limit = 10}) async {
     try {
       final filters = ProductFilterEntity(
         isActiveOnly: true,
@@ -229,7 +229,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getTrendingProducts({int limit = 10}) async {
+  Future<Either<String, List<Product>>> getTrendingProducts({int limit = 10}) async {
     try {
       final result = await _remoteDataSource.getTrendingProducts(limit: limit);
       
@@ -244,7 +244,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getRelatedProducts(
+  Future<Either<String, List<Product>>> getRelatedProducts(
     String productId, {
     int limit = 5,
   }) async {
@@ -278,7 +278,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getRecentlyViewedProducts({
+  Future<Either<String, List<Product>>> getRecentlyViewedProducts({
     int limit = 10,
   }) async {
     try {
@@ -334,7 +334,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getExpiringSoonProducts({
+  Future<Either<String, List<Product>>> getExpiringSoonProducts({
     int days = 30,
     int limit = 20,
   }) async {
@@ -352,7 +352,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getLowStockProducts({
+  Future<Either<String, List<Product>>> getLowStockProducts({
     int threshold = 10,
     int limit = 20,
   }) async {
@@ -424,7 +424,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getFavoriteProducts({
+  Future<Either<String, List<Product>>> getFavoriteProducts({
     int page = 1,
     int limit = 20,
   }) async {
@@ -659,7 +659,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getProductComparison(
+  Future<Either<String, List<Product>>> getProductComparison(
     List<String> productIds,
   ) async {
     try {
@@ -697,7 +697,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getComparisonList() async {
+  Future<Either<String, List<Product>>> getComparisonList() async {
     try {
       final comparisonIds = await _localDataSource.getComparisonProductIds();
       
@@ -752,7 +752,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> bulkGetProducts(List<String> productIds) async {
+  Future<Either<String, List<Product>>> bulkGetProducts(List<String> productIds) async {
     try {
       final result = await _remoteDataSource.bulkGetProducts(productIds);
       
@@ -865,7 +865,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   // Private helper methods
 
   /// Apply filters to product list
-  List<ProductEntity> _applyFilters(List<ProductEntity> products, ProductFilterEntity? filter) {
+  List<Product> _applyFilters(List<Product> products, ProductFilterEntity? filter) {
     if (filter == null || !filter.hasActiveFilters) return products;
 
     var filteredProducts = products;
@@ -990,7 +990,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   /// Apply sorting to product list
-  List<ProductEntity> _applySorting(List<ProductEntity> products, ProductFilterEntity? filter) {
+  List<Product> _applySorting(List<Product> products, ProductFilterEntity? filter) {
     if (filter == null || filter.sortBy == null) return products;
 
     final sortBy = filter.sortBy!;
@@ -1151,7 +1151,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getNewArrivals({int limit = 10}) async {
+  Future<Either<String, List<Product>>> getNewArrivals({int limit = 10}) async {
     final filters = ProductFilterEntity(
       isActiveOnly: true,
       sortBy: 'createdAt',
@@ -1167,7 +1167,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getBestSellers({int limit = 10}) async {
+  Future<Either<String, List<Product>>> getBestSellers({int limit = 10}) async {
     final result = await _remoteDataSource.getBestSellers(limit: limit);
     
     return result.fold(
@@ -1177,7 +1177,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getRecommendedProducts({
+  Future<Either<String, List<Product>>> getRecommendedProducts({
     String? userId,
     int limit = 10,
   }) async {
@@ -1190,7 +1190,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getSimilarProducts(
+  Future<Either<String, List<Product>>> getSimilarProducts(
     String productId, {
     int limit = 5,
   }) async {
@@ -1203,7 +1203,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
   }
 
   @override
-  Future<Either<String, List<ProductEntity>>> getFrequentlyBoughtTogether(
+  Future<Either<String, List<Product>>> getFrequentlyBoughtTogether(
     String productId, {
     int limit = 5,
   }) async {
@@ -1360,7 +1360,7 @@ class ProductCatalogRepositoryImpl implements ProductCatalogRepository {
 
   @override
   Future<Either<String, void>> bulkUpdateProducts(
-    List<ProductEntity> products,
+    List<Product> products,
   ) async {
     await _remoteDataSource.bulkUpdateProducts(products);
     await _localDataSource.clearProductCache();

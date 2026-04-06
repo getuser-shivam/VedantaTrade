@@ -18,16 +18,19 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
   final AuthRemoteDataSource _remoteDataSource;
   final SecurityManager _securityManager;
   final AppUtils _appUtils;
+  final AuthService _authService;
 
   AuthenticationRepositoryImpl({
     required AuthLocalDataSource localDataSource,
     required AuthRemoteDataSource remoteDataSource,
     required SecurityManager securityManager,
     required AppUtils appUtils,
+    required AuthService authService,
   })  : _localDataSource = localDataSource,
         _remoteDataSource = remoteDataSource,
         _securityManager = securityManager,
-        _appUtils = appUtils;
+        _appUtils = appUtils,
+        _authService = authService;
 
   @override
   Future<Either<String, AuthUserEntity>> registerUser({
@@ -41,84 +44,60 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
     UserProfile? profile,
   }) async {
     try {
-      // Validate input
-      final validationResult = _validateRegistrationInput(
+      final response = await _authService.register(
         email: email,
         password: password,
-        firstName: firstName,
-        lastName: lastName,
-        phoneNumber: phoneNumber,
+        name: middleName != null ? '$firstName $middleName $lastName' : '$firstName $lastName',
+        phone: phoneNumber ?? '',
+        role: role?.name.toUpperCase() ?? 'RETAILER',
       );
 
-      if (validationResult != null) {
-        return Left(validationResult);
+      if (response['success'] == false) {
+        return Left(response['message'] ?? 'Registration failed');
       }
 
-      // Check if user already exists
-      final existingUser = await _remoteDataSource.checkUserExists(email, phoneNumber);
-      if (existingUser.isLeft()) {
-        return Left(existingUser.fold((l) => l, (r) => 'User already exists'));
-      }
-
-      // Hash password with salt
-      final salt = _securityManager.generateSalt();
-// final hashedPassword = _securityManager.hashPassword(password, salt); // TODO: Move to environment variables
-
-      // Create user data
-      final userData = {
-        'email': email.toLowerCase().trim(),
-        'password': hashedPassword,
-        'salt': salt,
-        'firstName': firstName.trim(),
-        'lastName': lastName.trim(),
-        'middleName': middleName?.trim(),
-        'phoneNumber': phoneNumber?.trim(),
-        'role': role?.name ?? 'user',
-        'status': UserStatus.pendingEmailVerification.name,
-        'createdAt': DateTime.now().toIso8601String(),
-        'updatedAt': DateTime.now().toIso8601String(),
-        'preferences': const UserPreferences().toJson(),
-        'securitySettings': const SecuritySettings(
-          twoFactorEnabled: false,
-          twoFactorMethod: TwoFactorMethod.none,
-          sessionTimeoutEnabled: true,
-          sessionTimeoutMinutes: 30,
-          ipWhitelistEnabled: false,
-          whitelistedIps: [],
-          deviceTrackingEnabled: true,
-          maxConcurrentSessions: 3,
-          passwordComplexityEnabled: true,
-          passwordMinLength: 8,
-          passwordHistoryCount: 5,
-          loginAttemptLimitEnabled: true,
-          maxLoginAttempts: 5,
-          lockoutDurationMinutes: 15,
-          suspiciousActivityDetection: true,
-        ).toJson(),
-      };
-
-      if (profile != null) {
-        userData['profile'] = profile!.toJson();
-      }
-
-      // Register user
-      final result = await _remoteDataSource.registerUser(userData);
-      
-      if (result.isLeft()) {
-        return Left(result.fold((l) => l, (r) => 'Registration failed'));
-      }
-
-      // Send email verification
-      await _sendEmailVerification(email);
-
-      // Create user entity
-      final user = AuthUserEntity.fromJson(result.fold((l) => {}, (r) => r));
-      
-      return Right(user);
+      return Right(AuthUserEntity.fromJson(response['user']));
     } catch (e) {
       return Left('Registration failed: ${e.toString()}');
     }
   }
+
+  @override
+  Future<Either<String, AuthResult>> verifyMfaLogin({
+    required String identifier,
+    required String mfaToken,
+    required String mfaCode,
+  }) async {
+    try {
+      final response = await _authService.verifyMfaLogin(mfaToken, mfaCode);
+
+      if (response['success'] == false) {
+        return Left(response['message'] ?? 'MFA verification failed');
+      }
+
+      final userData = response['user'];
+      final user = AuthUserEntity.fromJson(userData);
+      final token = response['token'];
+
+      final authResult = AuthResult(
+        user: user,
+        accessToken: token,
+        refreshToken: response['refreshToken'] ?? '',
+        sessionId: response['sessionId'] ?? '',
+        expiresAt: DateTime.now().add(const Duration(days: 7)),
+        session: UserSession.fromJson(response['session'] ?? {}),
+        requiresTwoFactor: false,
+      );
+
+      // Cache the result
+      await _localDataSource.cacheAuthResult(authResult);
+
+      return Right(authResult);
+    } catch (e) {
+      return Left('MFA verification error: ${e.toString()}');
+    }
+  }
+
 
   @override
   Future<Either<String, AuthResult>> loginUser({
@@ -129,92 +108,53 @@ class AuthenticationRepositoryImpl implements AuthenticationRepository {
     String? deviceInfo,
   }) async {
     try {
-      // Check rate limiting
-      final rateLimitStatus = await _checkRateLimit(identifier, 'login');
-      if (rateLimitStatus.isLimited) {
-        return Left('Too many login attempts. Please try again later.');
-      }
-
-      // Get user by identifier
-      final userResult = await _remoteDataSource.getUserByIdentifier(identifier);
+      final response = await _authService.login(identifier, password);
       
-      if (userResult.isLeft()) {
-        await _reportLoginAttempt(identifier, false, 'User not found');
-        return Left('Invalid credentials');
+      if (response['success'] == false) {
+        if (response['isLocked'] == true) {
+          return Left(response['message'] ?? 'Account is locked');
+        }
+        return Left(response['message'] ?? 'Login failed');
       }
 
-      final user = userResult.fold((l) => throw Exception(l), (r) => r);
-
-      // Check account status
-      if (user.status != UserStatus.active) {
-        await _reportLoginAttempt(identifier, false, 'Account not active');
-        return Left('Account is not active. Please verify your email.');
+      if (response['requiresMfa'] == true) {
+        // Return a partial AuthResult with requiresTwoFactor = true
+        // We'll use the mfaToken for the next step
+        return Right(AuthResult(
+          user: AuthUserEntity.empty().copyWith(id: 'temp', email: identifier),
+          accessToken: '',
+          refreshToken: '',
+          sessionId: '',
+          expiresAt: DateTime.now().add(const Duration(minutes: 10)),
+          session: UserSession.empty(),
+          requiresTwoFactor: true,
+          metadata: {'mfaToken': response['mfaToken']},
+        ));
       }
 
-      // Check if account is locked
-      final lockStatus = await checkAccountLockStatus(identifier);
-      if (lockStatus.isLocked) {
-        return Left('Account is locked. Please try again later.');
-      }
+      final userData = response['user'];
+      final user = AuthUserEntity.fromJson(userData);
+      final token = response['token'];
 
-      // Verify password
-      final isPasswordValid = await _securityManager.verifyPassword(
-        password,
-        user.metadata['password'] as String,
-        user.metadata['salt'] as String,
+      final authResult = AuthResult(
+        user: user,
+        accessToken: token,
+        refreshToken: response['refreshToken'] ?? '',
+        sessionId: response['sessionId'] ?? '',
+        expiresAt: DateTime.now().add(const Duration(days: 7)),
+        session: UserSession.fromJson(response['session'] ?? {}),
+        requiresTwoFactor: false,
       );
 
-      if (!isPasswordValid) {
-        await _reportLoginAttempt(identifier, false, 'Invalid password');
-        return Left('Invalid credentials');
-      }
+      // Cache the result
+      await _localDataSource.cacheAuthResult(authResult);
 
-      // Check two-factor authentication
-      if (user.isTwoFactorEnabled) {
-        final twoFactorResult = await _handleTwoFactorAuthentication(user);
-        if (twoFactorResult.isLeft()) {
-          return twoFactorResult;
-        }
-        return twoFactorResult.fold((l) => Left(l), (r) => Right(r));
-      }
-
-      // Create session
-      final session = await _createUserSession(user, deviceToken, deviceInfo);
-
-      // Generate tokens
-      final accessToken = await _securityManager.generateJWTToken(user, session.id);
-      final refreshToken = await _securityManager.generateRefreshToken(user.id);
-
-      // Update last login
-      await _updateLastLogin(user.id);
-
-      // Cache user session
-      await _localDataSource.cacheAuthResult(AuthResult(
-        user: user,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        sessionId: session.id,
-        expiresAt: DateTime.now().add(const Duration(hours: 24)),
-        session: session,
-        requiresTwoFactor: false,
-      ));
-
-      // Report successful login
-      await _reportLoginAttempt(identifier, true);
-
-      return Right(AuthResult(
-        user: user,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        sessionId: session.id,
-        expiresAt: DateTime.now().add(const Duration(hours: 24)),
-        session: session,
-        requiresTwoFactor: false,
-      ));
+      return Right(authResult);
     } catch (e) {
-      return Left('Login failed: ${e.toString()}');
+      return Left('Connection error: ${e.toString()}');
     }
   }
+
 
   @override
   Future<Either<String, AuthResult>> loginWithOAuth({

@@ -5,7 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:vedanta_trade/core/api_config.dart';
-import 'package:vedanta_trade/features/auth/domain/entities/user_entity.dart';
+import 'package:vedanta_trade/features/authentication/domain/entities/user_entity.dart';
 
 class AuthService {
   late final Dio _dio;
@@ -56,16 +56,86 @@ class AuthService {
         data: {
           'email': email.trim(),
           'password': password,
-          'device_info': {
-            'platform': 'flutter',
-            'timestamp': DateTime.now().toIso8601String(),
-          },
         },
-        options: Options(
-          validateStatus: (status) => status != null && status < 500,
-        ),
       );
       
+      return response.data;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 423) {
+        return {
+          'success': false,
+          'message': e.response?.data?['message'] ?? 'Account is locked.',
+          'isLocked': true,
+        };
+      }
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyMfaLogin(String mfaToken, String otp) async {
+    try {
+      final response = await _dio.post(
+        '/auth/mfa/login-verify',
+        data: {
+          'mfaToken': mfaToken,
+          'otp': otp,
+        },
+      );
+      return response.data;
+    } catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> setupMfa(String token) async {
+    try {
+      final response = await _dio.post(
+        '/auth/mfa/setup',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      return response.data;
+    } catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> enableMfa(String token, String secret, String otp) async {
+    try {
+      final response = await _dio.post(
+        '/auth/mfa/verify',
+        data: {'secret': secret, 'token': otp},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      return response.data;
+    } catch (e) {
+      return {
+        'success': false,
+        'message': _getErrorMessage(e),
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> disableMfa(String token, String password, String otp) async {
+    try {
+      final response = await _dio.post(
+        '/auth/mfa/disable',
+        data: {'password': password, 'mfaToken': otp},
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
       return response.data;
     } catch (e) {
       return {
@@ -84,15 +154,7 @@ class AuthService {
           'email': email.trim(),
           'password': password,
           'phone': phone.trim(),
-          'role': 'User', // Default role
-          'device_info': {
-            'platform': 'flutter',
-            'timestamp': DateTime.now().toIso8601String(),
-          },
         },
-        options: Options(
-          validateStatus: (status) => status != null && status < 500,
-        ),
       );
       
       return response.data;
@@ -110,7 +172,6 @@ class AuthService {
         '/auth/reset-password',
         data: {
           'email': email.trim(),
-          'app_name': 'VedantaTrade',
         },
       );
       
@@ -124,6 +185,8 @@ class AuthService {
   }
 
   Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
+
+
     try {
       final response = await _dio.post(
         '/auth/refresh',

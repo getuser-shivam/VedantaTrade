@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/models/product_entity.dart';
 
 class ProductCardWidget extends StatelessWidget {
-  final ProductEntity product;
+  final Product product;
   final VoidCallback? onTap;
   final VoidCallback? onFavorite;
   final bool isFavorite;

@@ -34,6 +34,13 @@ abstract class AuthenticationRepository {
     String? middleName,
   });
 
+  /// Verify MFA Login
+  Future<Either<String, AuthResult>> verifyMfaLogin({
+    required String identifier,
+    required String mfaToken,
+    required String mfaCode,
+  });
+
   /// User Login
   Future<Either<String, AuthResult>> loginUser({
     required String identifier, // email or phone

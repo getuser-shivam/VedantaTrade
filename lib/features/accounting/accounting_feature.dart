@@ -13,7 +13,7 @@ export 'data/repositories/accounting_repository_impl.dart';
 
 // Presentation
 export 'presentation/providers/accounting_provider.dart';
-export 'presentation/screens/accountant_dashboard_screen.dart';
+export 'presentation/screens/accounting_dashboard_screen.dart';
 export 'presentation/screens/expense_reconciliation_screen.dart';
 export 'presentation/screens/invoice_screen.dart';
 export 'presentation/screens/ledger_screen.dart';

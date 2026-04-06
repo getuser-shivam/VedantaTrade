@@ -4,9 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:vedanta_trade/features/authentication/presentation/providers/auth_provider.dart';
 import 'package:vedanta_trade/features/authentication/presentation/screens/login_screen.dart';
-import 'package:vedanta_trade/features/product_catalog/presentation/screens/enhanced_product_catalog_screen.dart';
-import 'package:vedanta_trade/features/product_catalog/presentation/providers/product_catalog_provider.dart';
-import 'package:vedanta_trade/features/product_catalog/presentation/screens/product_detail_screen.dart';
+import 'package:vedanta_trade/features/product_catalog/product_catalog.dart';
 import 'package:vedanta_trade/features/cart/presentation/screens/cart_screen.dart';
 import 'package:vedanta_trade/features/profile/presentation/screens/profile_screen.dart';
 import 'package:vedanta_trade/features/orders/presentation/screens/order_history_screen.dart';
@@ -48,7 +46,7 @@ GoRouter createAppRouter() {
         path: '/product/:id',
         builder: (context, state) {
           final productId = state.pathParameters['id']!;
-          final product = context.read<ProductProvider>().getProductById(productId);
+          final product = context.read<ProductCatalogProvider>().getProductById(productId);
 
           if (product == null) {
             return const _MissingProductScreen();

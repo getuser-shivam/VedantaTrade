@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:vedanta_trade/features/reviews/domain/models/review.dart';
-import 'package:vedanta_trade/features/auth/domain/models/user.dart';
+import 'package:vedanta_trade/features/authentication/domain/models/user.dart';
 
 class ReviewProvider extends ChangeNotifier {
   List<Review> _reviews = [];

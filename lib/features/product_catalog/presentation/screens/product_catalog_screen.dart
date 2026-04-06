@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import '../providers/product_catalog_provider.dart';
-import '../widgets/product_card.dart';
-import '../widgets/category_grid.dart';
-import '../widgets/search_filter_bar.dart';
+import '../widgets/enhanced_product_card.dart';
+import '../widgets/enhanced_search_filter_bar.dart';
 import '../widgets/product_detail_sheet.dart';
+import '../widgets/category_chips.dart';
+import '../../data/models/product_model.dart';
+import '../../../domain/entities/product_filter_entity.dart';
+import '../../../shared/theme/enhanced_app_theme.dart';
+import '../../../shared/widgets/loading_overlay.dart';
+import '../../../shared/widgets/empty_state_widget.dart';
+import '../../../shared/widgets/error_widget.dart';
+import '../../../shared/widgets/pagination_loader.dart';
 
+/// Product Catalog Screen
+/// A high-performance, robust product catalog interface for VedantaTrade.
 class ProductCatalogScreen extends StatefulWidget {
   const ProductCatalogScreen({Key? key}) : super(key: key);
 
@@ -13,25 +23,36 @@ class ProductCatalogScreen extends StatefulWidget {
   State<ProductCatalogScreen> createState() => _ProductCatalogScreenState();
 }
 
-class _ProductCatalogScreenState extends State<ProductCatalogScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  final ScrollController _scrollController = ScrollController();
-  final TextEditingController _searchController = TextEditingController();
+class _ProductCatalogScreenState extends State<ProductCatalogScreen> with TickerProviderStateMixin {
+  late ScrollController _scrollController;
+  late AnimationController _fabController;
+  late Animation<double> _fabScaleAnimation;
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isFabVisible = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _initializeData();
+    _scrollController = ScrollController();
+    _fabController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fabScaleAnimation = CurvedAnimation(
+      parent: _fabController,
+      curve: Curves.easeOutBack,
+    );
+    _fabController.forward();
+
     _setupScrollListener();
+    _initializeData();
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _scrollController.dispose();
-    _searchController.dispose();
+    _fabController.dispose();
     super.dispose();
   }
 
@@ -43,328 +64,26 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
 
   void _setupScrollListener() {
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
+      if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+        if (_isFabVisible) {
+          setState(() => _isFabVisible = false);
+          _fabController.reverse();
+        }
+      } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+        if (!_isFabVisible) {
+          setState(() => _isFabVisible = true);
+          _fabController.forward();
+        }
+      }
+
+      // Pagination check
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
         context.read<ProductCatalogProvider>().loadMoreProducts();
       }
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: NestedScrollView(
-        controller: _scrollController,
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 120,
-              floating: false,
-              pinned: true,
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              flexibleSpace: FlexibleSpaceBar(
-                title: Text(
-                  'Product Catalog',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                background: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme.primary.withOpacity(0.8),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              bottom: TabBar(
-                controller: _tabController,
-                indicatorColor: Colors.white,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                tabs: const [
-                  Tab(icon: Icon(Icons.grid_view), text: 'Products'),
-                  Tab(icon: Icon(Icons.category), text: 'Categories'),
-                  Tab(icon: Icon(Icons.star), text: 'Featured'),
-                ],
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Consumer<ProductCatalogProvider>(
-                builder: (context, provider, child) {
-                  return SearchFilterBar(
-                    searchController: _searchController,
-                    searchQuery: provider.searchQuery,
-                    selectedCategory: provider.filterByCategory,
-                    sortBy: provider.sortBy,
-                    showInStockOnly: provider.showInStockOnly,
-                    showExpiringSoonOnly: provider.showExpiringSoonOnly,
-                    categories: provider.categories,
-                    onSearchChanged: provider.searchProducts,
-                    onCategoryChanged: provider.filterByCategory,
-                    onSortChanged: provider.sortByProducts,
-                    onInStockToggle: provider.toggleInStockFilter,
-                    onExpiringSoonToggle: provider.toggleExpiringSoonFilter,
-                    onClearFilters: provider.clearFilters,
-                  );
-                },
-              ),
-            ),
-          ];
-        },
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildProductsTab(),
-            _buildCategoriesTab(),
-            _buildFeaturedTab(),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddProductDialog,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Product'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildProductsTab() {
-    return Consumer<ProductCatalogProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading && provider.products.isEmpty) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        if (provider.products.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.inventory_2_outlined,
-                  size: 64,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No products found',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Try adjusting your filters or search terms',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey.shade500,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  onPressed: provider.clearFilters,
-                  icon: const Icon(Icons.clear),
-                  label: const Text('Clear Filters'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return Column(
-          children: [
-            // Statistics row
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      'Total Products',
-                      provider.totalProducts.toString(),
-                      Icons.inventory,
-                      Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      'In Stock',
-                      provider.products
-                          .where((p) => p.stockQuantity > 0)
-                          .length
-                          .toString(),
-                      Icons.check_circle,
-                      Colors.green,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      'Low Stock',
-                      provider.lowStockProducts.length.toString(),
-                      Icons.warning,
-                      Colors.orange,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Products grid
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => provider.refresh(),
-                child: ProductGrid(
-                  products: provider.products,
-                  onProductTap: _showProductDetails,
-                  onProductEdit: _showEditProductDialog,
-                  onProductDelete: _confirmDeleteProduct,
-                  showActions: true,
-                ),
-              ),
-            ),
-            
-            // Loading more indicator
-            if (provider.isLoadingMore)
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildCategoriesTab() {
-    return Consumer<ProductCatalogProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoadingCategories) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        return CategoryGrid(
-          categories: provider.categories,
-          onCategoryTap: (category) {
-            provider.filterByCategory(category.name);
-            _tabController.animateTo(0);
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildFeaturedTab() {
-    return Consumer<ProductCatalogProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        return Column(
-          children: [
-            // Featured products header
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.star,
-                    color: Colors.amber,
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Featured Products',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${provider.featuredProducts.length} products',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Featured products grid
-            Expanded(
-              child: ProductGrid(
-                products: provider.featuredProducts,
-                onProductTap: _showProductDetails,
-                crossAxisCount: 2,
-                childAspectRatio: 0.8,
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildStatCard(
-    BuildContext context,
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: color.withOpacity(0.8),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showProductDetails(Product product) {
-    context.read<ProductCatalogProvider>().selectProduct(product);
+  void _onProductTap(Product product) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -373,56 +92,291 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen>
     );
   }
 
-  void _showAddProductDialog() {
-    // TODO: Implement add product dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Add product feature coming soon!'),
-        backgroundColor: Colors.blue,
-      ),
-    );
-  }
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final provider = context.watch<ProductCatalogProvider>();
 
-  void _showEditProductDialog(Product product) {
-    // TODO: Implement edit product dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Edit ${product.name} feature coming soon!'),
-        backgroundColor: Colors.blue,
-      ),
-    );
-  }
-
-  void _confirmDeleteProduct(Product product) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Product'),
-        content: Text(
-          'Are you sure you want to delete ${product.name}? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.read<ProductCatalogProvider>().deleteProduct(product.id);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${product.name} deleted successfully'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: _buildAppBar(theme, provider),
+      body: LoadingOverlay(
+        isLoading: provider.isLoading && provider.products.isEmpty,
+        child: Column(
+          children: [
+            // Search & Filter Bar
+            EnhancedSearchFilterBar(
+              initialFilters: provider.filter,
+              onFiltersChanged: (filters) => provider.updateFilters(filters),
+              onSearch: (query) => provider.updateFilters(provider.filter.copyWith(searchQuery: query)),
             ),
+
+            // Category Quick Switcher
+            if (provider.categories.isNotEmpty)
+              CategoryChips(
+                categories: provider.categories,
+                selectedCategory: provider.filter.categories.isNotEmpty ? provider.filter.categories.first : null,
+                onCategorySelected: (category) => provider.selectCategory(category ?? 'All'),
+              ),
+
+            // Results Summary
+            _buildResultsSummary(provider, theme),
+
+            // Main Product View
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => provider.refresh(),
+                child: _buildMainContent(provider, theme),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: _buildFAB(theme, provider),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(ThemeData theme, ProductCatalogProvider provider) {
+    return AppBar(
+      title: const Text('VedantaTrade Catalog', style: TextStyle(fontWeight: FontWeight.bold)),
+      actions: [
+        IconButton(
+          icon: Icon(provider.viewMode == ViewMode.grid ? Icons.view_list : Icons.grid_view),
+          onPressed: () => provider.setViewMode(
+            provider.viewMode == ViewMode.grid ? ViewMode.list : ViewMode.grid,
           ),
+          tooltip: 'Toggle View Mode',
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: () => provider.refresh(),
+          tooltip: 'Refresh',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResultsSummary(ProductCatalogProvider provider, ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: theme.cardColor.withOpacity(0.5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '${provider.products.length} Products Found',
+            style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          if (provider.hasActiveFilters)
+            GestureDetector(
+              onTap: () => provider.clearFilters(),
+              child: Text(
+                'Clear Filters',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMainContent(ProductCatalogProvider provider, ThemeData theme) {
+    if (provider.hasError) {
+      return ErrorStateWidget(
+        message: provider.errorMessage ?? 'Failed to load products',
+        onRetry: () => provider.refresh(),
+      );
+    }
+
+    if (provider.products.isEmpty && !provider.isLoading) {
+      return const EmptyStateWidget(
+        message: 'No products found. Try adjusting your filters.',
+        icon: Icons.search_off,
+      );
+    }
+
+    return provider.viewMode == ViewMode.grid
+        ? _buildGrid(provider, theme)
+        : _buildList(provider, theme);
+  }
+
+  Widget _buildGrid(ProductCatalogProvider provider, ThemeData theme) {
+    final width = MediaQuery.of(context).size.width;
+    final crossAxisCount = width > 900 ? 4 : (width > 600 ? 3 : 2);
+
+    return GridView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(12),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        childAspectRatio: 0.72,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: provider.products.length + (provider.hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == provider.products.length) {
+          return const Center(child: PaginationLoader());
+        }
+        final product = provider.products[index];
+        return EnhancedProductCard(
+          product: product,
+          onTap: () => _onProductTap(product),
+          onFavorite: () => provider.toggleFavorite(product),
+          onCompare: () => provider.toggleComparison(product),
+        );
+      },
+    );
+  }
+
+  Widget _buildList(ProductCatalogProvider provider, ThemeData theme) {
+    return ListView.separated(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      itemCount: provider.products.length + (provider.hasMore ? 1 : 0),
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        if (index == provider.products.length) {
+          return const PaginationLoader();
+        }
+        final product = provider.products[index];
+        return ProductListTile(
+          product: product,
+          onTap: () => _onProductTap(product),
+        );
+      },
+    );
+  }
+
+  Widget _buildFAB(ThemeData theme, ProductCatalogProvider provider) {
+    return ScaleTransition(
+      scale: _fabScaleAnimation,
+      child: FloatingActionButton.extended(
+        onPressed: () {
+          // Open comparison view or cart
+        },
+        label: Text('Saved (${provider.favoriteProductIds.length})'),
+        icon: const Icon(Icons.favorite),
+        backgroundColor: theme.primaryColor,
+      ),
+    );
+  }
+}
+
+class ProductListTile extends StatelessWidget {
+  final Product product;
+  final VoidCallback onTap;
+
+  const ProductListTile({
+    Key? key,
+    required this.product,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final provider = context.watch<ProductCatalogProvider>();
+    final isFavorite = provider.isFavorite(product.id);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Product Image
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: theme.scaffoldBackgroundColor,
+                image: DecorationImage(
+                  image: NetworkImage(product.imageUrl.isNotEmpty ? product.imageUrl : 'https://via.placeholder.com/150'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            
+            // Product Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    product.manufacturer,
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        product.formattedPrice,
+                        style: TextStyle(
+                          color: theme.primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      if (product.isOnSale) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          product.formattedOriginalPrice,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+            // Actions
+            Column(
+              children: [
+                IconButton(
+                  icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+                  color: isFavorite ? Colors.red : theme.hintColor,
+                  onPressed: () => provider.toggleFavorite(product),
+                ),
+                Text(
+                  product.stockStatus,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: product.stockQuantity > 0 ? Colors.green : Colors.red,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

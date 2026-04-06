@@ -2,7 +2,7 @@ name: vedanta_trade
 description: VedantaTrade - Enterprise Pharma Trade Management Platform by Vedanta TradeLink
 
 publish_to: 'none'
-version: 3.1.1-alpha
+version: 3.7.0-beta
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

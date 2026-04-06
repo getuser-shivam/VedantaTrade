@@ -3,15 +3,15 @@ import '../../domain/models/product_filter.dart';
 import '../../domain/repositories/product_repository.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
-  final List<ProductEntity> _mockProducts = _generateMockProducts();
+  final List<Product> _mockProducts = _generateMockProducts();
 
   @override
-  Future<List<ProductEntity>> getProducts({
+  Future<List<Product>> getProducts({
     ProductFilter? filter,
     int page = 1,
     int limit = 20,
   }) async {
-    List<ProductEntity> products = List.from(_mockProducts);
+    List<Product> products = List.from(_mockProducts);
     
     if (filter != null) {
       products = _applyFilters(products, filter!);
@@ -26,7 +26,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<ProductEntity?> getProductById(String id) async {
+  Future<Product?> getProductById(String id) async {
     try {
       return _mockProducts.firstWhere((product) => product.id == id);
     } catch (e) {
@@ -35,14 +35,14 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<ProductEntity>> getProductsByCategory(String category) async {
+  Future<List<Product>> getProductsByCategory(String category) async {
     return _mockProducts
         .where((product) => product.category.toLowerCase() == category.toLowerCase())
         .toList();
   }
 
   @override
-  Future<List<ProductEntity>> searchProducts(String query) async {
+  Future<List<Product>> searchProducts(String query) async {
     if (query.isEmpty) return [];
     
     final lowerQuery = query.toLowerCase();
@@ -57,7 +57,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<ProductEntity>> getFeaturedProducts() async {
+  Future<List<Product>> getFeaturedProducts() async {
     return _mockProducts
         .where((product) => product.isActive && product.hasDiscount)
         .take(10)
@@ -65,14 +65,14 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<ProductEntity>> getDiscountedProducts() async {
+  Future<List<Product>> getDiscountedProducts() async {
     return _mockProducts
         .where((product) => product.hasDiscount)
         .toList();
   }
 
   @override
-  Future<List<ProductEntity>> getExpiringSoonProducts() async {
+  Future<List<Product>> getExpiringSoonProducts() async {
     return _mockProducts
         .where((product) => product.isExpiringSoon)
         .take(10)
@@ -80,7 +80,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<ProductEntity>> getLowStockProducts() async {
+  Future<List<Product>> getLowStockProducts() async {
     return _mockProducts
         .where((product) => product.isLowStock)
         .take(10)
@@ -115,7 +115,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<ProductEntity>> getRelatedProducts(String productId) async {
+  Future<List<Product>> getRelatedProducts(String productId) async {
     final currentProduct = await getProductById(productId);
     if (currentProduct == null) return [];
     
@@ -139,7 +139,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<ProductEntity>> getFavoriteProducts() async {
+  Future<List<Product>> getFavoriteProducts() async {
     return _mockProducts.take(5).toList(); // Mock implementation
   }
 
@@ -154,7 +154,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<ProductEntity>> getRecentlyViewedProducts() async {
+  Future<List<Product>> getRecentlyViewedProducts() async {
     return _mockProducts.take(8).toList(); // Mock implementation
   }
 
@@ -164,7 +164,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<List<ProductEntity>> getProductsByManufacturer(String manufacturer) async {
+  Future<List<Product>> getProductsByManufacturer(String manufacturer) async {
     return _mockProducts
         .where((product) => product.manufacturer.toLowerCase() == manufacturer.toLowerCase())
         .toList();
@@ -188,7 +188,7 @@ class ProductRepositoryImpl implements ProductRepository {
     };
   }
 
-  List<ProductEntity> _applyFilters(List<ProductEntity> products, ProductFilter filter) {
+  List<Product> _applyFilters(List<Product> products, ProductFilter filter) {
     if (filter.searchQuery?.isNotEmpty == true) {
       products = _applySearchFilter(products, filter.searchQuery!);
     }
@@ -241,7 +241,7 @@ class ProductRepositoryImpl implements ProductRepository {
     return products;
   }
 
-  List<ProductEntity> _applySearchFilter(List<ProductEntity> products, String query) {
+  List<Product> _applySearchFilter(List<Product> products, String query) {
     final lowerQuery = query.toLowerCase();
     return products.where((product) =>
         product.name.toLowerCase().contains(lowerQuery) ||
@@ -252,7 +252,7 @@ class ProductRepositoryImpl implements ProductRepository {
     ).toList();
   }
 
-  List<ProductEntity> _applySorting(List<ProductEntity> products, ProductSortOption sortBy) {
+  List<Product> _applySorting(List<Product> products, ProductSortOption sortBy) {
     switch (sortBy) {
       case ProductSortOption.nameAsc:
         return products..sort((a, b) => a.name.compareTo(b.name));
@@ -274,10 +274,10 @@ class ProductRepositoryImpl implements ProductRepository {
     return products;
   }
 
-  List<ProductEntity> _generateMockProducts() {
+  List<Product> _generateMockProducts() {
     final now = DateTime.now();
     return [
-      ProductEntity(
+      Product(
         id: '1',
         name: 'Paracetamol 500mg',
         description: 'Paracetamol tablets for pain relief and fever reduction',
@@ -302,7 +302,7 @@ class ProductRepositoryImpl implements ProductRepository {
         discountType: 'Bulk Order',
         discountValidUntil: now.add(const Duration(days: 15)),
       ),
-      ProductEntity(
+      Product(
         id: '2',
         name: 'Amoxicillin 250mg',
         description: 'Antibiotic for bacterial infections',
@@ -325,7 +325,7 @@ class ProductRepositoryImpl implements ProductRepository {
         specifications: {'composition': 'Amoxicillin 250mg', 'packaging': '20 capsules per bottle'},
         expiryDate: now.add(const Duration(days: 60)),
       ),
-      ProductEntity(
+      Product(
         id: '3',
         name: 'Digital Blood Pressure Monitor',
         description: 'Automatic blood pressure monitoring device',
@@ -344,7 +344,7 @@ class ProductRepositoryImpl implements ProductRepository {
         updatedAt: now.subtract(const Duration(days: 2)),
         specifications: {'display': 'Digital LCD', 'accuracy': '+/- 3mmHg', 'battery': 'AAA x2'},
       ),
-      ProductEntity(
+      Product(
         id: '4',
         name: 'Surgical Gloves',
         description: 'Disposable surgical gloves for medical procedures',
@@ -363,7 +363,7 @@ class ProductRepositoryImpl implements ProductRepository {
         updatedAt: now.subtract(const Duration(days: 1)),
         specifications: {'material': 'Latex', 'size': 'Large', 'sterile': 'Yes'},
       ),
-      ProductEntity(
+      Product(
         id: '5',
         name: 'Vitamin C Tablets',
         description: 'Vitamin C supplement for immune system support',

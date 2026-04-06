@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class ProductEntity extends Equatable {
+class Product extends Equatable {
   final String id;
   final String name;
   final String description;
@@ -28,7 +28,7 @@ class ProductEntity extends Equatable {
   final String? discountType;
   final DateTime? discountValidUntil;
 
-  const ProductEntity({
+  const Product({
     required this.id,
     required this.name,
     required this.description,
@@ -57,7 +57,7 @@ class ProductEntity extends Equatable {
     this.discountValidUntil,
   });
 
-  ProductEntity copyWith({
+  Product copyWith({
     String? id,
     String? name,
     String? description,
@@ -85,7 +85,7 @@ class ProductEntity extends Equatable {
     String? discountType,
     DateTime? discountValidUntil,
   }) {
-    return ProductEntity(
+    return Product(
       id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
@@ -147,7 +147,7 @@ class ProductEntity extends Equatable {
 
   @override
   String toString() {
-    return 'ProductEntity(id: $id, name: $name, category: $category, price: $price $currency)';
+    return 'Product(id: $id, name: $name, category: $category, price: $price $currency)';
   }
 
   bool get isLowStock => stockQuantity <= minOrderQuantity;
