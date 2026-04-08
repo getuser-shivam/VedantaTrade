@@ -10,6 +10,11 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:dio/dio.dart';
 import 'package:vedanta_trade/core/api_config.dart';
+import 'package:vedanta_trade/shared/widgets/responsive/responsive_layout.dart';
+import 'package:vedanta_trade/shared/widgets/responsive/responsive_grid.dart';
+import 'package:vedanta_trade/shared/widgets/responsive/responsive_container.dart';
+import 'package:vedanta_trade/shared/widgets/responsive/responsive_row.dart';
+import 'package:vedanta_trade/shared/widgets/responsive/responsive_column.dart';
 
 class MrDashboard extends StatefulWidget {
   const MrDashboard({super.key});
@@ -85,118 +90,83 @@ class _MrDashboardState extends State<MrDashboard> {
       ),
       body: _loading
           ? const Center(child: LoadingAnimation())
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                final isSmall = constraints.maxWidth < 600;
+          : ResponsiveLayout(
+              mobile: _buildMobileLayout(),
+              tablet: _buildTabletLayout(),
+              desktop: _buildDesktopLayout(),
+            ),
+    );
+  }
 
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Greeting
-                      Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Today, ${DateFormat('d MMM yyyy').format(DateTime.now())}',
-                                style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 13),
-                              ),
-                              const Text(
-                                'Good Morning, Ramesh! 👋',
-                                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.white),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          const CircleAvatar(
-                            radius: 24,
-                            backgroundColor: Colors.white10,
-                            child: Icon(Icons.notifications_outlined, color: Colors.white70),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      
-                      // Stats Grid
-                      GridView.count(
-                        crossAxisCount: isSmall ? 2 : 4,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        childAspectRatio: 1.3,
-                        children: [
-                          GlassmorphicStatCard(
-                            title: 'Visits Today',
-                            value: '${_stats?['visitsToday'] ?? 0}',
-                            icon: Icons.today_rounded,
-                            color: AppTheme.mrColor,
-                          ),
-                          GlassmorphicStatCard(
-                            title: 'This Month',
-                            value: '${_stats?['visitsThisMonth'] ?? 0}',
-                            icon: Icons.calendar_month_rounded,
-                            color: AppTheme.primary,
-                          ),
-                          GlassmorphicStatCard(
-                            title: 'Samples Given',
-                            value: '${_stats?['samplesDistributed'] ?? 0}',
-                            icon: Icons.medication_rounded,
-                            color: AppTheme.secondary,
-                          ),
-                          GlassmorphicStatCard(
-                            title: 'Pending Claims',
-                            value: '₹${_stats?['pendingExpenses'] ?? 0}',
-                            icon: Icons.account_balance_wallet_rounded,
-                            color: AppTheme.warning,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      
-                      // Target Progress Section
-                      const Text(
-                        'Performance Metrics',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      const SizedBox(height: 16),
-                      GlassmorphicCard(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          children: [
-                            _TargetRow(label: 'Visit Target', achieved: _stats?['visitsThisMonth'] ?? 0, target: 60, color: AppTheme.mrColor),
-                            const SizedBox(height: 20),
-                            const _TargetRow(label: 'Revenue (MTD)', achieved: 185000, target: 250000, color: AppTheme.primary),
-                            const SizedBox(height: 20),
-                            _TargetRow(label: 'Samples Distributed', achieved: _stats?['samplesDistributed'] ?? 0, target: 200, color: AppTheme.secondary),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      
-                      // Live Map View for Janakpur territory
-                      const Text(
-                        'Live Territory Map (Janakpur)',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      const SizedBox(height: 16),
-                      GlassmorphicCard(
-                        height: 300,
-                        padding: EdgeInsets.zero,
-                        clipBehavior: Clip.hardEdge,
-                        child: FlutterMap(
-                          options: const MapOptions(
-                            initialCenter: LatLng(26.7288, 85.9260),
-                            initialZoom: 14.0,
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'np.com.vedantatrade.app',
-                            ),
+  Widget _buildMobileLayout() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: ResponsiveColumn(
+        spacing: 24,
+        children: [
+          _buildGreetingSection(),
+          _buildStatsGrid(isMobile: true),
+          _buildPerformanceMetrics(),
+          _buildLiveMap(),
+          _buildRecentVisits(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabletLayout() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: ResponsiveColumn(
+        spacing: 32,
+        children: [
+          _buildGreetingSection(),
+          _buildStatsGrid(isMobile: false),
+          ResponsiveRow(
+            spacing: 24,
+            children: [
+              Expanded(
+                flex: 1,
+                child: _buildPerformanceMetrics(),
+              ),
+              Expanded(
+                flex: 1,
+                child: _buildRecentVisits(),
+              ),
+            ],
+          ),
+          _buildLiveMap(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32),
+      child: ResponsiveColumn(
+        spacing: 32,
+        children: [
+          _buildGreetingSection(),
+          _buildStatsGrid(isMobile: false),
+          ResponsiveRow(
+            spacing: 32,
+            children: [
+              Expanded(
+                flex: 1,
+                child: _buildPerformanceMetrics(),
+              ),
+              Expanded(
+                flex: 1,
+                child: _buildRecentVisits(),
+              ),
+            ],
+          ),
+          _buildLiveMap(),
+        ],
+      ),
+    );
+  }
                             MarkerLayer(
                               markers: [
                                 Marker(

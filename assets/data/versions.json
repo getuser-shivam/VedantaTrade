@@ -1,5 +1,60 @@
 [
   {
+    "version": "3.8.0-alpha",
+    "releaseDate": "2026-04-06",
+    "status": "Alpha",
+    "buildNumber": "3800",
+    "platform": "Multi-Platform",
+    "description": "The Architectural Pivot: Clean Architecture, Security Hardening, and Glassmorphic UI.",
+    "screenshots": [
+      "assets/screenshots/v3_8_0_clean_arch.png",
+      "assets/screenshots/v3_8_0_glassmorphic_ui.png",
+      "assets/screenshots/v3_8_0_mfa_login.png"
+    ],
+    "features": [
+      "Clean Architecture Migration (Data/Domain/Presentation)",
+      "Premium Glassmorphic Design System (GlassCard)",
+      "Multi-Factor Authentication (MFA) Integration",
+      "Advanced Account Locking (HTTP 423 Persistence)",
+      "Automated CI/CD Pipeline (GitHub Actions)",
+      "Redesigned Product Catalog with Interactive Overlays",
+      "Distribution & Marketing Management Foundations"
+    ],
+    "changelog": [
+      "Refactored core modules to decoupled Clean Architecture",
+      "Implemented Stellar Dark Mode with Indigo/Emerald palette",
+      "Added 2FA secure login flow and lockout logic",
+      "Configured automated builds and linting via GitHub Actions",
+      "Updated typography to Outfit and Inter fonts",
+      "Unified all security logic into hardened AuthService"
+    ],
+    "isFeatured": true
+  },
+  {
+    "version": "3.7.0-beta",
+    "releaseDate": "2026-04-05",
+    "status": "Beta",
+    "buildNumber": "3700",
+    "platform": "Multi-Platform",
+    "description": "Beta release for internal stakeholder testing with initial product catalog.",
+    "screenshots": [
+      "assets/screenshots/v3_7_0_catalog.png"
+    ],
+    "features": [
+      "Initial Product Catalog Implementation",
+      "Stakeholder Feedback Integration",
+      "Core Performance Improvements",
+      "Documentation Synchronization"
+    ],
+    "changelog": [
+      "Launched beta testing phase",
+      "Implemented basic product search and filtering",
+      "Fixed critical session management bugs",
+      "Synchronized README and CHANGELOG"
+    ],
+    "isFeatured": false
+  },
+  {
     "version": "3.2.0-alpha",
     "releaseDate": "2026-04-03",
     "status": "Alpha",

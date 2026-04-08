@@ -4,11 +4,73 @@
 
 This document provides comprehensive development guidelines for the VedantaTrade pharmaceutical distribution platform, ensuring consistency, quality, and maintainability across the entire codebase.
 
+**Important References:**
+- [Project Structure Standard](./PROJECT_STRUCTURE_STANDARD.md) - Standardized directory structure
+- [Naming Conventions](./NAMING_CONVENTIONS.md) - Detailed naming conventions
+- [Project Structure Analysis](./PROJECT_STRUCTURE_ANALYSIS.md) - Current structure analysis
+
+## Project Structure Standards
+
+### Feature Structure Requirements
+
+All new features must follow the standardized Clean Architecture structure:
+
+```
+features/feature_name/
+├── feature_name.dart              # Entry point (exports public API)
+├── feature_name_feature.dart      # Feature registration
+├── data/                          # Data layer
+│   ├── models/                    # Data models
+│   ├── repositories/              # Repository implementations
+│   ├── datasources/               # API/local storage
+│   └── services/                  # Data services
+├── domain/                        # Domain layer
+│   ├── entities/                  # Domain entities
+│   ├── repositories/              # Repository interfaces
+│   ├── usecases/                  # Business logic
+│   └── services/                  # Domain services
+└── presentation/                  # Presentation layer
+    ├── screens/                   # Full-screen widgets
+    ├── widgets/                   # Reusable widgets
+    └── providers/                 # State management
+```
+
+### Structure Compliance Rules
+
+1. **No files at feature root level** (except entry point files)
+2. **All layers must exist** (data, domain, presentation)
+3. **Clean Architecture separation** - layers must not violate dependency rules
+4. **Consistent naming** - follow naming conventions (see NAMING_CONVENTIONS.md)
+5. **Entry point files** - every feature must have `{feature_name}.dart` and `{feature_name}_feature.dart`
+
+### Migration Priority
+
+Features requiring restructuring (from PROJECT_STRUCTURE_ANALYSIS.md):
+
+**Critical (Immediate):**
+- field_force
+- admin
+- retailer
+
+**Medium Priority:**
+- stockist
+- notifications
+- reviews
+- accounting
+- orders
+
+**Low Priority:**
+- profile
+- splash
+- ux
+
 ## Code Standards
 
 ### Dart/Flutter Standards
 
 #### 1. Naming Conventions
+
+**For detailed naming conventions, see [NAMING_CONVENTIONS.md](./NAMING_CONVENTIONS.md)**
 
 ```dart
 // Classes - PascalCase
@@ -19,28 +81,38 @@ class UserProfileWidget {}
 final String userName = 'john_doe';
 void authenticateUser() {}
 
-// Constants - SCREAMING_SNAKE_CASE
-const String API_BASE_URL = 'https://api.vedantatrade.com';
-const int MAX_RETRY_ATTEMPTS = 3;
+// Constants - camelCase (feature-specific) or UPPER_CASE (global)
+const String apiBaseUrl = 'https://api.vedantatrade.com';
+const int maxRetryAttempts = 3;
+const String API_BASE_URL = 'https://api.vedantatrade.com'; // Global constant
 
 // Private members - prefix with underscore
 String _privateMethod() {}
 final int _privateVariable = 0;
 
-// Files - snake_case
-// authentication_repository.dart
-// user_profile_service.dart
-// product_list_screen.dart
+// Files - camelCase (new standard)
+// authenticationRepository.dart
+// userService.dart
+// productListScreen.dart
+
+// Directories - snake_case
+// authentication/
+// user_profile/
+// product_list/
 ```
 
 #### 2. File Organization
+
+**For detailed project structure, see [PROJECT_STRUCTURE_STANDARD.md](./PROJECT_STRUCTURE_STANDARD.md)**
 
 ```dart
 // Import order:
 // 1. Dart imports
 // 2. Flutter imports
 // 3. Package imports
-// 4. Local imports
+// 4. Core imports
+// 5. Feature imports (current feature first, then other features)
+// 6. Relative imports
 
 import 'dart:async';
 import 'dart:convert';
@@ -578,7 +650,22 @@ class InputValidator {
 
 #### 1. Review Checklist
 
-- [ ] Code follows naming conventions
+**Project Structure:**
+- [ ] Feature follows standardized directory structure (see PROJECT_STRUCTURE_STANDARD.md)
+- [ ] Files are in correct layer (data/domain/presentation)
+- [ ] No files at feature root level (except entry point files)
+- [ ] Entry point file exists: `{feature_name}.dart`
+- [ ] Feature registration file exists: `{feature_name}_feature.dart`
+
+**Naming Conventions:**
+- [ ] Code follows naming conventions (see NAMING_CONVENTIONS.md)
+- [ ] Directories use snake_case
+- [ ] Files use camelCase
+- [ ] Classes use PascalCase
+- [ ] Variables use camelCase
+- [ ] Boolean variables use is/has/should/can prefix
+
+**Code Quality:**
 - [ ] Functions and classes are properly documented
 - [ ] Error handling is implemented
 - [ ] Tests are written for new functionality

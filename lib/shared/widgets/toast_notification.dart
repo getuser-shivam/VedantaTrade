@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:vedanta_trade/app/theme/app_theme.dart';
+import 'package:vedanta_trade/app/theme/app_palette.dart';
 
 /// Toast notification types
 enum ToastType { success, error, warning, info }
@@ -22,13 +22,13 @@ class ToastNotification extends StatelessWidget {
   Color get _backgroundColor {
     switch (type) {
       case ToastType.success:
-        return AppTheme.success.withOpacity(0.9);
+        return AppPalette.success.withOpacity(0.9);
       case ToastType.error:
-        return AppTheme.error.withOpacity(0.9);
+        return AppPalette.error.withOpacity(0.9);
       case ToastType.warning:
-        return Colors.orange.withOpacity(0.9);
+        return AppPalette.warning.withOpacity(0.9);
       case ToastType.info:
-        return AppTheme.primary.withOpacity(0.9);
+        return AppPalette.info.withOpacity(0.9);
     }
   }
 

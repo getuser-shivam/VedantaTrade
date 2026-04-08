@@ -13,6 +13,10 @@ import '../../../shared/widgets/loading_overlay.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_widget.dart';
 import '../../../shared/widgets/pagination_loader.dart';
+import '../../../shared/widgets/responsive/responsive_layout.dart';
+import '../../../shared/widgets/responsive/responsive_grid.dart';
+import '../../../shared/widgets/responsive/responsive_container.dart';
+import '../../../shared/widgets/responsive/responsive_card.dart';
 
 /// Product Catalog Screen
 /// A high-performance, robust product catalog interface for VedantaTrade.
@@ -97,6 +101,14 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> with Ticker
     final theme = Theme.of(context);
     final provider = context.watch<ProductCatalogProvider>();
 
+    return ResponsiveLayout(
+      mobile: _buildMobileLayout(theme, provider),
+      tablet: _buildTabletLayout(theme, provider),
+      desktop: _buildDesktopLayout(theme, provider),
+    );
+  }
+
+  Widget _buildMobileLayout(ThemeData theme, ProductCatalogProvider provider) {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -124,6 +136,183 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> with Ticker
             _buildResultsSummary(provider, theme),
 
             // Main Product View
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => provider.refresh(),
+                child: _buildMainContent(provider, theme),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: _buildFAB(theme, provider),
+    );
+  }
+
+  Widget _buildTabletLayout(ThemeData theme, ProductCatalogProvider provider) {
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: _buildAppBar(theme, provider),
+      body: LoadingOverlay(
+        isLoading: provider.isLoading && provider.products.isEmpty,
+        child: Row(
+          children: [
+            // Sidebar for filters and categories
+            SizedBox(
+              width: 300,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Search Bar
+                    EnhancedSearchFilterBar(
+                      initialFilters: provider.filter,
+                      onFiltersChanged: (filters) => provider.updateFilters(filters),
+                      onSearch: (query) => provider.updateFilters(provider.filter.copyWith(searchQuery: query)),
+                      isCompact: true,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // Category Quick Switcher
+                    if (provider.categories.isNotEmpty) ...[
+                      Text(
+                        'Categories',
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      CategoryChips(
+                        categories: provider.categories,
+                        selectedCategory: provider.filter.categories.isNotEmpty ? provider.filter.categories.first : null,
+                        onCategorySelected: (category) => provider.selectCategory(category ?? 'All'),
+                        isVertical: true,
+                      ),
+                    ],
+                    
+                    const Spacer(),
+                    
+                    // Results Summary
+                    _buildResultsSummary(provider, theme),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Main Content
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => provider.refresh(),
+                child: _buildMainContent(provider, theme),
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: _buildFAB(theme, provider),
+    );
+  }
+
+  Widget _buildDesktopLayout(ThemeData theme, ProductCatalogProvider provider) {
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: _buildAppBar(theme, provider),
+      body: LoadingOverlay(
+        isLoading: provider.isLoading && provider.products.isEmpty,
+        child: Row(
+          children: [
+            // Sidebar for filters and categories
+            SizedBox(
+              width: 350,
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Search Bar
+                    EnhancedSearchFilterBar(
+                      initialFilters: provider.filter,
+                      onFiltersChanged: (filters) => provider.updateFilters(filters),
+                      onSearch: (query) => provider.updateFilters(provider.filter.copyWith(searchQuery: query)),
+                      isCompact: true,
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Category Quick Switcher
+                    if (provider.categories.isNotEmpty) ...[
+                      Text(
+                        'Categories',
+                        style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      CategoryChips(
+                        categories: provider.categories,
+                        selectedCategory: provider.filter.categories.isNotEmpty ? provider.filter.categories.first : null,
+                        onCategorySelected: (category) => provider.selectCategory(category ?? 'All'),
+                        isVertical: true,
+                      ),
+                    ],
+                    
+                    const Spacer(),
+                    
+                    // Results Summary
+                    _buildResultsSummary(provider, theme),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // View Mode Toggle
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => provider.setViewMode(ViewMode.grid),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: provider.viewMode == ViewMode.grid ? theme.primaryColor : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.grid_view,
+                                  color: provider.viewMode == ViewMode.grid ? Colors.white : theme.iconTheme.color,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => provider.setViewMode(ViewMode.list),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: provider.viewMode == ViewMode.list ? theme.primaryColor : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.view_list,
+                                  color: provider.viewMode == ViewMode.list ? Colors.white : theme.iconTheme.color,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Main Content
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () => provider.refresh(),
@@ -205,31 +394,22 @@ class _ProductCatalogScreenState extends State<ProductCatalogScreen> with Ticker
   }
 
   Widget _buildGrid(ProductCatalogProvider provider, ThemeData theme) {
-    final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = width > 900 ? 4 : (width > 600 ? 3 : 2);
-
-    return GridView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(12),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        childAspectRatio: 0.72,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-      ),
-      itemCount: provider.products.length + (provider.hasMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == provider.products.length) {
-          return const Center(child: PaginationLoader());
-        }
-        final product = provider.products[index];
-        return EnhancedProductCard(
-          product: product,
-          onTap: () => _onProductTap(product),
-          onFavorite: () => provider.toggleFavorite(product),
-          onCompare: () => provider.toggleComparison(product),
-        );
-      },
+    return ResponsiveGrid(
+      mobileColumns: 2,
+      tabletColumns: 3,
+      desktopColumns: 4,
+      largeDesktopColumns: 5,
+      spacing: 16,
+      runSpacing: 16,
+      padding: const EdgeInsets.all(16),
+      children: provider.products.map((product) => EnhancedProductCard(
+        product: product,
+        onTap: () => _onProductTap(product),
+        onFavorite: () => provider.toggleFavorite(product),
+        onCompare: () => provider.toggleComparison(product),
+      )).toList() + [
+        if (provider.hasMore) const Center(child: PaginationLoader())
+      ],
     );
   }
 

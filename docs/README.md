@@ -1,6 +1,6 @@
 # VedantaTrade
 
-A comprehensive pharmaceutical distribution management system built with Flutter for the Nepalese market.
+A comprehensive pharmaceutical distribution management system built with Flutter for the Nepalese market. (v3.8.0-alpha: The Architectural Pivot)
 
 ## 🚀 Quick Start
 
